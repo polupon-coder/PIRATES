@@ -350,6 +350,7 @@ function applyStaticTexts() {
   set('createBtn', 'textContent', 'Crear partida', 'Create game');
   set('joinBtn', 'textContent', 'Unirse', 'Join');
   set('playBtn', 'textContent', 'Jugar', 'Play');
+  document.querySelectorAll('.title-img').forEach((im) => { im.src = `img/titulo-${LANG}.webp`; im.alt = L('Piratas', 'Pirates'); });
   set('coverBy', 'textContent', 'Un juego de Pol Lupon', 'A game by Pol Lupon');
   $('langBtn').textContent = LANG.toUpperCase();
   $('langBtn').title = L('Change language: English', 'Cambiar idioma: español');
