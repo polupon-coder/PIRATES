@@ -30,6 +30,7 @@ module.exports = {
 
   ATTRS: ['velas', 'canones', 'casco', 'bodega', 'tripulacion'],
   ATTR_LABEL: { velas: 'Velas', canones: 'Cañones', casco: 'Casco', bodega: 'Bodega', tripulacion: 'Tripulación' },
+  ATTR_LABEL_EN: { velas: 'Sails', canones: 'Cannons', casco: 'Hull', bodega: 'Hold', tripulacion: 'Crew' },
   LEVELS: {
     velas: [3, 4, 5],
     canones: [2, 3, 4],
@@ -50,6 +51,7 @@ module.exports = {
 
   GOODS: ['comida', 'materiales', 'manufacturas', 'lujos'],
   GOOD_LABEL: { comida: 'Comida', materiales: 'Materiales', manufacturas: 'Manufacturas', lujos: 'Lujos' },
+  GOOD_LABEL_EN: { comida: 'Food', materiales: 'Materials', manufacturas: 'Goods', lujos: 'Luxuries' },
   GOOD_VALUE: { comida: 2, materiales: 3, manufacturas: 4, lujos: 5 },
   // Precio al que el puerto compra: valor base + [-1, +2]. Vende 1 oro más caro.
   PRICE_VAR: [-1, 2],

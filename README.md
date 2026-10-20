@@ -35,6 +35,9 @@ Cada cambio en la rama `main` se publica solo. En el plan gratuito el servidor s
   - **Atacar o comerciar:** desde «A la vista».
   - **Puerto:** comerciar, mejorar, reparar y reclutar.
 - **Combate:** una ventana con los dos barcos. Cada capitán elige Cañonear, Abordar o Maniobrar (20 s; si no eliges, tu barco cañonea). Se ven los dados de cada asalto.
+- **Mismo dispositivo:** en la sala, escribe el nombre de otro jugador y pulsa **Añadir**: jugará en este mismo móvil u ordenador. Cuando le toque (su turno, una maniobra de combate o un trato), el juego tapa el mapa y pide pasarle el dispositivo; así nadie ve el mapa del otro. Se puede mezclar con jugadores en otros dispositivos y con bots.
+- **Idioma:** el botón **ES / EN** de arriba cambia entre español e inglés (se recuerda en el navegador; por defecto, el del navegador). La crónica, los avisos y los errores también se traducen.
+- **Móvil:** el mapa empieza acercado a tu barco y lo sigue; la lupa (− / +) alterna con el mapa entero, y se puede mover con el dedo.
 - **Precios:** el botón de arriba muestra los precios de todos los puertos descubiertos, para planear rutas comerciales.
 
 ## Estructura

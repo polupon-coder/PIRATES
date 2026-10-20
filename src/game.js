@@ -39,10 +39,14 @@ function countGoods(hold) {
   for (const u of hold) n[u.g] += 1;
   return n;
 }
-function goodsText(list) {
+// Mensajes en los dos idiomas: { es, en }. El cliente muestra el del jugador.
+const T = (es, en) => ({ es, en });
+function goodsText(list, lang = 'es') {
   const n = countGoods(list.map((g) => (typeof g === 'string' ? { g } : g)));
-  return C.GOODS.filter((g) => n[g]).map((g) => `${n[g]} ${GL[g].toLowerCase()}`).join(', ') || 'nada';
+  const label = lang === 'en' ? C.GOOD_LABEL_EN : GL;
+  return C.GOODS.filter((g) => n[g]).map((g) => `${n[g]} ${label[g].toLowerCase()}`).join(', ') || (lang === 'en' ? 'nothing' : 'nada');
 }
+const goodsT = (list) => T(goodsText(list, 'es'), goodsText(list, 'en'));
 // Unidades de un tipo, las más antiguas primero.
 function takeUnits(hold, g, n) {
   const out = [];
@@ -116,8 +120,9 @@ class Game {
     return this.player(id) || this.merchants.find((s) => s.id === id) || this.frigates.find((s) => s.id === id) || null;
   }
 
-  shipName(s) {
+  shipName(s, lang = 'es') {
     if (s.kind === 'pirata') return s.name;
+    if (lang === 'en') return s.kind === 'mercante' ? 'a merchant' : 'the Navy frigate';
     return s.kind === 'mercante' ? 'un mercante' : 'la fragata de la Armada';
   }
 
@@ -154,10 +159,11 @@ class Game {
     }
   }
 
+  // motivo: { es, en }
   addPL(p, n, motivo) {
     if (!p || p.kind !== 'pirata' || n <= 0) return;
     p.pl += n;
-    this.say(`${p.name} gana ${n} de leyenda (${motivo}).`);
+    this.say(T(`${p.name} gana ${n} de leyenda (${motivo.es}).`, `${p.name} earns ${n} legend (${motivo.en}).`));
   }
 
   // ---------------------------------------------------------------- sala
@@ -178,7 +184,7 @@ class Game {
     };
     this.players.push(p);
     if (!this.hostId) this.hostId = p.id;
-    this.say(`${p.name} sube a bordo.`);
+    this.say(T(`${p.name} sube a bordo.`, `${p.name} comes aboard.`));
     return p;
   }
 
@@ -228,7 +234,8 @@ class Game {
     for (let i = 0; i < C.FRIGATES_BY_PLAYERS[n]; i++) this.spawnFrigate();
     this.phase = 'juego';
     this.round = 1;
-    this.say(`¡Zarpamos! Orden de turno: ${this.order.map((id) => this.player(id).name).join(', ')}.`);
+    const names = this.order.map((id) => this.player(id).name).join(', ');
+    this.say(T(`¡Zarpamos! Orden de turno: ${names}.`, `We set sail! Turn order: ${names}.`));
     this.startTurn(0);
   }
 
@@ -242,7 +249,7 @@ class Game {
     this.turnIdx = idx;
     const p = this.player(this.order[idx]);
     this.turn = { pid: p.id, actions: C.ACTIONS_PER_TURN, moving: null, deadline: this.now() + C.TURN_MS, left: null };
-    this.say(`— Ronda ${this.round}: turno de ${p.name}.`);
+    this.say(T(`— Ronda ${this.round}: turno de ${p.name}.`, `— Round ${this.round}: ${p.name}'s turn.`));
   }
 
   pauseTurn() {
@@ -299,7 +306,7 @@ class Game {
     const t = this.player(id);
     if (!t) fail('Jugador desconocido');
     this.removePlayer(id);
-    this.say(`${t.name} abandona la tripulación.`);
+    this.say(T(`${t.name} abandona la tripulación.`, `${t.name} leaves the crew.`));
   }
 
   a_start(p) {
@@ -344,7 +351,8 @@ class Game {
         break;
       }
       if (p.docked !== null) {
-        this.say(`${p.name} zarpa de ${this.map.ports[p.docked].name}.`, this.observers([p.x, p.y]));
+        const pn = this.map.ports[p.docked].name;
+        this.say(T(`${p.name} zarpa de ${pn}.`, `${p.name} sails from ${pn}.`), this.observers([p.x, p.y]));
         p.docked = null;
         p.visit = null;
       }
@@ -370,7 +378,7 @@ class Game {
     if (pt.id === p.lastPort) fail('No puedes volver al último puerto que visitaste hasta atracar en otro');
     this.turn.moving = null;
     this.dock(p, pt.id);
-    this.say(`${p.name} atraca en ${pt.name}.`, this.observers([pt.x, pt.y]));
+    this.say(T(`${p.name} atraca en ${pt.name}.`, `${p.name} docks at ${pt.name}.`), this.observers([pt.x, pt.y]));
   }
 
   dock(p, portId) {
@@ -403,9 +411,9 @@ class Game {
     if (res === 'tesoro') {
       const oro = randInt(this.rng, C.TREASURE_GOLD[0], C.TREASURE_GOLD[1]);
       p.oro += oro;
-      this.notify(p, `¡Tesoro! Encuentras ${oro} oros.`, 'tesoro');
-      this.say(`${p.name} explora una isla y encuentra un tesoro.`, obs);
-      this.addPL(p, C.PL.tesoro, 'tesoro');
+      this.notify(p, T(`¡Tesoro! Encuentras ${oro} oros.`, `Treasure! You find ${oro} gold.`), 'tesoro');
+      this.say(T(`${p.name} explora una isla y encuentra un tesoro.`, `${p.name} explores an island and finds treasure.`), obs);
+      this.addPL(p, C.PL.tesoro, T('tesoro', 'treasure'));
     } else if (res === 'mercancias') {
       const n = randInt(this.rng, C.EXPLORE_GOODS[0], C.EXPLORE_GOODS[1]);
       const found = Array.from({ length: n }, () => C.GOODS[Math.floor(this.rng() * C.GOODS.length)]);
@@ -413,17 +421,18 @@ class Game {
       const kept = found.slice(0, Math.max(0, room));
       for (const g of kept) p.hold.push({ g, cost: 0 });
       const lost = found.length - kept.length;
-      this.notify(p, `Encuentras mercancías: ${goodsText(found)}.${lost ? ` No caben ${lost} en la bodega.` : ''}`, 'mercancias');
-      this.say(`${p.name} explora una isla y encuentra mercancías.`, obs);
+      this.notify(p, T(`Encuentras mercancías: ${goodsText(found)}.${lost ? ` No caben ${lost} en la bodega.` : ''}`,
+        `You find cargo: ${goodsText(found, 'en')}.${lost ? ` ${lost} don't fit in the hold.` : ''}`), 'mercancias');
+      this.say(T(`${p.name} explora una isla y encuentra mercancías.`, `${p.name} explores an island and finds cargo.`), obs);
     } else if (res === 'peligro') {
       const d = randInt(this.rng, C.DANGER_DAMAGE[0], C.DANGER_DAMAGE[1]);
       p.casco = Math.max(0, p.casco - d);
-      this.notify(p, `¡Peligro en la isla! Tu barco recibe ${d} de daño.`, 'peligro');
-      this.say(`${p.name} explora una isla y sufre un percance.`, obs);
-      if (p.casco <= 0) this.sink(p, null, 'los peligros de la isla');
+      this.notify(p, T(`¡Peligro en la isla! Tu barco recibe ${d} de daño.`, `Danger on the island! Your ship takes ${d} damage.`), 'peligro');
+      this.say(T(`${p.name} explora una isla y sufre un percance.`, `${p.name} explores an island and runs into trouble.`), obs);
+      if (p.casco <= 0) this.sink(p, null, T('los peligros de la isla', 'the island\'s dangers'));
     } else {
-      this.notify(p, 'La isla está desierta: no encuentras nada.', 'nada');
-      this.say(`${p.name} explora una isla sin encontrar nada.`, obs);
+      this.notify(p, T('La isla está desierta: no encuentras nada.', 'The island is deserted: you find nothing.'), 'nada');
+      this.say(T(`${p.name} explora una isla sin encontrar nada.`, `${p.name} explores an island and finds nothing.`), obs);
     }
   }
 
@@ -458,21 +467,25 @@ class Game {
       for (let i = 0; i < n; i++) p.hold.push({ g, cost: port.prices[g].compra });
       if (!p.visit.bought.includes(g)) p.visit.bought.push(g);
     }
-    const parts = [];
-    if (sum(sell)) parts.push(`vendes ${goodsText(Object.entries(sell).flatMap(([g, n]) => Array(n).fill(g)))} por ${income} oros`);
-    if (sum(buy)) parts.push(`compras ${goodsText(Object.entries(buy).flatMap(([g, n]) => Array(n).fill(g)))} por ${cost} oros`);
-    this.notify(p, `En ${port.name} ${parts.join(' y ')}.`, 'comercio');
-    this.say(`${p.name} comercia en ${port.name}.`, this.observers([port.x, port.y]));
+    const sold = Object.entries(sell).flatMap(([g, n]) => Array(n).fill(g));
+    const bought = Object.entries(buy).flatMap(([g, n]) => Array(n).fill(g));
+    const es = [];
+    const en = [];
+    if (sum(sell)) { es.push(`vendes ${goodsText(sold)} por ${income} oros`); en.push(`you sell ${goodsText(sold, 'en')} for ${income} gold`); }
+    if (sum(buy)) { es.push(`compras ${goodsText(bought)} por ${cost} oros`); en.push(`you buy ${goodsText(bought, 'en')} for ${cost} gold`); }
+    this.notify(p, T(`En ${port.name} ${es.join(' y ')}.`, `At ${port.name} ${en.join(' and ')}.`), 'comercio');
+    this.say(T(`${p.name} comercia en ${port.name}.`, `${p.name} trades at ${port.name}.`), this.observers([port.x, port.y]));
     if (sum(sell)) this.addProfit(p, profit);
   }
 
   // Cada PROFIT_PER_PL oros de beneficio neto acumulado = 1 PL (solo al superar un nuevo máximo).
   addProfit(p, profit) {
     p.netProfit += profit;
-    if (profit) this.notify(p, `Beneficio de la venta: ${profit > 0 ? '+' : ''}${profit}. Beneficio acumulado: ${p.netProfit}.`, 'comercio');
+    const sign = profit > 0 ? '+' : '';
+    if (profit) this.notify(p, T(`Beneficio de la venta: ${sign}${profit}. Beneficio acumulado: ${p.netProfit}.`, `Sale profit: ${sign}${profit}. Total profit: ${p.netProfit}.`), 'comercio');
     const earned = Math.floor(Math.max(0, p.netProfit) / C.PROFIT_PER_PL);
     if (earned > p.profitPL) {
-      this.addPL(p, earned - p.profitPL, 'beneficio comercial');
+      this.addPL(p, earned - p.profitPL, T('beneficio comercial', 'trade profit'));
       p.profitPL = earned;
     }
   }
@@ -490,8 +503,9 @@ class Game {
     p.niveles[attr] += 1;
     if (attr === 'casco') p.casco += maxCasco(p) - oldCasco;
     if (attr === 'tripulacion') p.tripulacion = Math.min(maxCrew(p), p.tripulacion + 1);
-    this.notify(p, `${C.ATTR_LABEL[attr]} mejorado a nivel ${'I'.repeat(p.niveles[attr])} por ${cost} oros.`, 'mejora');
-    this.say(`${p.name} mejora su barco.`, this.observers([p.x, p.y]));
+    const lv = 'I'.repeat(p.niveles[attr]);
+    this.notify(p, T(`${C.ATTR_LABEL[attr]} mejorado a nivel ${lv} por ${cost} oros.`, `${C.ATTR_LABEL_EN[attr]} upgraded to level ${lv} for ${cost} gold.`), 'mejora');
+    this.say(T(`${p.name} mejora su barco.`, `${p.name} upgrades their ship.`), this.observers([p.x, p.y]));
   }
 
   a_reparar(p, { n }) {
@@ -502,7 +516,7 @@ class Game {
     this.spend(p);
     p.oro -= amount * C.REPAIR_COST;
     p.casco += amount;
-    this.notify(p, `Reparas ${amount} punto(s) de casco por ${amount * C.REPAIR_COST} oros.`, 'mejora');
+    this.notify(p, T(`Reparas ${amount} punto(s) de casco por ${amount * C.REPAIR_COST} oros.`, `You repair ${amount} hull point(s) for ${amount * C.REPAIR_COST} gold.`), 'mejora');
   }
 
   a_reclutar(p, { n }) {
@@ -513,7 +527,7 @@ class Game {
     this.spend(p);
     p.oro -= amount * C.RECRUIT_COST;
     p.tripulacion += amount;
-    this.notify(p, `Reclutas ${amount} marinero(s) por ${amount * C.RECRUIT_COST} oros.`, 'mejora');
+    this.notify(p, T(`Reclutas ${amount} marinero(s) por ${amount * C.RECRUIT_COST} oros.`, `You recruit ${amount} sailor(s) for ${amount * C.RECRUIT_COST} gold.`), 'mejora');
   }
 
   // Comercio con un mercante adyacente, a los precios de su puerto de destino.
@@ -549,7 +563,8 @@ class Game {
       for (let i = 0; i < n; i++) p.hold.push({ g, cost: prices[g].compra });
     }
     p.oro += income - cost;
-    this.notify(p, `Comercias con el mercante: ${income ? `cobras ${income}` : ''}${income && cost ? ' y ' : ''}${cost ? `pagas ${cost}` : ''} oros.`, 'comercio');
+    this.notify(p, T(`Comercias con el mercante: ${income ? `cobras ${income}` : ''}${income && cost ? ' y ' : ''}${cost ? `pagas ${cost}` : ''} oros.`,
+      `You trade with the merchant: ${income ? `you receive ${income}` : ''}${income && cost ? ' and ' : ''}${cost ? `you pay ${cost}` : ''} gold.`), 'comercio');
     if (sum(sell)) this.addProfit(p, profit);
   }
 
@@ -567,7 +582,7 @@ class Game {
     this.spend(p);
     this.offer = { from: p.id, to: t.id, dar: give, pedir: want, deadline: this.now() + C.OFFER_MS };
     this.pauseTurn();
-    this.say(`${p.name} propone un trato a ${t.name}.`, [p.id, t.id]);
+    this.say(T(`${p.name} propone un trato a ${t.name}.`, `${p.name} offers a deal to ${t.name}.`), [p.id, t.id]);
     if (t.bot) this.answerOffer(t, require('./bot').judgeOffer(this, t, this.offer));
   }
 
@@ -599,18 +614,18 @@ class Game {
       try {
         this.checkTrade(a, t, o.dar, o.pedir);
       } catch (e) {
-        this.say(`El trato entre ${a.name} y ${t.name} no se puede cerrar: ${e.message}.`, [a.id, t.id]);
+        this.say(T(`El trato entre ${a.name} y ${t.name} no se puede cerrar: ${e.message}.`, `The deal between ${a.name} and ${t.name} cannot be closed.`), [a.id, t.id]);
         return;
       }
       a.oro += o.pedir.oro - o.dar.oro;
       t.oro += o.dar.oro - o.pedir.oro;
       for (const [g, n] of Object.entries(o.dar.goods)) t.hold.push(...takeUnits(a.hold, g, n));
       for (const [g, n] of Object.entries(o.pedir.goods)) a.hold.push(...takeUnits(t.hold, g, n));
-      this.say(`${t.name} acepta el trato de ${a.name}.`, [a.id, t.id]);
-      this.notify(a, `${t.name} acepta tu trato.`, 'comercio');
+      this.say(T(`${t.name} acepta el trato de ${a.name}.`, `${t.name} accepts ${a.name}'s deal.`), [a.id, t.id]);
+      this.notify(a, T(`${t.name} acepta tu trato.`, `${t.name} accepts your deal.`), 'comercio');
     } else {
-      this.say(`${t.name} rechaza el trato de ${a.name}.`, [a.id, t.id]);
-      this.notify(a, `${t.name} rechaza tu trato.`, 'info');
+      this.say(T(`${t.name} rechaza el trato de ${a.name}.`, `${t.name} rejects ${a.name}'s deal.`), [a.id, t.id]);
+      this.notify(a, T(`${t.name} rechaza tu trato.`, `${t.name} rejects your deal.`), 'info');
     }
   }
 
@@ -667,10 +682,10 @@ class Game {
       if (me.kind === 'pirata') me.known[foe.y * C.SIZE + foe.x] = 1;
     }
     c.obs = this.observers([att.x, att.y], [def.x, def.y]);
-    const verb = first === 'abordaje' ? 'aborda' : 'cañonea';
-    this.say(`⚔ ${this.shipName(att)} ${verb} a ${this.shipName(def)}.`, c.obs);
-    const who = this.shipName(att);
-    if (def.kind === 'pirata') this.notify(def, `¡${who.charAt(0).toUpperCase()}${who.slice(1)} te ataca!`, 'combate');
+    const verb = first === 'abordaje' ? T('aborda', 'boards') : T('cañonea', 'fires on');
+    this.say(T(`⚔ ${this.shipName(att)} ${verb.es} a ${this.shipName(def)}.`, `⚔ ${this.shipName(att, 'en')} ${verb.en} ${this.shipName(def, 'en')}.`), c.obs);
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+    if (def.kind === 'pirata') this.notify(def, T(`¡${cap(this.shipName(att))} te ataca!`, `${cap(this.shipName(att, 'en'))} attacks you!`), 'combate');
     this.autoPicks();
   }
 
@@ -712,7 +727,7 @@ class Game {
     const pk = c.picks;
     const other = (s) => (s === 'a' ? 'd' : 'a');
     const r = { ronda: c.ronda, picks: { ...pk }, tiradas: {}, texto: [] };
-    const N = (side) => this.shipName(S[side]);
+    const N = (side, lang) => this.shipName(S[side], lang);
     const offense = (side, base) => {
       const n = base + (c.ventaja[side] ? 1 : 0);
       c.ventaja[side] = false;
@@ -733,19 +748,19 @@ class Game {
       const tgt = other(side);
       if (pk[tgt] === 'maniobra' && h > 0) {
         h -= 1;
-        r.texto.push(`${N(tgt)} maniobra y esquiva un impacto.`);
+        r.texto.push(T(`${N(tgt)} maniobra y esquiva un impacto.`, `${N(tgt, 'en')} maneuvers and dodges a hit.`));
       }
       dmg[tgt] += h;
-      r.texto.push(`${N(side)} dispara: ${h} impacto(s).`);
+      r.texto.push(T(`${N(side)} dispara: ${h} impacto(s).`, `${N(side, 'en')} fires: ${h} hit(s).`));
     }
     for (const side of ['a', 'd']) S[side].casco = Math.max(0, S[side].casco - dmg[side]);
     for (const side of ['a', 'd']) {
       if (pk[side] === 'maniobra') {
         c.ventaja[side] = true;
-        if (pk[other(side)] === 'abordaje') r.texto.push(`${N(side)} maniobra y evita el abordaje.`);
+        if (pk[other(side)] === 'abordaje') r.texto.push(T(`${N(side)} maniobra y evita el abordaje.`, `${N(side, 'en')} maneuvers and avoids the boarding.`));
       }
     }
-    if (pk.a === 'maniobra' && pk.d === 'maniobra') r.texto.push('Ambos barcos maniobran: nadie recibe daño.');
+    if (pk.a === 'maniobra' && pk.d === 'maniobra') r.texto.push(T('Ambos barcos maniobran: nadie recibe daño.', 'Both ships maneuver: no one takes damage.'));
 
     // Abordajes.
     const boarders = ['a', 'd'].filter((s) => pk[s] === 'abordaje');
@@ -772,7 +787,7 @@ class Game {
         if (w === x) ended = this.boardingWin(S[x], S[y], r);
         else {
           S[x].tripulacion = Math.max(0, S[x].tripulacion - 1);
-          r.texto.push(`${N(y)} rechaza el abordaje: ${N(x)} pierde un marinero.`);
+          r.texto.push(T(`${N(y)} rechaza el abordaje: ${N(x)} pierde un marinero.`, `${N(y, 'en')} repels the boarding: ${N(x, 'en')} loses a sailor.`));
         }
       }
     }
@@ -781,12 +796,12 @@ class Game {
     const sunk = ['a', 'd'].filter((s) => S[s].casco <= 0);
     if (sunk.length) ended = 'hundimiento';
     else if (!ended && c.ronda >= C.COMBAT_ROUNDS) ended = 'asaltos';
-    this.say(`Asalto ${c.ronda}: ${r.texto.join(' ')}`, [...new Set([...c.obs, c.a, c.d])]);
+    this.say(T(`Asalto ${c.ronda}: ${r.texto.map((x) => x.es).join(' ')}`, `Round ${c.ronda}: ${r.texto.map((x) => x.en).join(' ')}`), [...new Set([...c.obs, c.a, c.d])]);
     if (ended) {
       c.fin = { motivo: ended, hundidos: sunk.map((s) => c[s]) };
-      if (ended === 'asaltos') this.say('Tras tres asaltos, ningún barco se impone.', c.obs);
+      if (ended === 'asaltos') this.say(T('Tras tres asaltos, ningún barco se impone.', 'After three rounds, neither ship prevails.'), c.obs);
       this.combat = null;
-      const summary = { ...c, nombres: { a: N('a'), d: N('d') } };
+      const summary = { ...c, nombres: { a: T(N('a'), N('a', 'en')), d: T(N('d'), N('d', 'en')) } };
       for (const s of ['a', 'd']) if (S[s].kind === 'pirata') S[s].lastCombat = summary;
       for (const s of sunk) this.sink(S[s], S[other(s)], 'combate');
       this.afterCombat(c);
@@ -807,7 +822,8 @@ class Game {
       l.hold.splice(l.hold.indexOf(u), 1);
       w.hold.push({ g: u.g, cost: 0 });
     }
-    r.texto.push(`¡${this.shipName(w)} gana el abordaje${n ? ` y captura ${goodsText(best)}` : ''}! ${this.shipName(l)} pierde un marinero.`);
+    r.texto.push(T(`¡${this.shipName(w)} gana el abordaje${n ? ` y captura ${goodsText(best)}` : ''}! ${this.shipName(l)} pierde un marinero.`,
+      `${this.shipName(w, 'en')} wins the boarding${n ? ` and captures ${goodsText(best, 'en')}` : ''}! ${this.shipName(l, 'en')} loses a sailor.`));
     return 'abordaje';
   }
 
@@ -826,26 +842,29 @@ class Game {
       if (by && by.kind === 'pirata') {
         taken = lost.slice(0, Math.max(0, holdCap(by) - by.hold.length));
         for (const u of taken) by.hold.push({ g: u.g, cost: 0 });
-        if (taken.length) this.notify(by, `Recoges del naufragio: ${goodsText(taken)}.`, 'combate');
+        if (taken.length) this.notify(by, T(`Recoges del naufragio: ${goodsText(taken)}.`, `You salvage from the wreck: ${goodsText(taken, 'en')}.`), 'combate');
       }
       s.hundimientos += 1;
-      this.say(`☠ ${s.name} se hunde${by ? ` a manos de ${this.shipName(by)}` : ` por ${cause}`} y vuelve a ${this.map.ports[s.home].name}.`);
-      this.notify(s, `Tu barco se ha hundido. Pierdes ${goodsText(lost)} y vuelves a tu puerto de origen.`, 'hundido');
+      const home = this.map.ports[s.home].name;
+      const why = typeof cause === 'string' ? T(cause, cause) : cause;
+      this.say(T(`☠ ${s.name} se hunde${by ? ` a manos de ${this.shipName(by)}` : ` por ${why.es}`} y vuelve a ${home}.`,
+        `☠ ${s.name} sinks${by ? ` at the hands of ${this.shipName(by, 'en')}` : ` due to ${why.en}`} and returns to ${home}.`));
+      this.notify(s, T(`Tu barco se ha hundido. Pierdes ${goodsText(lost)} y vuelves a tu puerto de origen.`, `Your ship has sunk. You lose ${goodsText(lost, 'en')} and return to your home port.`), 'hundido');
       this.dock(s, s.home);
       s.casco = maxCasco(s);
       s.tripulacion = maxCrew(s);
       if (this.turn && this.turn.pid === s.id) this.turn.moving = null;
-      if (by && by.kind === 'pirata') this.addPL(by, C.PL.pirata, `hundir a ${s.name}`);
+      if (by && by.kind === 'pirata') this.addPL(by, C.PL.pirata, T(`hundir a ${s.name}`, `sinking ${s.name}`));
     } else if (s.kind === 'mercante') {
       this.merchants = this.merchants.filter((m) => m !== s);
       this.respawns.push({ kind: 'mercante', rounds: C.MERCHANT.respawn });
-      this.say(`☠ ${by ? this.shipName(by) : 'Alguien'} hunde un mercante.`, obs);
-      if (by && by.kind === 'pirata') this.addPL(by, C.PL.mercante, 'hundir un mercante');
+      this.say(T(`☠ ${by ? this.shipName(by) : 'Alguien'} hunde un mercante.`, `☠ ${by ? this.shipName(by, 'en') : 'Someone'} sinks a merchant.`), obs);
+      if (by && by.kind === 'pirata') this.addPL(by, C.PL.mercante, T('hundir un mercante', 'sinking a merchant'));
     } else {
       this.frigates = this.frigates.filter((f) => f !== s);
       this.respawns.push({ kind: 'fragata', rounds: C.FRIGATE.respawn });
-      this.say(`☠ ${by ? this.shipName(by) : 'Alguien'} hunde una fragata de la Armada.`);
-      if (by && by.kind === 'pirata') this.addPL(by, C.PL.fragata, 'hundir una fragata');
+      this.say(T(`☠ ${by ? this.shipName(by) : 'Alguien'} hunde una fragata de la Armada.`, `☠ ${by ? this.shipName(by, 'en') : 'Someone'} sinks a Navy frigate.`));
+      if (by && by.kind === 'pirata') this.addPL(by, C.PL.fragata, T('hundir una fragata', 'sinking a frigate'));
     }
   }
 
@@ -953,7 +972,7 @@ class Game {
       this.advance(m, goals, C.MERCHANT.mov);
       if (cheb(m.x, m.y, dest.x, dest.y) === 1) {
         this.merchants = this.merchants.filter((x) => x !== m);
-        this.say(`Un mercante descarga en ${dest.name}.`, this.observers([m.x, m.y]));
+        this.say(T(`Un mercante descarga en ${dest.name}.`, `A merchant unloads at ${dest.name}.`), this.observers([m.x, m.y]));
       }
     }
   }
@@ -1022,7 +1041,8 @@ class Game {
       ranking: ranking.map((p) => ({ id: p.id, name: p.name, color: p.color, pl: p.pl, oro: p.oro, islas: p.explored.length })),
       winners: winners.map((p) => p.id),
     };
-    this.say(`🏴‍☠️ Fin de la partida. ${winners.length > 1 ? 'Victoria compartida' : 'Gana'}: ${winners.map((p) => p.name).join(' y ')}.`);
+    this.say(T(`🏴‍☠️ Fin de la partida. ${winners.length > 1 ? 'Victoria compartida' : 'Gana'}: ${winners.map((p) => p.name).join(' y ')}.`,
+      `🏴‍☠️ Game over. ${winners.length > 1 ? 'Shared victory' : 'Winner'}: ${winners.map((p) => p.name).join(' and ')}.`));
   }
 
   // ---------------------------------------------------------------- tiempo
@@ -1038,7 +1058,7 @@ class Game {
           if (!c.picks[side]) {
             c.picks[side] = 'canon';
             const s = this.ship(c[side]);
-            this.notify(s, 'Se acabó el tiempo: tu barco cañonea.', 'info');
+            this.notify(s, T('Se acabó el tiempo: tu barco cañonea.', 'Time\'s up: your ship fires.'), 'info');
           }
         }
         this.resolveRound();
@@ -1055,7 +1075,7 @@ class Game {
     }
     if (this.turn && this.turn.deadline !== null && now >= this.turn.deadline) {
       const p = this.current();
-      this.say(`Se acabó el tiempo de ${p ? p.name : 'turno'}.`);
+      this.say(T(`Se acabó el tiempo de ${p ? p.name : 'turno'}.`, `Time's up for ${p ? p.name : 'the turn'}.`));
       this.endTurn();
       return true;
     }
@@ -1117,7 +1137,7 @@ class Game {
     const side = c.a === pid ? 'a' : c.d === pid ? 'd' : null;
     if (!side) return null;
     const S = { a: this.ship(c.a), d: this.ship(c.d) };
-    const info = (s) => s && { ...this.shipView(s), name: this.shipName(s), canones: cannonDice(s), tripMax: maxCrew(s) };
+    const info = (s) => s && { ...this.shipView(s), name: this.shipName(s), nameEn: this.shipName(s, 'en'), canones: cannonDice(s), tripMax: maxCrew(s) };
     return {
       id: c.id,
       yo: side,
@@ -1144,7 +1164,7 @@ class Game {
       phase: this.phase,
       hostId: this.hostId,
       you: pid,
-      players: this.players.map((p) => ({ id: p.id, name: p.name, color: p.color, bot: p.bot, connected: p.connected, pl: p.pl ?? 0 })),
+      players: this.players.map((p) => ({ id: p.id, name: p.name, color: p.color, bot: p.bot, local: !!p.local, connected: p.connected, pl: p.pl ?? 0 })),
       log: this.log.filter((l) => !l.to || l.to.includes(pid)).slice(-80),
       reglas: {
         size: C.SIZE, maxRounds: C.MAX_ROUNDS, winPL: C.WIN_PL, actions: C.ACTIONS_PER_TURN, levels: C.LEVELS,
@@ -1231,7 +1251,10 @@ class Game {
         ultimoCombate: me.lastCombat && this.combatView(me.lastCombat, pid),
       },
       combat: this.combatView(c, pid),
-      combatOthers: c && c.a !== pid && c.d !== pid ? { a: this.shipName(this.ship(c.a)), d: this.shipName(this.ship(c.d)) } : null,
+      combatOthers: c && c.a !== pid && c.d !== pid ? {
+        a: T(this.shipName(this.ship(c.a)), this.shipName(this.ship(c.a), 'en')),
+        d: T(this.shipName(this.ship(c.d)), this.shipName(this.ship(c.d), 'en')),
+      } : null,
       offer: o && (o.from === pid || o.to === pid) ? { ...o, fromName: this.player(o.from).name, toName: this.player(o.to).name, deadlineIn: Math.max(0, o.deadline - this.now()) } : null,
       final: this.final,
     };

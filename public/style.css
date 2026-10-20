@@ -599,11 +599,13 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 /* ---------- zoom del mapa en el móvil */
 .board-view { max-width: 100%; }
 .zoom-btn {
-  position: absolute; z-index: 15; top: 14px; right: 14px;
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
-  border: 9px solid transparent; border-image: url(img/cartel.webp) 44 fill / 9px stretch;
-  background: none; padding: 0 6px; filter: drop-shadow(0 2px 2px #0009);
+  position: absolute; z-index: 15; top: 10px; right: 10px;
+  width: 52px; height: 52px; border-radius: 50%; padding: 0;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #f6e8c6, #d9bd84);
+  border: 2px solid #7a4d2b; box-shadow: 0 3px 8px #000a;
 }
+.zoom-btn svg { display: block; filter: drop-shadow(0 1px 1px #0006); }
 @media (max-width: 900px) {
   body.zoomed .board-view {
     /* Ventana cuadrada sobre el mapa acercado (unas 6,5 casillas de ancho); se mueve con el dedo. */
@@ -614,3 +616,15 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   body.zoomed .board { --cell: calc((100vw - 14px) / 6.5); margin: 0; width: calc(var(--cell) * 12); }
   body.zoomed .board::after { display: none; }
 }
+
+/* Idioma */
+.lang-btn { display: inline-flex; gap: 2px; padding: 2px 6px; font-size: 13px; }
+.lang-btn span { padding: 0 4px; border-radius: 4px; opacity: .55; }
+.lang-btn span.on { opacity: 1; background: #ffffff26; font-weight: 700; color: var(--gold-2); }
+
+/* Mismo dispositivo: pantalla para pasar el dispositivo sin ver el mapa del otro */
+.handoff { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px;
+  background: linear-gradient(#0a0603e6, #0a0603f2), url(img/mesa.webp) center / cover; }
+.handoff-card { width: min(440px, 100%); text-align: center; padding: 34px 30px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.handoff-card h2 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 40px; margin: 0; color: var(--wood); display: flex; align-items: center; gap: 10px; }
+.local-add { margin-top: 10px; }

@@ -6,6 +6,24 @@ const $ = (id) => document.getElementById(id);
 const SESSION_KEY = 'piratas.session';
 const MUTE_KEY = 'piratas.mudo';
 
+// ------------------------------------------------------------ idioma (español / inglés)
+
+let LANG = (() => { try { return localStorage.getItem('piratas.lang'); } catch { return null; } })()
+  || (/^es\b/i.test(navigator.language || '') ? 'es' : 'en');
+const L = (es, en) => (LANG === 'en' ? en : es);
+// Textos del servidor: cadena (solo español) o { es, en }.
+const txt = (m) => (m && typeof m === 'object' ? (m[LANG] || m.es) : m);
+const GOOD_LABEL_EN = { comida: 'Food', materiales: 'Materials', manufacturas: 'Goods', lujos: 'Luxuries' };
+const ATTR_LABEL_EN = { velas: 'Sails', canones: 'Cannons', casco: 'Hull', bodega: 'Hold', tripulacion: 'Crew' };
+const goodLabel = (g) => (LANG === 'en' ? GOOD_LABEL_EN[g] : S.reglas.goodLabel[g]);
+const attrLabel = (a) => (LANG === 'en' ? ATTR_LABEL_EN[a] : S.reglas.attrLabel[a]);
+function setLang(l) {
+  LANG = l;
+  try { localStorage.setItem('piratas.lang', l); } catch { /* sin almacenamiento */ }
+  applyStaticTexts();
+  if (S) render();
+}
+
 let S = null; // último estado recibido
 let receivedAt = 0;
 const ui = {
@@ -50,13 +68,54 @@ const LEYENDA = ICON('tesoro');
 const LUGAR = (name) => `${ICON('brujula', 'place')} ${esc(name)}`;
 // Icono de cada mejora del barco.
 const ATTR_ICON = { velas: ICON('velas'), canones: ICON('canon'), casco: ICON('casco'), bodega: ICON('carga'), tripulacion: ICON('tripulacion') };
-const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
-const PICK_LABEL = { canon: 'Cañonear', abordaje: 'Abordar', maniobra: 'Maniobrar' };
+const KIND_LABEL = new Proxy({}, { get: (_, k) => ({ pirata: L('Pirata', 'Pirate'), mercante: L('Mercante', 'Merchant'), fragata: L('Fragata de la Armada', 'Navy frigate') })[k] });
+const PICK_LABEL = new Proxy({}, { get: (_, k) => ({ canon: L('Cañonear', 'Fire'), abordaje: L('Abordar', 'Board'), maniobra: L('Maniobrar', 'Maneuver') })[k] });
+
+// Errores del servidor (en español) traducidos al inglés.
+const ERR_EN = {
+  'Acción desconocida': 'Unknown action', 'Ataque no válido': 'Invalid attack', 'Cantidad no válida': 'Invalid amount',
+  'Elige a otro pirata': 'Choose another pirate', 'Elige qué comprar o vender': 'Choose what to buy or sell',
+  'Error interno': 'Internal error', 'Espera a que termine lo pendiente': 'Wait for the pending action to finish',
+  'Fuera de alcance o sin línea de tiro': 'Out of range or no line of fire', 'Hay un combate en curso': 'A fight is in progress',
+  'Hay una propuesta de comercio pendiente': 'A trade offer is pending', 'Jugador desconocido': 'Unknown player',
+  'La partida ha terminado': 'The game is over', 'La partida ya ha empezado': 'The game has already started',
+  'La propuesta está vacía': 'The offer is empty', 'Los barcos tienen que estar juntos': 'The ships must be next to each other',
+  'Maniobra no válida': 'Invalid maneuver', 'Mejora no válida': 'Invalid upgrade', 'No cabe en la bodega': 'It does not fit in the hold',
+  'No cabe en la bodega del mercante': 'It does not fit in the merchant\'s hold', 'No es tu turno': 'It is not your turn',
+  'No estás en combate': 'You are not in a fight', 'No estás en ninguna sala': 'You are not in a room', 'No estás navegando': 'You are not sailing',
+  'No existe ninguna sala con ese código': 'There is no room with that code', 'No hay ninguna isla por explorar junto a tu barco': 'There is no unexplored island next to your ship',
+  'No puedes abordar desde el puerto': 'You cannot board from port', 'No puedes atacar desde el puerto': 'You cannot attack from port',
+  'No puedes comprar y vender la misma mercancía': 'You cannot buy and sell the same goods', 'No puedes expulsarte': 'You cannot remove yourself',
+  'No puedes navegar ahí': 'You cannot sail there', 'No puedes volver al último puerto que visitaste hasta atracar en otro': 'You cannot return to the last port you visited until you dock at another one',
+  'No te quedan acciones': 'No actions left', 'No te quedan puntos de movimiento': 'No movement points left', 'No tienes marineros para abordar': 'You have no sailors to board with',
+  'No tienes ninguna propuesta': 'You have no offer', 'No tienes oro suficiente': 'Not enough gold', 'Objetivo no válido': 'Invalid target',
+  'Para abordar tienes que estar junto al barco': 'To board you must be next to the ship', 'Primero pulsa Navegar': 'Press Sail first', 'Ruta no válida': 'Invalid route',
+  'Solo el anfitrión puede añadir bots': 'Only the host can add bots', 'Solo el anfitrión puede empezar': 'Only the host can start',
+  'Solo el anfitrión puede expulsar': 'Only the host can remove players', 'Tienes que estar atracado en un puerto': 'You must be docked at a port',
+  'Tienes que estar junto al mercante': 'You must be next to the merchant', 'Tienes que estar junto al puerto': 'You must be next to the port',
+  'Ya está al nivel máximo': 'Already at the maximum level', 'Ya has elegido maniobra': 'You have already chosen a maneuver',
+};
+const ERR_EN_RE = [
+  [/^La sala está llena \((\d+) jugadores\)$/, 'The room is full ($1 players)'],
+  [/^Hacen falta al menos (\d+) jugadores$/, 'At least $1 players are needed'],
+  [/^No tienes tanta (.+)$/, 'You do not have that much $1'],
+  [/^El mercante no lleva tanta (.+)$/, 'The merchant does not carry that much $1'],
+  [/^No puedes revender (.+) en el puerto donde la compraste$/, 'You cannot resell $1 at the port where you bought it'],
+  [/^(.+) no tiene tanto oro$/, '$1 does not have that much gold'],
+  [/^(.+) no tiene tanta (.+)$/, '$1 does not have that much $2'],
+  [/^No cabe en la bodega de (.+)$/, 'It does not fit in $1\'s hold'],
+];
+function trError(msg) {
+  if (LANG !== 'en' || !msg) return msg;
+  if (ERR_EN[msg]) return ERR_EN[msg];
+  for (const [re, en] of ERR_EN_RE) if (re.test(msg)) return msg.replace(re, en);
+  return msg;
+}
 
 function toast(text, kind = 'info') {
   const t = document.createElement('div');
   t.className = `toast ${kind}`;
-  t.textContent = text;
+  t.textContent = trError(txt(text));
   if (kind === 'tesoro') t.insertAdjacentHTML('afterbegin', '<img class="toast-ico" src="img/tesoro.webp" alt="">');
   $('toasts').appendChild(t);
   setTimeout(() => t.remove(), kind === 'tesoro' ? 6000 : 4200);
@@ -95,7 +154,7 @@ const BELL_OFF = BELL.replace('</svg>', '<path d="M4 4l24 24" stroke-width="2.4"
 function paintSound() {
   const b = $('soundBtn');
   b.innerHTML = Sounds.muted ? BELL_OFF : BELL;
-  b.title = Sounds.muted ? 'Activar sonidos' : 'Silenciar sonidos';
+  b.title = Sounds.muted ? L('Activar sonidos', 'Sound on') : L('Silenciar sonidos', 'Mute sounds');
   b.classList.toggle('muted', Sounds.muted);
 }
 
@@ -180,12 +239,15 @@ socket.on('state', (st) => {
   const prev = S;
   S = st;
   receivedAt = Date.now();
-  if (first || ui.seenAvisos === null) {
-    ui.seenAvisos = new Set(((st.me && st.me.avisos) || []).map((a) => a.n));
-    ui.combatSeen = st.me && st.me.ultimoCombate ? st.me.ultimoCombate.id : null;
-    ui.finalSeen = st.phase === 'fin';
+  // Avisos y combates ya vistos, por jugador (varios pueden jugar en este dispositivo).
+  if (!ui.seenBy) ui.seenBy = {};
+  if (!ui.seenBy[st.you]) {
+    ui.seenBy[st.you] = { avisos: new Set(((st.me && st.me.avisos) || []).map((a) => a.n)), combat: st.me && st.me.ultimoCombate ? st.me.ultimoCombate.id : null };
   }
-  effects(prev, st);
+  ui.seenAvisos = ui.seenBy[st.you].avisos;
+  if (first) ui.finalSeen = st.phase === 'fin';
+  const switched = prev && prev.you !== st.you;
+  effects(switched ? null : prev, st);
   render();
 });
 socket.on('chat', (m) => {
@@ -197,7 +259,7 @@ socket.on('chat', (m) => {
 socket.on('kicked', () => {
   saveSession(null);
   S = null;
-  toast('Te han expulsado de la sala', 'error');
+  toast(L('Te han expulsado de la sala', 'You have been removed from the room'), 'error');
   showHome();
 });
 
@@ -242,7 +304,7 @@ function showHome() {
 
 function enter(r, name) {
   if (!r.ok) {
-    $('homeError').textContent = r.error;
+    $('homeError').textContent = trError(r.error);
     return;
   }
   saveSession({ code: r.code, token: r.token, name });
@@ -251,24 +313,65 @@ function enter(r, name) {
 
 $('createBtn').onclick = () => {
   const name = $('nameInput').value.trim();
-  if (!name) { $('homeError').textContent = 'Escribe tu nombre de capitán'; return; }
+  if (!name) { $('homeError').textContent = L('Escribe tu nombre de capitán', 'Write your captain name'); return; }
   socket.emit('create', { name }, (r) => enter(r, name));
 };
 $('joinBtn').onclick = () => {
   const name = $('nameInput').value.trim();
   const code = $('codeInput').value.trim().toUpperCase();
-  if (!name) { $('homeError').textContent = 'Escribe tu nombre de capitán'; return; }
-  if (code.length !== 4) { $('homeError').textContent = 'El código tiene 4 letras'; return; }
+  if (!name) { $('homeError').textContent = L('Escribe tu nombre de capitán', 'Write your captain name'); return; }
+  if (code.length !== 4) { $('homeError').textContent = L('El código tiene 4 letras', 'The code has 4 letters'); return; }
   socket.emit('join', { code, name }, (r) => enter(r, name));
 };
 $('codeInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('joinBtn').click(); });
 $('soundBtn').onclick = () => { Sounds.toggle(); paintSound(); };
 $('rulesBtn').onclick = () => { ui.modal = 'reglas'; renderModal(); };
 $('pricesBtn').onclick = () => { ui.modal = 'precios'; renderModal(); };
-paintSound();
+$('langBtn').onclick = () => setLang(LANG === 'es' ? 'en' : 'es');
+
+// Textos fijos de la página (index.html) en el idioma elegido.
+function applyStaticTexts() {
+  document.documentElement.lang = LANG;
+  const set = (id, prop, es, en) => { const el = $(id); if (el) el[prop] = L(es, en); };
+  set('pricesBtn', 'textContent', 'Precios', 'Prices');
+  set('rulesBtn', 'textContent', 'Reglas', 'Rules');
+  set('nameInput', 'placeholder', 'Tu nombre de capitán', 'Your captain name');
+  set('codeInput', 'placeholder', 'CÓDIGO', 'CODE');
+  set('createBtn', 'textContent', 'Crear partida', 'Create game');
+  set('joinBtn', 'textContent', 'Unirse', 'Join');
+  const sub = document.querySelector('.home-sub');
+  if (sub) sub.textContent = L('Explora el archipiélago, comercia, mejora tu barco y conviértete en leyenda.', 'Explore the archipelago, trade, upgrade your ship and become a legend.');
+  $('langBtn').innerHTML = `<span class="${LANG === 'es' ? 'on' : ''}">ES</span><span class="${LANG === 'en' ? 'on' : ''}">EN</span>`;
+  $('langBtn').title = L('Change language: English', 'Cambiar idioma: español');
+  paintSound();
+}
+applyStaticTexts();
+
+// Varios jugadores en este dispositivo: a quién le toca ahora (si no es el activo).
+function handoffTarget() {
+  if (!S || !S.local || S.phase !== 'juego') return null;
+  const meNeeds = S.local.find((p) => p.id === S.you && p.needs);
+  if (meNeeds) return null;
+  return S.local.find((p) => p.needs && p.id !== S.you) || null;
+}
+function renderHandoff() {
+  const h = $('handoff');
+  const to = handoffTarget();
+  if (!to) { h.classList.add('hidden'); h.innerHTML = ''; return false; }
+  h.innerHTML = `<div class="handoff-card parchment">
+    <p class="muted">${L('Mismo dispositivo', 'Same device')}</p>
+    <h2><span class="flag" style="background:${to.color}"></span> ${esc(to.name)}</h2>
+    <p>${L(`Pasa el dispositivo a <b>${esc(to.name)}</b>. El resto no debe mirar: verá su mapa.`, `Hand the device to <b>${esc(to.name)}</b>. Everyone else, look away: their map will be shown.`)}</p>
+    <button class="btn gold big" id="handoffBtn">${L(`Soy ${esc(to.name)}: continuar`, `I'm ${esc(to.name)}: continue`)}</button>
+  </div>`;
+  h.classList.remove('hidden');
+  $('handoffBtn').onclick = () => socket.emit('setActive', { playerId: to.id });
+  return true;
+}
 
 function render() {
   if (!S) return;
+  if (renderHandoff()) return;
   $('home').classList.add('hidden');
   $('roomInfo').textContent = S.code;
   document.body.classList.toggle('in-game', S.phase !== 'lobby');
@@ -276,7 +379,7 @@ function render() {
     $('game').classList.add('hidden');
     $('lobby').classList.remove('hidden');
     $('pricesBtn').classList.add('hidden');
-    $('status').textContent = 'Preparando la tripulación';
+    $('status').textContent = L('Preparando la tripulación', 'Gathering the crew');
     renderLobby();
   } else {
     $('lobby').classList.add('hidden');
@@ -295,24 +398,38 @@ function renderLobby() {
   const link = `${location.origin}/?sala=${S.code}`;
   $('lobby').innerHTML = `
     <div class="lobby-card parchment">
-      <h2>Tripulación de la sala ${esc(S.code)}</h2>
-      <p class="muted">De 2 a 4 piratas. Comparte el enlace o el código con tus amigos.</p>
-      <div class="share"><input class="input" readonly value="${esc(link)}" id="shareInput"><button class="btn small" id="copyBtn">Copiar</button></div>
+      <h2>${L('Tripulación de la sala', 'Crew of room')} ${esc(S.code)}</h2>
+      <p class="muted">${L('De 2 a 4 piratas. Comparte el enlace o el código con tus amigos, o añade jugadores que jueguen en este mismo dispositivo.', 'From 2 to 4 pirates. Share the link or the code with your friends, or add players on this same device.')}</p>
+      <div class="share"><input class="input" readonly value="${esc(link)}" id="shareInput"><button class="btn small" id="copyBtn">${L('Copiar', 'Copy')}</button></div>
       ${S.players.map((p) => `
         <div class="player-row">
           <span class="flag" style="background:${p.color}"></span>
-          <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}</span>
-          ${p.id === S.hostId ? '<span class="tag">Anfitrión</span>' : ''}
-          ${p.bot ? '<span class="tag">Bot</span>' : p.connected ? '' : '<span class="tag">Desconectado</span>'}
-          ${host && p.id !== S.you ? `<button class="btn small red" data-kick="${p.id}">Expulsar</button>` : ''}
+          <span class="name">${esc(p.name)}${p.id === S.you ? L(' (tú)', ' (you)') : ''}</span>
+          ${p.id === S.hostId ? `<span class="tag">${L('Anfitrión', 'Host')}</span>` : ''}
+          ${p.local || (S.local && S.local.some((x) => x.id === p.id) && p.id !== S.you) ? `<span class="tag">${L('Este dispositivo', 'This device')}</span>` : ''}
+          ${p.bot ? '<span class="tag">Bot</span>' : p.connected ? '' : `<span class="tag">${L('Desconectado', 'Disconnected')}</span>`}
+          ${host && p.id !== S.you ? `<button class="btn small red" data-kick="${p.id}">${L('Expulsar', 'Remove')}</button>` : ''}
         </div>`).join('')}
+      ${S.players.length < 4 ? `<div class="share local-add">
+        <input class="input" id="localName" maxlength="20" placeholder="${L('Otro jugador en este dispositivo', 'Another player on this device')}">
+        <button class="btn small" id="localBtn">${L('Añadir', 'Add')}</button>
+      </div>` : ''}
       <div class="row" style="margin-top:14px">
-        ${host ? `<button class="btn" id="botBtn" ${S.players.length >= 4 ? 'disabled' : ''}>Añadir bot</button>
-        <button class="btn gold" id="startBtn" ${S.players.length < 2 ? 'disabled' : ''}>¡Zarpar!</button>` : '<p class="muted">Esperando a que el anfitrión empiece la partida…</p>'}
+        ${host ? `<button class="btn" id="botBtn" ${S.players.length >= 4 ? 'disabled' : ''}>${L('Añadir bot', 'Add bot')}</button>
+        <button class="btn gold" id="startBtn" ${S.players.length < 2 ? 'disabled' : ''}>${L('¡Zarpar!', 'Set sail!')}</button>` : `<p class="muted">${L('Esperando a que el anfitrión empiece la partida…', 'Waiting for the host to start the game…')}</p>`}
       </div>
     </div>`;
   const cb = $('copyBtn');
-  if (cb) cb.onclick = () => { navigator.clipboard?.writeText(link); toast('Enlace copiado'); };
+  if (cb) cb.onclick = () => { navigator.clipboard?.writeText(link); toast(L('Enlace copiado', 'Link copied')); };
+  if ($('localBtn')) {
+    const add = () => {
+      const name = $('localName').value.trim();
+      if (!name) { toast(L('Escribe su nombre', 'Write their name'), 'error'); return; }
+      socket.emit('addLocal', { name }, (r) => { if (r && !r.ok) toast(r.error, 'error'); });
+    };
+    $('localBtn').onclick = add;
+    $('localName').onkeydown = (e) => { if (e.key === 'Enter') add(); };
+  }
   if ($('botBtn')) $('botBtn').onclick = () => act('addBot');
   if ($('startBtn')) $('startBtn').onclick = () => act('start');
   document.querySelectorAll('[data-kick]').forEach((b) => { b.onclick = () => act('kick', { id: b.dataset.kick }); });
@@ -336,19 +453,19 @@ function playerName(id) {
 // Barra superior: ronda y estado del turno (acciones, movimiento y reloj).
 function renderStatus() {
   if (S.phase === 'fin') {
-    $('status').innerHTML = '<span class="me-turn">La partida ha terminado</span>';
+    $('status').innerHTML = `<span class="me-turn">${L('La partida ha terminado', 'The game is over')}</span>`;
     return;
   }
   const t = S.turn;
   // En el móvil se muestra la versión corta (.short) de cada dato.
-  let html = `<span class="long">Ronda ${S.round} de ${S.reglas.maxRounds} · ${LEYENDA} ${S.reglas.winPL} para ganar</span><span class="short">Ronda ${S.round}/${S.reglas.maxRounds}</span> <span class="sep">|</span> `;
-  if (S.combat) html += '<span class="me-turn">⚔ ¡Combate!</span>';
-  else if (S.combatOthers) html += `⚔ ${esc(S.combatOthers.a)} combate contra ${esc(S.combatOthers.d)}`;
-  else if (!t) html += 'Mercantes y Armada se mueven…';
+  let html = `<span class="long">${L('Ronda', 'Round')} ${S.round} ${L('de', 'of')} ${S.reglas.maxRounds} · ${LEYENDA} ${S.reglas.winPL} ${L('para ganar', 'to win')}</span><span class="short">${L('Ronda', 'Round')} ${S.round}/${S.reglas.maxRounds}</span> <span class="sep">|</span> `;
+  if (S.combat) html += `<span class="me-turn">⚔ ${L('¡Combate!', 'Fight!')}</span>`;
+  else if (S.combatOthers) html += `⚔ ${esc(txt(S.combatOthers.a))} ${L('combate contra', 'fights')} ${esc(txt(S.combatOthers.d))}`;
+  else if (!t) html += L('Mercantes y Armada se mueven…', 'Merchants and Navy are moving…');
   else if (t.pid === S.you) {
-    html += `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span><span class="long"> ${t.actions} acción(es)</span>`;
-    if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp}<span class="long"> de movimiento</span>`;
-  } else html += `Turno de <b>${esc(playerName(t.pid))}</b>`;
+    html += `<span class="me-turn">${L('Tu turno', 'Your turn')}</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span><span class="long"> ${t.actions} ${L('acción(es)', 'action(s)')}</span>`;
+    if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp}<span class="long"> ${L('de movimiento', 'movement')}</span>`;
+  } else html += `${L('Turno de', 'Turn:')} <b>${esc(playerName(t.pid))}</b>`;
   const ms = t && remaining(t.deadlineIn);
   if (ms !== null && ms !== undefined && !S.combat) html += ` <span class="clock ${ms < 15000 ? 'low' : ''}" id="clock">${fmt(ms)}</span>`;
   $('status').innerHTML = html;
@@ -633,6 +750,20 @@ addEventListener('resize', () => { if (S && S.map) { drawSea(); drawVeil(); } })
 
 // ------------------------------------------------------------ zoom del mapa en el móvil
 
+// Lupa de latón con mango de madera y un + o un − en el cristal.
+function lens(sign) {
+  const bar = '<path d="M14 21h12" stroke="#3b2414" stroke-width="3" stroke-linecap="round"/>';
+  const vert = sign === '+' ? '<path d="M20 15v12" stroke="#3b2414" stroke-width="3" stroke-linecap="round"/>' : '';
+  return `<svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true">
+    <path d="M30 30l11 11" stroke="#5a2f12" stroke-width="7" stroke-linecap="round"/>
+    <path d="M30 30l3.5 3.5" stroke="#c9952e" stroke-width="7.5" stroke-linecap="round"/>
+    <circle cx="20" cy="21" r="14" fill="#e9f3f6" fill-opacity=".88" stroke="#b07d26" stroke-width="4.5"/>
+    <circle cx="20" cy="21" r="11.6" fill="none" stroke="#e7bf5f" stroke-width="1.2"/>
+    <path d="M12 15a10 10 0 0 1 6-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>
+    ${bar}${vert}
+  </svg>`;
+}
+
 // En el móvil el mapa empieza acercado y centrado en tu barco; el botón alterna con el mapa entero.
 const isMobile = () => matchMedia('(max-width: 900px)').matches;
 let zoomed = true;
@@ -642,7 +773,9 @@ function applyZoom(force) {
   document.body.classList.toggle('zoomed', on);
   const btn = $('zoomBtn');
   btn.classList.toggle('hidden', !(isMobile() && S && S.phase !== 'lobby'));
-  btn.innerHTML = on ? `${ICON('catalejo', 'tiny')} Ver mapa entero` : `${ICON('catalejo', 'tiny')} Acercar`;
+  btn.innerHTML = lens(on ? '-' : '+');
+  btn.title = on ? L('Ver el mapa entero', 'See the whole map') : L('Acercar a tu barco', 'Zoom to your ship');
+  btn.setAttribute('aria-label', btn.title);
   if (!on || !S.me) { centeredOn = ''; return; }
   const key = `${S.me.x},${S.me.y}`;
   if (!force && key === centeredOn) return;
@@ -796,7 +929,7 @@ function statBar(cur, max) {
 
 function shipLabel(s) {
   if (s.kind === 'pirata') return esc(s.name);
-  return s.kind === 'mercante' ? `Mercante → ${LUGAR(s.destino)}` : 'Fragata de la Armada';
+  return s.kind === 'mercante' ? `${L('Mercante', 'Merchant')} → ${LUGAR(s.destino)}` : L('Fragata de la Armada', 'Navy frigate');
 }
 
 // Arrastrar la ventana de acciones por su título (se queda donde la dejes, dentro del tablero).
@@ -828,28 +961,28 @@ function renderPanel() {
 
   // Acciones contextuales.
   let acts = '';
-  if (S.phase === 'fin') acts = '<button class="btn gold block" id="finalBtn">Ver clasificación</button>';
+  if (S.phase === 'fin') acts = `<button class="btn gold block" id="finalBtn">${L('Ver clasificación', 'See ranking')}</button>`;
   else if (!myTurn) {
-    acts = `<p class="hint">${S.offer && S.offer.to === S.you ? 'Tienes una propuesta de comercio.' : S.combat ? 'Combate en curso.' : t ? `Esperando a ${esc(playerName(t.pid))}…` : 'Los barcos neutrales se mueven…'}</p>`;
+    acts = `<p class="hint">${S.offer && S.offer.to === S.you ? L('Tienes una propuesta de comercio.', 'You have a trade offer.') : S.combat ? L('Combate en curso.', 'Fight in progress.') : t ? `${L('Esperando a', 'Waiting for')} ${esc(playerName(t.pid))}…` : L('Los barcos neutrales se mueven…', 'Neutral ships are moving…')}</p>`;
   } else {
     const noAct = t.actions <= 0;
     if (t.moving) {
-      acts += `<p class="hint">Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.</p>
-        <button class="btn gold block" data-act="parar">Detener el barco</button>`;
+      acts += `<p class="hint">${L(`Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.`, `Tap a marked tile to sail (${t.moving.mp} points left). Reefs cost 2.`)}</p>
+        <button class="btn gold block" data-act="parar">${L('Detener el barco', 'Stop the ship')}</button>`;
     } else {
-      acts += `<button class="btn gold block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar <span class="long">(${me.velas} casillas)</span></button>`;
+      acts += `<button class="btn gold block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} ${L('Navegar', 'Sail')} <span class="long">(${me.velas} ${L('casillas', 'tiles')})</span></button>`;
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
-      acts += `<button class="btn gold block" data-dock="${id}">Atracar<span class="long"> en</span> ${LUGAR(p ? p.name : 'el puerto')} <span class="long"> (gratis)</span></button>`;
+      acts += `<button class="btn gold block" data-dock="${id}">${L('Atracar', 'Dock')}<span class="long"> ${L('en', 'at')}</span> ${LUGAR(p ? p.name : L('el puerto', 'the port'))} <span class="long"> ${L('(gratis)', '(free)')}</span></button>`;
     }
-    for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} Explorar la isla</button>`;
-    if (port) acts += `<button class="btn gold block" id="portBtn">Puerto<span class="long"> de</span> ${LUGAR(port.name)}</button>`;
+    for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} ${L('Explorar la isla', 'Explore the island')}</button>`;
+    if (port) acts += `<button class="btn gold block" id="portBtn">${L('Puerto', 'Port')}<span class="long"> ${L('de', 'of')}</span> ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
-      if (near) acts += `<p class="hint">No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.</p>`;
+      if (near) acts += `<p class="hint">${L(`No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.`, `You can't return to ${esc(near.name)} until you dock at another port.`)}</p>`;
     }
-    acts += `<button class="btn flag-btn block" data-act="terminar">Terminar turno</button>`;
+    acts += `<button class="btn flag-btn block" data-act="terminar">${L('Terminar turno', 'End turn')}</button>`;
   }
 
   // Rivales: los demás capitanes con sus logros; los que están a la vista se resaltan y
@@ -859,11 +992,11 @@ function renderPanel() {
   const shipActions = (s) => {
     const o = tgt.get(s.id);
     const btns = [];
-    if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>${ICON('canon')} Cañonear</button>`);
-    if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>${ICON('sables')} Abordar</button>`);
-    if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Comerciar</button>`);
+    if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>${ICON('canon')} ${L('Cañonear', 'Fire')}</button>`);
+    if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>${ICON('sables')} ${L('Abordar', 'Board')}</button>`);
+    if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} ${L('Comerciar', 'Trade')}</button>`);
     const adj = Math.max(Math.abs(s.x - me.x), Math.abs(s.y - me.y)) <= 1;
-    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Trato</button>`);
+    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} ${L('Trato', 'Deal')}</button>`);
     return btns.length ? `<div class="rival-acts">${btns.join('')}</div>` : '';
   };
   const turnOrder = S.order.map((id) => S.players.find((p) => p.id === id)).filter(Boolean);
@@ -875,11 +1008,11 @@ function renderPanel() {
       <div class="rival-row">
         <span class="flag" style="background:${p.color}"></span>
         <span class="name" title="${esc(p.name)}">${esc(p.name)}${!p.bot && !p.connected ? ' 💤' : ''}</span>
-        ${s ? `<span class="seen-tag" title="A la vista">${ICON('catalejo', 'tiny')}</span><span class="hull" title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>` : ''}
-        <b class="pts" title="Logros">${LEYENDA} ${p.pl}</b>
+        ${s ? `<span class="seen-tag" title="${L('A la vista', 'In sight')}">${ICON('catalejo', 'tiny')}</span><span class="hull" title="${L('Casco', 'Hull')}">${CASCO} ${s.casco}/${s.cascoMax}</span>` : ''}
+        <b class="pts" title="${L('Logros', 'Achievements')}">${LEYENDA} ${p.pl}</b>
       </div>
       ${s ? `<div class="life">${statBar(s.casco, s.cascoMax)}</div>` : ''}
-      ${docked ? '<div class="hint">Atracado</div>' : ''}
+      ${docked ? `<div class="hint">${L('Atracado', 'Docked')}</div>` : ''}
       ${s ? shipActions(s) : ''}
     </div>`;
   }).join('');
@@ -894,10 +1027,10 @@ function renderPanel() {
     </div>`).join('');
 
   // Mercancías en una línea: solo icono y número (el nombre y el coste, al pasar el ratón).
-  const goods = R.goods.map((g) => `<span class="chip good" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}"><b>${me.mercancias[g]}</b>${GOOD_ICON[g]}<small>${R.goodLabel[g]}</small></span>`).join('');
+  const goods = R.goods.map((g) => `<span class="chip good" title="${goodLabel(g)}${me.mercancias[g] ? ` · ${L('coste medio', 'average cost')} ${me.costes[g]}` : ''}"><b>${me.mercancias[g]}</b>${GOOD_ICON[g]}<small>${goodLabel(g)}</small></span>`).join('');
 
-  const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
-  const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || '<p class="hint">Aún no hay mensajes.</p>';
+  const log = S.log.slice().reverse().map((l) => `<p>${esc(txt(l.text))}</p>`).join('');
+  const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || `<p class="hint">${L('Aún no hay mensajes.', 'No messages yet.')}</p>`;
   const low = me.casco <= Math.ceil(me.cascoMax / 3);
 
   $('panel').innerHTML = `
@@ -909,33 +1042,33 @@ function renderPanel() {
             <div>
               <div class="who" style="color:${me.color}">${esc(me.name)}</div>
               <div class="life me-life" title="Casco ${me.casco}/${me.cascoMax}">${statBar(me.casco, me.cascoMax)}</div>
-              <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
+              <div class="hint">${port ? `${L('Atracado en', 'Docked at')} ${LUGAR(port.name)}` : L('En alta mar', 'At sea')}</div>
             </div>
             <div class="mine">
               <span>${LEYENDA} <b>${me.pl}</b> / ${R.winPL}</span>
-              <span>${ORO} <b>${me.oro}</b> oros</span>
+              <span>${ORO} <b>${me.oro}</b> ${L('oros', 'gold')}</span>
             </div>
           </div>
         </div>
       </div>
       <div class="attrs">
         ${[
-          ['velas', `${me.velas}`, 'casillas por navegación'],
-          ['canones', `${me.canones}`, 'dados de cañón'],
-          ['casco', `${me.casco}/${me.cascoMax}`, 'casco actual / máximo'],
+          ['velas', `${me.velas}`, L('casillas por navegación', 'tiles per sail')],
+          ['canones', `${me.canones}`, L('dados de cañón', 'cannon dice')],
+          ['casco', `${me.casco}/${me.cascoMax}`, L('casco actual / máximo', 'current / max hull')],
           ['bodega', `${me.carga}/${me.bodega}`, 'carga / capacidad'],
-          ['tripulacion', `${me.tripulacion}/${me.tripMax}`, 'marineros / máximo'],
-        ].map(([a, v, what]) => `<div class="attr ${a === 'casco' && low ? 'low' : ''}" title="${R.attrLabel[a]}: ${what} · nivel ${ROMAN[me.niveles[a]]}">
-          <b>${v}</b>${ATTR_ICON[a]}<span class="name">${R.attrLabel[a]}</span><span class="lv">Nivel ${ROMAN[me.niveles[a]]}</span></div>`).join('')}
+          ['tripulacion', `${me.tripulacion}/${me.tripMax}`, L('marineros / máximo', 'sailors / max')],
+        ].map(([a, v, what]) => `<div class="attr ${a === 'casco' && low ? 'low' : ''}" title="${attrLabel(a)}: ${what} · ${L('nivel', 'level')} ${ROMAN[me.niveles[a]]}">
+          <b>${v}</b>${ATTR_ICON[a]}<span class="name">${attrLabel(a)}</span><span class="lv">${L('Nivel', 'Level')} ${ROMAN[me.niveles[a]]}</span></div>`).join('')}
       </div>
       <div class="cargo">
         <div class="chips goods-line">${goods}</div>
-        <span class="chip profit" title="Beneficio comercial: próximo punto de logro al llegar a ${me.siguientePL}"><b>${me.netProfit}/${me.siguientePL}</b>${ORO}<small>Beneficio</small></span>
+        <span class="chip profit" title="${L(`Beneficio comercial: próximo punto de logro al llegar a ${me.siguientePL}`, `Trade profit: next achievement point at ${me.siguientePL}`)}"><b>${me.netProfit}/${me.siguientePL}</b>${ORO}<small>${L('Beneficio', 'Profit')}</small></span>
       </div>
     </div>
-    <div class="box parchment rivals-box"><h3>Rivales</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
+    <div class="box parchment rivals-box"><h3>${L('Rivales', 'Rivals')}</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
     <div class="log-buttons">
-      <button class="btn block log-btn" data-open="cronica">Crónica</button>
+      <button class="btn block log-btn" data-open="cronica">${L('Crónica', 'Log')}</button>
       <button class="btn block log-btn" data-open="chat">Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>
     </div>`;
 
@@ -946,9 +1079,9 @@ function renderPanel() {
   lf.classList.toggle('hidden', !ui.logOpen);
   if (ui.logOpen) {
     if (ui.logOpen === 'chat') ui.unread = 0;
-    lf.innerHTML = `<div class="float-head"><h3>${ui.logOpen === 'chat' ? 'Chat' : 'Crónica'}</h3><button class="float-toggle" id="logClose" title="Cerrar">×</button></div>
+    lf.innerHTML = `<div class="float-head"><h3>${ui.logOpen === 'chat' ? 'Chat' : L('Crónica', 'Log')}</h3><button class="float-toggle" id="logClose" title="${L('Cerrar', 'Close')}">×</button></div>
       <div class="log">${ui.logOpen === 'chat' ? chat : log}</div>
-      ${ui.logOpen === 'chat' ? '<form class="chat-form" id="chatForm"><input class="input" id="chatInput" maxlength="200" placeholder="Escribe a la tripulación…" autocomplete="off"><button class="btn small">Enviar</button></form>' : ''}`;
+      ${ui.logOpen === 'chat' ? `<form class="chat-form" id="chatForm"><input class="input" id="chatInput" maxlength="200" placeholder="${L('Escribe a la tripulación…', 'Write to the crew…')}" autocomplete="off"><button class="btn small">${L('Enviar', 'Send')}</button></form>` : ''}`;
     if (ui.logPos) Object.assign(lf.style, { left: `${ui.logPos.x}px`, top: `${ui.logPos.y}px`, right: 'auto', bottom: 'auto' });
     lf.querySelector('.float-head').onpointerdown = (e) => dragFloat(e, lf, 'logPos');
     $('logClose').onclick = () => { ui.logOpen = null; renderPanel(); };
@@ -967,7 +1100,7 @@ function renderPanel() {
   document.body.classList.toggle('float-open', showFloat && !ui.actionsCollapsed);
   document.body.classList.toggle('float-min', showFloat && !!ui.actionsCollapsed);
   fl.innerHTML = showFloat
-    ? `<div class="float-head"><h3>Acciones</h3><button class="float-toggle" id="floatToggle" title="${ui.actionsCollapsed ? 'Mostrar' : 'Ocultar'}">${ui.actionsCollapsed ? '▴' : '▾'}</button></div><div class="actions">${acts}</div>`
+    ? `<div class="float-head"><h3>${L('Acciones', 'Actions')}</h3><button class="float-toggle" id="floatToggle" title="${ui.actionsCollapsed ? L('Mostrar', 'Show') : L('Ocultar', 'Hide')}">${ui.actionsCollapsed ? '▴' : '▾'}</button></div><div class="actions">${acts}</div>`
     : '';
   if ($('floatToggle')) $('floatToggle').onclick = () => { ui.actionsCollapsed = !ui.actionsCollapsed; renderPanel(); };
   if (ui.floatPos) Object.assign(fl.style, { left: `${ui.floatPos.x}px`, top: `${ui.floatPos.y}px`, right: 'auto', bottom: 'auto' });
@@ -1036,7 +1169,7 @@ function tradeTable(prices, stock, opts) {
     const canBuyMore = load < me.bodega && me.oro + income - cost >= prices[g].compra && !(q.vender[g] > 0);
     const canSellMore = !(q.comprar[g] > 0);
     return `<tr>
-      <td>${GOOD_ICON[g]} ${R.goodLabel[g]}</td>
+      <td>${GOOD_ICON[g]} ${goodLabel(g)}</td>
       <td>${me.mercancias[g]}${me.mercancias[g] ? ` <span class="muted">(${me.costes[g]})</span>` : ''}</td>
       <td><b>${prices[g].vende}</b></td>
       <td>${stepper(`vender.${g}`, q.vender[g] || 0, 0, canSellMore ? sellMax : (q.vender[g] || 0))}</td>
@@ -1047,12 +1180,12 @@ function tradeTable(prices, stock, opts) {
   const total = income - cost;
   return `
     <table class="trade">
-      <tr><th>Mercancía</th><th>Tienes (coste)</th><th>Te paga</th><th>Vender</th><th>Te cobra${stock ? ' (lleva)' : ''}</th><th>Comprar</th></tr>
+      <tr><th>${L('Mercancía', 'Goods')}</th><th>${L('Tienes (coste)', 'You have (cost)')}</th><th>${L('Te paga', 'Pays you')}</th><th>${L('Vender', 'Sell')}</th><th>${L('Te cobra', 'Charges')}${stock ? L(' (lleva)', ' (carries)') : ''}</th><th>${L('Comprar', 'Buy')}</th></tr>
       ${rows}
     </table>
-    <p class="summary">Cobras <b>${income}</b>, pagas <b>${cost}</b> → ${total >= 0 ? '+' : ''}<b>${total}</b> oros · Bodega ${load}/${me.bodega}</p>
-    ${opts.noResell && opts.noResell.length ? `<p class="hint">Comprado en esta visita (no se puede revender aquí): ${opts.noResell.map((g) => R.goodLabel[g]).join(', ')}.</p>` : ''}
-    <button class="btn gold block" id="doTrade" ${income || cost ? '' : 'disabled'}>Comerciar (1 acción)</button>`;
+    <p class="summary">${L('Cobras', 'You get')} <b>${income}</b>, ${L('pagas', 'you pay')} <b>${cost}</b> → ${total >= 0 ? '+' : ''}<b>${total}</b> ${L('oros', 'gold')} · ${L('Bodega', 'Hold')} ${load}/${me.bodega}</p>
+    ${opts.noResell && opts.noResell.length ? `<p class="hint">${L('Comprado en esta visita (no se puede revender aquí)', 'Bought on this visit (cannot be resold here)')}: ${opts.noResell.map((g) => goodLabel(g)).join(', ')}.</p>` : ''}
+    <button class="btn gold block" id="doTrade" ${income || cost ? '' : 'disabled'}>${L('Comerciar (1 acción)', 'Trade (1 action)')}</button>`;
 }
 
 function renderModal() {
@@ -1070,11 +1203,11 @@ function renderModal() {
     body = `<h2>${shipLabel(s)}</h2>
       <div class="ship-head">${shipImg(s, facing(s, 'left'))}<div>
         <div>${KIND_LABEL[s.kind]}</div>
-        <div>${CASCO} Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
-        ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${R.attrLabel[a]} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>Carga: ${s.carga} mercancías</div>` : ''}
-        ${s.kind === 'mercante' ? `<div>Rumbo a ${LUGAR(s.destino)} con ${s.carga} mercancías</div>` : ''}
+        <div>${CASCO} ${L('Casco', 'Hull')} ${s.casco}/${s.cascoMax} · ${TRIP} ${L('Tripulación', 'Crew')} ${s.tripulacion}</div>
+        ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${attrLabel(a)} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>${L('Carga', 'Cargo')}: ${s.carga} ${L('mercancías', 'goods')}</div>` : ''}
+        ${s.kind === 'mercante' ? `<div>${L('Rumbo a', 'Bound for')} ${LUGAR(s.destino)} ${L('con', 'with')} ${s.carga} ${L('mercancías', 'goods')}</div>` : ''}
       </div></div>
-      <p class="hint">Usa los botones de «A la vista» para atacar o comerciar.</p>`;
+      <p class="hint">${L('Usa los botones del panel Rivales para atacar o comerciar.', 'Use the buttons in the Rivals panel to attack or trade.')}</p>`;
   } else if (ui.modal === 'puerto') {
     const port = S.map.ports.find((p) => p.id === me.docked);
     if (!port) return closeModal();
@@ -1086,34 +1219,34 @@ function renderModal() {
       content = R.attrs.map((a) => {
         const l = me.niveles[a];
         const cost = l < 3 ? R.upgradeCost[a][l - 1] : null;
-        return `<div class="up-row"><span>${ATTR_ICON[a]} <b>${R.attrLabel[a]}</b> ${ROMAN[l]} <span class="muted">(${R.levels[a][l - 1]}${l < 3 ? ` → ${R.levels[a][l]}` : ''})</span></span>
-          <span>${cost !== null ? `${cost} oros` : 'Máximo'}</span>
-          <button class="btn small gold" data-up="${a}" ${cost === null || me.oro < cost || !hasAct ? 'disabled' : ''}>Mejorar a ${ROMAN[l + 1] || '—'}</button></div>`;
-      }).join('') + '<p class="hint">Cada mejora cuesta 1 acción y es permanente, aunque te hundan.</p>';
+        return `<div class="up-row"><span>${ATTR_ICON[a]} <b>${attrLabel(a)}</b> ${ROMAN[l]} <span class="muted">(${R.levels[a][l - 1]}${l < 3 ? ` → ${R.levels[a][l]}` : ''})</span></span>
+          <span>${cost !== null ? `${cost} ${L('oros', 'gold')}` : L('Máximo', 'Max')}</span>
+          <button class="btn small gold" data-up="${a}" ${cost === null || me.oro < cost || !hasAct ? 'disabled' : ''}>${L('Mejorar a', 'Upgrade to')} ${ROMAN[l + 1] || '—'}</button></div>`;
+      }).join('') + `<p class="hint">${L('Cada mejora cuesta 1 acción y es permanente, aunque te hundan.', 'Each upgrade costs 1 action and is permanent, even if you sink.')}</p>`;
     } else if (ui.portTab === 'reparar') {
       const max = Math.min(me.cascoMax - me.casco, Math.floor(me.oro / R.repair));
       ui.repair = Math.max(1, Math.min(ui.repair, max));
       content = max > 0
-        ? `<p>Casco ${me.casco}/${me.cascoMax}. Cada punto cuesta ${R.repair} oro.</p><p>Reparar ${stepper('repair', ui.repair, 1, max)} punto(s) → ${ui.repair * R.repair} oros</p>
-          <button class="btn gold block" id="doRepair" ${hasAct ? '' : 'disabled'}>Reparar (1 acción)</button>`
-        : `<p>${me.casco >= me.cascoMax ? 'El casco está intacto.' : 'No tienes oro para reparar.'}</p>`;
+        ? `<p>${L('Casco', 'Hull')} ${me.casco}/${me.cascoMax}. ${L(`Cada punto cuesta ${R.repair} oro.`, `Each point costs ${R.repair} gold.`)}</p><p>${L('Reparar', 'Repair')} ${stepper('repair', ui.repair, 1, max)} ${L('punto(s)', 'point(s)')} → ${ui.repair * R.repair} ${L('oros', 'gold')}</p>
+          <button class="btn gold block" id="doRepair" ${hasAct ? '' : 'disabled'}>${L('Reparar (1 acción)', 'Repair (1 action)')}</button>`
+        : `<p>${me.casco >= me.cascoMax ? L('El casco está intacto.', 'The hull is intact.') : L('No tienes oro para reparar.', 'Not enough gold to repair.')}</p>`;
     } else {
       const max = Math.min(me.tripMax - me.tripulacion, Math.floor(me.oro / R.recruit));
       ui.recruit = Math.max(1, Math.min(ui.recruit, max));
       content = max > 0
-        ? `<p>Tripulación ${me.tripulacion}/${me.tripMax}. Cada marinero cuesta ${R.recruit} oros.</p><p>Reclutar ${stepper('recruit', ui.recruit, 1, max)} → ${ui.recruit * R.recruit} oros</p>
-          <button class="btn gold block" id="doRecruit" ${hasAct ? '' : 'disabled'}>Reclutar (1 acción)</button>`
-        : `<p>${me.tripulacion >= me.tripMax ? 'Tu tripulación está completa.' : 'No tienes oro para reclutar.'}</p>`;
+        ? `<p>${L('Tripulación', 'Crew')} ${me.tripulacion}/${me.tripMax}. ${L(`Cada marinero cuesta ${R.recruit} oros.`, `Each sailor costs ${R.recruit} gold.`)}</p><p>${L('Reclutar', 'Recruit')} ${stepper('recruit', ui.recruit, 1, max)} → ${ui.recruit * R.recruit} ${L('oros', 'gold')}</p>
+          <button class="btn gold block" id="doRecruit" ${hasAct ? '' : 'disabled'}>${L('Reclutar (1 acción)', 'Recruit (1 action)')}</button>`
+        : `<p>${me.tripulacion >= me.tripMax ? L('Tu tripulación está completa.', 'Your crew is complete.') : L('No tienes oro para reclutar.', 'Not enough gold to recruit.')}</p>`;
     }
     body = `<h2>${LUGAR(port.name)}</h2>
-      <p class="muted">${ORO} Oro: <b>${me.oro}</b> · Acciones: <b>${S.turn && S.turn.pid === S.you ? S.turn.actions : 0}</b></p>
+      <p class="muted">${ORO} ${L('Oro', 'Gold')}: <b>${me.oro}</b> · ${L('Acciones', 'Actions')}: <b>${S.turn && S.turn.pid === S.you ? S.turn.actions : 0}</b></p>
       <div class="tabs">${tabs.map(([k, l]) => `<button data-ptab="${k}" class="${ui.portTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       ${content}`;
   } else if (ui.modal === 'mercante') {
     const s = S.ships.find((x) => x.id === ui.modalId);
     if (!s || !s.precios) return closeModal();
-    body = `<h2>Mercante rumbo a ${LUGAR(s.destino)}</h2>
-      <p class="muted">Comercia a los precios de ${esc(s.destino)}. ${ORO} Oro: <b>${me.oro}</b></p>
+    body = `<h2>${L('Mercante rumbo a', 'Merchant bound for')} ${LUGAR(s.destino)}</h2>
+      <p class="muted">${L(`Comercia a los precios de ${esc(s.destino)}.`, `Trade at ${esc(s.destino)} prices.`)} ${ORO} ${L('Oro', 'Gold')}: <b>${me.oro}</b></p>
       ${tradeTable(s.precios, s.cargamento, {})}`;
   } else if (ui.modal === 'trato') {
     const other = S.ships.find((x) => x.id === ui.modalId);
@@ -1121,18 +1254,18 @@ function renderModal() {
     const d = ui.deal;
     const side = (key, who, gold, goods) => `
       <div><h4>${who}</h4>
-        <p>${ORO} Oro ${stepper(`${key}.oro`, d[key].oro, 0, gold)}</p>
-        ${R.goods.map((g) => `<p>${GOOD_ICON[g]} ${R.goodLabel[g]} ${stepper(`${key}.goods.${g}`, d[key].goods[g] || 0, 0, goods ? goods[g] : 9)}</p>`).join('')}
+        <p>${ORO} ${L('Oro', 'Gold')} ${stepper(`${key}.oro`, d[key].oro, 0, gold)}</p>
+        ${R.goods.map((g) => `<p>${GOOD_ICON[g]} ${goodLabel(g)} ${stepper(`${key}.goods.${g}`, d[key].goods[g] || 0, 0, goods ? goods[g] : 9)}</p>`).join('')}
       </div>`;
-    body = `<h2>Trato con ${esc(other.name)}</h2>
+    body = `<h2>${L('Trato con', 'Deal with')} ${esc(other.name)}</h2>
       <div class="duel" style="grid-template-columns:1fr 1fr">
-        ${side('dar', 'Tú das', me.oro, me.mercancias)}
-        ${side('pedir', 'Tú pides', 99, null)}
+        ${side('dar', L('Tú das', 'You give'), me.oro, me.mercancias)}
+        ${side('pedir', L('Tú pides', 'You ask'), 99, null)}
       </div>
-      <p class="hint">Proponer cuesta 1 acción. ${esc(other.name)} tiene 20 segundos para aceptar. La Leyenda comercial solo se gana vendiendo en puertos o a mercantes.</p>
-      <button class="btn gold block" id="doDeal">Proponer trato (1 acción)</button>`;
+      <p class="hint">${L(`Proponer cuesta 1 acción. ${esc(other.name)} tiene 20 segundos para aceptar. Los logros por comercio solo se ganan vendiendo en puertos o a mercantes.`, `Offering costs 1 action. ${esc(other.name)} has 20 seconds to accept. Trade achievements are only earned selling at ports or to merchants.`)}</p>
+      <button class="btn gold block" id="doDeal">${L('Proponer trato (1 acción)', 'Offer deal (1 action)')}</button>`;
   }
-  m.innerHTML = `<div class="dialog framed"><button class="close" id="closeModal" aria-label="Cerrar">×</button>${body}</div>`;
+  m.innerHTML = `<div class="dialog framed"><button class="close" id="closeModal" aria-label="${L('Cerrar', 'Close')}">×</button>${body}</div>`;
   m.classList.remove('hidden');
   bindModal();
 }
@@ -1172,15 +1305,43 @@ function bindModal() {
 function pricesHtml() {
   const R = S.reglas;
   const ports = S.map.ports;
-  if (!ports.length) return '<h2>Precios</h2><p>Todavía no has descubierto ningún puerto.</p>';
-  return `<h2>Precios conocidos</h2>
-    <p class="hint">«Paga» es lo que te da el puerto al venderle; «cobra», lo que te pide al comprarle. Las rutas rentables están en las diferencias.</p>
-    <table class="trade"><tr><th>Puerto</th>${R.goods.map((g) => `<th>${GOOD_ICON[g]} ${R.goodLabel[g]}<br>paga / cobra</th>`).join('')}</tr>
-    ${ports.map((p) => `<tr><td><b>${LUGAR(p.name)}</b>${p.id === S.me.lastPort ? ' <span class="muted">(último)</span>' : ''}</td>${R.goods.map((g) => `<td>${p.precios[g].vende} / ${p.precios[g].compra}</td>`).join('')}</tr>`).join('')}
+  if (!ports.length) return `<h2>${L('Precios', 'Prices')}</h2><p>${L('Todavía no has descubierto ningún puerto.', 'You have not discovered any port yet.')}</p>`;
+  return `<h2>${L('Precios conocidos', 'Known prices')}</h2>
+    <p class="hint">${L('«Paga» es lo que te da el puerto al venderle; «cobra», lo que te pide al comprarle. Las rutas rentables están en las diferencias.', '"Pays" is what the port gives you when you sell; "charges", what it asks when you buy. Profitable routes are in the differences.')}</p>
+    <table class="trade"><tr><th>${L('Puerto', 'Port')}</th>${R.goods.map((g) => `<th>${GOOD_ICON[g]} ${goodLabel(g)}<br>${L('paga / cobra', 'pays / charges')}</th>`).join('')}</tr>
+    ${ports.map((p) => `<tr><td><b>${LUGAR(p.name)}</b>${p.id === S.me.lastPort ? ` <span class="muted">${L('(último)', '(last)')}</span>` : ''}</td>${R.goods.map((g) => `<td>${p.precios[g].vende} / ${p.precios[g].compra}</td>`).join('')}</tr>`).join('')}
     </table>`;
 }
 
 function rulesHtml() {
+  if (LANG === 'en') {
+    return `<div class="rules"><h2>Pirates rules</h2>
+    <p><b>Goal:</b> get 12 ${LEYENDA} Legend Points. The game ends when the round in which someone reaches 12 is completed, or after round 15. Whoever has the most points wins (tie-break: gold, then islands explored).</p>
+    <h3>Your turn: 3 actions</h3>
+    <ul>
+      <li><b>Sail:</b> move as many tiles as your Sails (3/4/5), in 8 directions. Reefs cost 2. You cannot cross corners closed by land or tiles with ships at sea.</li>
+      <li><b>Explore:</b> next to an island you have not explored. Treasure 25% (3–8 gold and +3 ${LEYENDA}), cargo 35%, danger 25% (1–2 damage) or nothing.</li>
+      <li><b>Fire</b> (up to 2 tiles, with line of fire) or <b>Board</b> (next to the ship): starts a fight.</li>
+      <li><b>In port:</b> trade, upgrade, repair (1 gold per point) and recruit (2 gold per sailor). Each one is 1 action.</li>
+      <li><b>Docking</b> is free from a tile next to the port, but you cannot return to the last port visited until you dock at another one.</li>
+      <li><b>Trade</b> with a merchant or offer a deal to another pirate next to you.</li>
+    </ul>
+    <h3>Fights</h3>
+    <p>Up to 3 rounds. In each one, both captains secretly choose <b>Fire</b>, <b>Board</b> or <b>Maneuver</b> (once per fight). Each 5 or 6 on the dice is a success.</p>
+    <ul>
+      <li>Fire: each success deals 1 damage. Maneuver cancels 1 hit and gives <b>advantage</b> (+1 die on your next attack roll).</li>
+      <li>Board: crew against crew; ties favour the defender. The winner captures up to 2 goods and the other loses a sailor. If you fire at whoever boards you, you shoot first.</li>
+      <li>If you are sunk, you lose half your cargo (taken by whoever sank you if a pirate) and return to your home port repaired.</li>
+    </ul>
+    <h3>Legend Points</h3>
+    <ul><li>Treasure: +3 ${LEYENDA} · Sink a merchant: +1 ${LEYENDA} · Sink a pirate: +2 ${LEYENDA} · Sink a frigate: +3 ${LEYENDA}</li>
+    <li>Every 4 gold of accumulated net trade profit (sale − purchase cost): +1 ${LEYENDA}</li></ul>
+    <h3>The sea</h3>
+    <p>You see the terrain 3 × 3 around your ship and ships up to 2 tiles away. Merchants sail between ports and the Navy patrols and attacks the pirates it sees. You have 90 s per turn and 20 s to choose a maneuver.</p>
+    <h3>Same device</h3>
+    <p>In the room you can add players who play on this same device: when it is their turn, the game asks you to hand them the device.</p>
+  </div>`;
+  }
   return `<div class="rules"><h2>Reglas de Piratas</h2>
     <p><b>Objetivo:</b> conseguir 12 ${LEYENDA} Puntos de Leyenda. La partida termina al completar la ronda en que alguien llega a 12, o tras la ronda 15. Gana quien más puntos tenga (desempate: oro, luego islas exploradas).</p>
     <h3>Tu turno: 3 acciones</h3>
@@ -1204,6 +1365,8 @@ function rulesHtml() {
     <li>Cada 4 oros de beneficio comercial neto acumulado (venta − coste de compra): +1 ${LEYENDA}</li></ul>
     <h3>Mar</h3>
     <p>Ves el terreno en 3 × 3 alrededor de tu barco y los barcos hasta 2 casillas. Los mercantes viajan entre puertos y la Armada patrulla y ataca a los piratas que ve. Tienes 90 s por turno y 20 s para elegir maniobra.</p>
+    <h3>Mismo dispositivo</h3>
+    <p>En la sala puedes añadir jugadores que juegan en este mismo dispositivo: cuando les toca, el juego te pide que les pases el dispositivo.</p>
   </div>`;
 }
 
@@ -1212,12 +1375,12 @@ function renderFinal() {
   const f = S.final;
   const win = f.winners.includes(S.you);
   m.innerHTML = `<div class="dialog framed">
-    <button class="close" id="closeModal" aria-label="Cerrar">×</button>
-    <p class="winner-title">${win ? '¡Eres una leyenda!' : `Gana ${f.winners.map(playerName).map(esc).join(' y ')}`}</p>
-    <table class="final-table"><tr><th>#</th><th>Pirata</th><th>${LEYENDA}</th><th>Oro</th><th>Islas</th></tr>
+    <button class="close" id="closeModal" aria-label="${L('Cerrar', 'Close')}">×</button>
+    <p class="winner-title">${win ? L('¡Eres una leyenda!', 'You are a legend!') : `${L('Gana', 'Winner:')} ${f.winners.map(playerName).map(esc).join(L(' y ', ' and '))}`}</p>
+    <table class="final-table"><tr><th>#</th><th>${L('Pirata', 'Pirate')}</th><th>${LEYENDA}</th><th>${L('Oro', 'Gold')}</th><th>${L('Islas', 'Islands')}</th></tr>
       ${f.ranking.map((r, i) => `<tr><td>${i + 1}</td><td><span class="flag" style="background:${r.color};display:inline-block"></span> ${esc(r.name)}</td><td><b>${r.pl}</b></td><td>${r.oro}</td><td>${r.islas}</td></tr>`).join('')}
     </table>
-    <button class="btn gold block" data-again>Nueva partida</button>
+    <button class="btn gold block" data-again>${L('Nueva partida', 'New game')}</button>
   </div>`;
   m.classList.remove('hidden');
   $('closeModal').onclick = () => { ui.finalSeen = true; m.classList.add('hidden'); };
@@ -1232,14 +1395,15 @@ function diceHtml(t, fresh) {
 }
 
 function fighter(s, side, c, right) {
-  if (!s) return `<div class="fighter ${right ? 'right' : ''}"><div class="fname">${esc((c.nombres || {})[side] || 'Hundido')}</div><p>☠ Hundido</p></div>`;
-  const name = s.name.charAt(0).toUpperCase() + s.name.slice(1);
+  if (!s) return `<div class="fighter ${right ? 'right' : ''}"><div class="fname">${esc(txt((c.nombres || {})[side]) || L('Hundido', 'Sunk'))}</div><p>☠ ${L('Hundido', 'Sunk')}</p></div>`;
+  const raw = LANG === 'en' && s.nameEn ? s.nameEn : s.name;
+  const name = raw.charAt(0).toUpperCase() + raw.slice(1);
   return `<div class="fighter ${right ? 'right' : ''}">
     ${shipImg(s, facing(s, right ? 'left' : 'right'))}
-    <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? ' (tú)' : ''}</div>
+    <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? L(' (tú)', ' (you)') : ''}</div>
     <div>${CASCO} ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
-    <div>🎯 ${s.canones} dados · ${TRIP} ${s.tripulacion}</div>
-    <div class="badges">${c.ventaja[side] ? '<span class="badge adv">Ventaja +1</span>' : ''}${c.maniobro[side] ? '<span class="badge">Ya maniobró</span>' : ''}</div>
+    <div>🎯 ${s.canones} ${L('dados', 'dice')} · ${TRIP} ${s.tripulacion}</div>
+    <div class="badges">${c.ventaja[side] ? `<span class="badge adv">${L('Ventaja +1', 'Advantage +1')}</span>` : ''}${c.maniobro[side] ? `<span class="badge">${L('Ya maniobró', 'Already maneuvered')}</span>` : ''}</div>
   </div>`;
 }
 
@@ -1251,13 +1415,13 @@ function renderCombat() {
   const offer = !live && S.offer && S.offer.to === S.you ? S.offer : null;
   if (offer) {
     const R = S.reglas;
-    const list = (part) => [part.oro ? `${ORO} ${part.oro} oros` : '', ...R.goods.filter((g) => part.goods[g]).map((g) => `${GOOD_ICON[g]} ${part.goods[g]} ${R.goodLabel[g].toLowerCase()}`)].filter(Boolean).join(', ') || 'nada';
+    const list = (part) => [part.oro ? `${ORO} ${part.oro} ${L('oros', 'gold')}` : '', ...R.goods.filter((g) => part.goods[g]).map((g) => `${GOOD_ICON[g]} ${part.goods[g]} ${goodLabel(g).toLowerCase()}`)].filter(Boolean).join(', ') || L('nada', 'nothing');
     box.innerHTML = `<div class="dialog framed">
-      <h2>Propuesta de ${esc(offer.fromName)}</h2>
-      <p>Te da: <b>${list(offer.dar)}</b></p>
-      <p>Te pide: <b>${list(offer.pedir)}</b></p>
-      <p class="waiting">Tienes <span id="offerClock">${fmt(remaining(offer.deadlineIn))}</span> para responder.</p>
-      <div class="row"><button class="btn green" style="flex:1" id="acceptBtn">Aceptar</button><button class="btn red" style="flex:1" id="rejectBtn">Rechazar</button></div>
+      <h2>${L('Propuesta de', 'Offer from')} ${esc(offer.fromName)}</h2>
+      <p>${L('Te da', 'Gives you')}: <b>${list(offer.dar)}</b></p>
+      <p>${L('Te pide', 'Asks for')}: <b>${list(offer.pedir)}</b></p>
+      <p class="waiting">${L('Tienes', 'You have')} <span id="offerClock">${fmt(remaining(offer.deadlineIn))}</span> ${L('para responder.', 'to answer.')}</p>
+      <div class="row"><button class="btn green" style="flex:1" id="acceptBtn">${L('Aceptar', 'Accept')}</button><button class="btn red" style="flex:1" id="rejectBtn">${L('Rechazar', 'Reject')}</button></div>
     </div>`;
     box.classList.remove('hidden');
     $('acceptBtn').onclick = () => act('responder', { aceptar: true });
@@ -1269,37 +1433,37 @@ function renderCombat() {
   const ICON = { canon: '<img class="choice-ico" src="img/canon.webp" alt="">', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
   const DESC = {
     canon: `Dispara ${c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)} dados`,
-    abordaje: `Lucha con ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} dados de tripulación`,
-    maniobra: 'Esquiva 1 impacto o evita el abordaje y gana ventaja',
+    abordaje: L(`Lucha con ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} dados de tripulación`, `Fight with ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} crew dice`),
+    maniobra: L('Esquiva 1 impacto o evita el abordaje y gana ventaja', 'Dodge 1 hit or avoid boarding and gain advantage'),
   };
   let choose = '';
   if (live && !c.eligio) {
-    choose = `<p class="center"><b>Elige tu maniobra</b> · <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>
+    choose = `<p class="center"><b>${L('Elige tu maniobra', 'Choose your maneuver')}</b> · <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>
       <div class="choices">${['canon', 'abordaje', 'maniobra'].map((k) => `
         <button class="btn choice ${k === 'canon' ? 'red' : k === 'abordaje' ? 'gold' : 'green'}" data-pick="${k}" ${c.opciones.includes(k) ? '' : 'disabled'}>
           <span class="big-ico">${ICON[k]}</span><b>${PICK_LABEL[k]}</b><small>${DESC[k]}</small></button>`).join('')}</div>`;
   } else if (live) {
-    choose = `<p class="waiting">Esperando la decisión del rival… <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>`;
+    choose = `<p class="waiting">${L('Esperando la decisión del rival…', 'Waiting for the rival\'s decision…')} <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>`;
   }
   let result = '';
   if (done) {
     const sunk = c.fin.hundidos || [];
-    const txt = c.fin.motivo === 'abordaje' ? 'El combate termina con un abordaje.'
-      : c.fin.motivo === 'hundimiento' ? (sunk.includes(S.you) ? '☠ Tu barco se ha hundido.' : '☠ ¡Barco enemigo hundido!')
-        : 'Tras tres asaltos, ningún barco se impone.';
-    result = `<p class="winner-title" style="font-size:30px">${txt}</p><button class="btn gold block" id="combatClose">Continuar</button>`;
+    const end = c.fin.motivo === 'abordaje' ? L('El combate termina con un abordaje.', 'The fight ends with a boarding.')
+      : c.fin.motivo === 'hundimiento' ? (sunk.includes(S.you) ? L('☠ Tu barco se ha hundido.', '☠ Your ship has sunk.') : L('☠ ¡Barco enemigo hundido!', '☠ Enemy ship sunk!'))
+        : L('Tras tres asaltos, ningún barco se impone.', 'After three rounds, neither ship prevails.');
+    result = `<p class="winner-title" style="font-size:30px">${end}</p><button class="btn gold block" id="combatClose">${L('Continuar', 'Continue')}</button>`;
   }
   const hist = c.historial.slice().reverse().map((r, i) => {
     const fresh = i === 0;
     const line = ['a', 'd'].map((sd) => {
-      const n = sd === c.yo ? 'Tú' : esc((c[sd] && c[sd].name) || (c.nombres || {})[sd] || '');
+      const n = sd === c.yo ? L('Tú', 'You') : esc((c[sd] && (LANG === 'en' && c[sd].nameEn ? c[sd].nameEn : c[sd].name)) || txt((c.nombres || {})[sd]) || '');
       const t = r.tiradas[sd] || r.tiradas[`${sd}Abordaje`];
       return `${n}: <b>${PICK_LABEL[r.picks[sd]]}</b>${diceHtml(r.tiradas[sd], fresh)}${r.tiradas[`${sd}Abordaje`] ? diceHtml(r.tiradas[`${sd}Abordaje`], fresh) : ''}${t ? '' : ''}`;
     }).join(' · ');
-    return `<div class="round-log"><b>Asalto ${r.ronda}</b> — ${line}<br>${esc(r.texto.join(' '))}</div>`;
+    return `<div class="round-log"><b>${L('Asalto', 'Round')} ${r.ronda}</b> — ${line}<br>${esc(r.texto.map(txt).join(' '))}</div>`;
   }).join('');
   box.innerHTML = `<div class="dialog framed">
-    <h2>⚔ Combate · Asalto ${Math.min(c.ronda, 3)} de 3</h2>
+    <h2>⚔ ${L('Combate', 'Fight')} · ${L('Asalto', 'Round')} ${Math.min(c.ronda, 3)} ${L('de', 'of')} 3</h2>
     <div class="duel">${fighter(c.a, 'a', c, false)}<div class="vs">VS</div>${fighter(c.d, 'd', c, true)}</div>
     ${choose}${result}
     <div class="history">${hist}</div>
