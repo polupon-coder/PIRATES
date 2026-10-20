@@ -373,23 +373,6 @@ function isDeep(x, y) {
   return true;
 }
 
-// Las láminas de puerto tienen el mar abajo: se giran para que miren al lado con más mar.
-function portRotation(x, y) {
-  const sea = (dx, dy) => {
-    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return n && (n.t === 'mar' || n.t === 'arrecife') ? 1 : 0;
-  };
-  const sides = [[0, 1, 0], [-1, 0, 90], [0, -1, 180], [1, 0, 270]];
-  let best = sides[0];
-  let bestScore = -1;
-  for (const side of sides) {
-    const [dx, dy] = side;
-    const score = sea(dx, dy) * 2 + (dx ? sea(dx, -1) + sea(dx, 1) : sea(-1, dy) + sea(1, dy));
-    if (score > bestScore) { best = side; bestScore = score; }
-  }
-  return best[2];
-}
-
 function renderBoard() {
   const me = S.me;
   const N = S.map.size;
@@ -447,7 +430,7 @@ function renderBoard() {
           return n === null && x + dx >= 0 && y + dy >= 0 && x + dx < N && y + dy < N;
         });
         if (c.t === 'puerto') {
-          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${portRotation(x, y)}deg"></div>`;
+          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${(portsById.get(c.puerto) || {}).giro || 0}deg"></div>`;
         } else {
           const kind = solo ? ' solo' : village.get(c.isla) === k ? ' poblado' : hill.get(c.isla) === k ? ' colina' : '';
           inner += `<div class="land${kind}"></div>`;

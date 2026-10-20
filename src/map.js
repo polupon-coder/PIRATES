@@ -138,6 +138,24 @@ function pickWeighted(rng, pairs) {
   return pairs[pairs.length - 1][0];
 }
 
+// Las láminas de puerto tienen la tierra arriba y el muelle abajo. Se gira para que el muelle
+// dé a una casilla de mar (en cruz) y, si se puede, con tierra de la misma isla detrás.
+// Giro en grados: 0 = muelle abajo, 90 = izquierda, 180 = arriba, 270 = derecha.
+const PORT_SIDES = [[0, 1, 0], [-1, 0, 90], [0, -1, 180], [1, 0, 270]];
+function portOrientation(m, x, y, island) {
+  let best = null;
+  for (const [dx, dy, rot] of PORT_SIDES) {
+    if (!isNav(m.t(x + dx, y + dy))) continue;
+    let score = 4;
+    if (m.inside(x - dx, y - dy) && m.island[y - dy][x - dx] === island) score += 3;
+    // Mar a ambos lados del frente: el muelle no queda encajonado.
+    const side = dx ? [[x + dx, y - 1], [x + dx, y + 1]] : [[x - 1, y + dy], [x + 1, y + dy]];
+    for (const [sx, sy] of side) if (isNav(m.t(sx, sy))) score += 1;
+    if (!best || score > best.score) best = { rot, score };
+  }
+  return best;
+}
+
 function makePrices(rng) {
   const prices = {};
   for (const g of C.GOODS) {
@@ -190,11 +208,16 @@ function tryGenerate(rng, nPlayers) {
   const names = shuffle(rng, [...C.PORT_NAMES]);
   const portIslands = shuffle(rng, [...m.islands]).slice(0, C.PORTS);
   for (const isl of portIslands) {
-    const coast = isl.cells.filter(([x, y]) => DIRS.some(([dx, dy]) => isNav(m.t(x + dx, y + dy))));
-    if (!coast.length) return null;
-    const [x, y] = coast[Math.floor(rng() * coast.length)];
+    // La casilla y el giro con mejor colocación: muelle hacia el mar y tierra detrás.
+    let best = null;
+    for (const [x, y] of shuffle(rng, [...isl.cells])) {
+      const o = portOrientation(m, x, y, isl.id);
+      if (o && (!best || o.score > best.score)) best = { x, y, ...o };
+    }
+    if (!best) return null;
+    const { x, y } = best;
     m.tiles[y][x] = 'puerto';
-    const port = { id: m.ports.length, name: names[m.ports.length], x, y, island: isl.id, prices: makePrices(rng) };
+    const port = { id: m.ports.length, name: names[m.ports.length], x, y, island: isl.id, rot: best.rot, prices: makePrices(rng) };
     isl.port = port.id;
     m.ports.push(port);
   }
@@ -227,4 +250,4 @@ function generateMap(rng, nPlayers) {
   throw new Error('No se pudo generar el mapa');
 }
 
-module.exports = { GameMap, generateMap, DIRS, isNav, isLand, cheb, key, randInt, shuffle };
+module.exports = { GameMap, generateMap, portOrientation, DIRS, isNav, isLand, cheb, key, randInt, shuffle };

@@ -100,6 +100,11 @@ test('el mapa generado cumple el reglamento', () => {
     assert.strictEqual(new Set(m.ports.map((p) => p.island)).size, C.PORTS, 'un puerto por isla');
     assert.ok(m.seaConnected(), 'mar conectado');
     for (const p of m.ports) assert.ok(m.portExits(p).length > 0, 'el puerto da al mar');
+    // El muelle (abajo en la lámina, girado) da a una casilla de mar.
+    for (const p of m.ports) {
+      const [dx, dy] = { 0: [0, 1], 90: [-1, 0], 180: [0, -1], 270: [1, 0] }[p.rot];
+      assert.ok(['mar', 'arrecife'].includes(m.t(p.x + dx, p.y + dy)), 'muelle hacia el mar');
+    }
     assert.strictEqual(m.starts.length, n);
     for (const s of m.starts) {
       for (const t of m.starts) if (s !== t) assert.ok(m.portDistance(m.ports[s], m.ports[t]) >= C.START_MIN_DIST);

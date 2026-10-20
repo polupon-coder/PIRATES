@@ -1157,7 +1157,7 @@ class Game {
       }
       tiles.push(row);
     }
-    const ports = this.map.ports.filter((p) => me.known[p.y * S + p.x]).map((p) => ({ id: p.id, name: p.name, x: p.x, y: p.y, isla: p.island, precios: p.prices }));
+    const ports = this.map.ports.filter((p) => me.known[p.y * S + p.x]).map((p) => ({ id: p.id, name: p.name, x: p.x, y: p.y, isla: p.island, giro: p.rot || 0, precios: p.prices }));
     const visible = this.shipsAtSea().filter((s) => this.sees(me, s));
     const dockedHere = this.players.filter((p) => p.docked !== null && this.sees(me, p));
     const c = this.combat;
