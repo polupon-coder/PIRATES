@@ -46,6 +46,8 @@ const GOOD_ICON = { comida: ICON('comida', 'good'), materiales: ICON('materiales
 const TRIP = ICON('tripulacion');
 const CASCO = ICON('casco');
 const LEYENDA = ICON('tesoro');
+// Brújula junto a los nombres de lugares.
+const LUGAR = (name) => `${ICON('brujula', 'place')} ${esc(name)}`;
 // Icono de cada mejora del barco.
 const ATTR_ICON = { velas: ICON('velas'), canones: ICON('canon'), casco: ICON('casco'), bodega: ICON('carga'), tripulacion: ICON('tripulacion') };
 const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
@@ -612,7 +614,6 @@ function renderBoard() {
       }
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);
-        inner += `<div class="port-icon" title="${esc(p ? p.name : 'Puerto')}">⚓</div><div class="port-name">${esc(p ? p.name : '')}</div>`;
         if (me.atracables.includes(c.puerto) && myTurn) clickable = true;
       }
       for (const s of shipsAt.get(k) || []) {
@@ -663,7 +664,7 @@ function statBar(cur, max) {
 
 function shipLabel(s) {
   if (s.kind === 'pirata') return esc(s.name);
-  return s.kind === 'mercante' ? `Mercante → ${esc(s.destino)}` : 'Fragata de la Armada';
+  return s.kind === 'mercante' ? `Mercante → ${LUGAR(s.destino)}` : 'Fragata de la Armada';
 }
 
 // Arrastrar la ventana de acciones por su título (se queda donde la dejes, dentro del tablero).
@@ -708,10 +709,10 @@ function renderPanel() {
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
-      acts += `<button class="btn green block" data-dock="${id}">⚓ Atracar en ${esc(p ? p.name : 'el puerto')} (gratis)</button>`;
+      acts += `<button class="btn green block" data-dock="${id}">Atracar en ${LUGAR(p ? p.name : 'el puerto')} (gratis)</button>`;
     }
     for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo')} Explorar la isla</button>`;
-    if (port) acts += `<button class="btn gold block" id="portBtn">🏛 Puerto de ${esc(port.name)}</button>`;
+    if (port) acts += `<button class="btn gold block" id="portBtn">Puerto de ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
       if (near) acts += `<p class="hint">No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.</p>`;
@@ -760,7 +761,7 @@ function renderPanel() {
         <div>
           <div class="who" style="color:${me.color}">${esc(me.name)}</div>
           <div>${LEYENDA} <b>${me.pl}</b> / ${R.winPL} PL · ${ORO} <b>${me.oro}</b> oros</div>
-          <div class="hint">${port ? `Atracado en ${esc(port.name)}` : 'En alta mar'}</div>
+          <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
         </div>
       </div>
       <div class="stats">
@@ -912,7 +913,7 @@ function renderModal() {
         <div>${KIND_LABEL[s.kind]}</div>
         <div>${CASCO} Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
         ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${R.attrLabel[a]} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>Carga: ${s.carga} mercancías</div>` : ''}
-        ${s.kind === 'mercante' ? `<div>Rumbo a ${esc(s.destino)} con ${s.carga} mercancías</div>` : ''}
+        ${s.kind === 'mercante' ? `<div>Rumbo a ${LUGAR(s.destino)} con ${s.carga} mercancías</div>` : ''}
       </div></div>
       <p class="hint">Usa los botones de «A la vista» para atacar o comerciar.</p>`;
   } else if (ui.modal === 'puerto') {
@@ -945,14 +946,14 @@ function renderModal() {
           <button class="btn gold block" id="doRecruit" ${hasAct ? '' : 'disabled'}>Reclutar (1 acción)</button>`
         : `<p>${me.tripulacion >= me.tripMax ? 'Tu tripulación está completa.' : 'No tienes oro para reclutar.'}</p>`;
     }
-    body = `<h2>⚓ ${esc(port.name)}</h2>
+    body = `<h2>${LUGAR(port.name)}</h2>
       <p class="muted">${ORO} Oro: <b>${me.oro}</b> · Acciones: <b>${S.turn && S.turn.pid === S.you ? S.turn.actions : 0}</b></p>
       <div class="tabs">${tabs.map(([k, l]) => `<button data-ptab="${k}" class="${ui.portTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       ${content}`;
   } else if (ui.modal === 'mercante') {
     const s = S.ships.find((x) => x.id === ui.modalId);
     if (!s || !s.precios) return closeModal();
-    body = `<h2>Mercante rumbo a ${esc(s.destino)}</h2>
+    body = `<h2>Mercante rumbo a ${LUGAR(s.destino)}</h2>
       <p class="muted">Comercia a los precios de ${esc(s.destino)}. ${ORO} Oro: <b>${me.oro}</b></p>
       ${tradeTable(s.precios, s.cargamento, {})}`;
   } else if (ui.modal === 'trato') {
@@ -1016,7 +1017,7 @@ function pricesHtml() {
   return `<h2>Precios conocidos</h2>
     <p class="hint">«Paga» es lo que te da el puerto al venderle; «cobra», lo que te pide al comprarle. Las rutas rentables están en las diferencias.</p>
     <table class="trade"><tr><th>Puerto</th>${R.goods.map((g) => `<th>${GOOD_ICON[g]} ${R.goodLabel[g]}<br>paga / cobra</th>`).join('')}</tr>
-    ${ports.map((p) => `<tr><td><b>${esc(p.name)}</b>${p.id === S.me.lastPort ? ' <span class="muted">(último)</span>' : ''}</td>${R.goods.map((g) => `<td>${p.precios[g].vende} / ${p.precios[g].compra}</td>`).join('')}</tr>`).join('')}
+    ${ports.map((p) => `<tr><td><b>${LUGAR(p.name)}</b>${p.id === S.me.lastPort ? ' <span class="muted">(último)</span>' : ''}</td>${R.goods.map((g) => `<td>${p.precios[g].vende} / ${p.precios[g].compra}</td>`).join('')}</tr>`).join('')}
     </table>`;
 }
 
