@@ -69,11 +69,12 @@ Texturas del tablero (en `public/img/`):
 | Archivo | Uso |
 | --- | --- |
 | `mar.webp` | Mar, continuo de casilla en casilla (los arrecifes llevan rocas encima). |
-| `tierra.webp` | Tierra de las islas de varias casillas. |
+| `tierra.webp` | Tierra de las islas de varias casillas (lámina entera en cada casilla). |
 | `colina.webp` | La casilla más interior de cada isla sin puerto de 3 o más casillas. |
 | `isla.webp` | Islotes de una sola casilla. |
+| `costa.webp` | Borde de playa en el agua que toca tierra (no junto a puertos ni islotes, que traen su costa): se gira hacia la tierra y solo se usa su franja de playa. |
 | `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Van en las islas más grandes, con tierra detrás y a los lados si se puede, y el muelle hacia el mar; donde su tierra toca agua, el borde se funde. |
-| `niebla.webp` | Niebla de guerra sobre lo que aún no se ha descubierto. |
+| `niebla.webp` | Sin uso por ahora (la niebla de guerra es el pergamino). |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
 | `pergamino.webp`, `pergamino-centro.webp` | Silueta rota (como máscara, con los bordes repetidos sin estirar) y papel del centro (a escala) de paneles, portada y ventanas. |
 | `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro, bodega y tripulación. |

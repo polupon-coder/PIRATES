@@ -27,7 +27,7 @@ body {
   font-family: 'EB Garamond', Georgia, serif;
   font-size: 17px;
   color: var(--paper);
-  background: linear-gradient(#0a0603aa, #0a0603cc), url(img/mesa.webp) center / cover fixed #1d120a;
+  background: linear-gradient(#0a060340, #0a060366), url(img/mesa.webp) center / cover fixed #1d120a;
 }
 button { font: inherit; cursor: pointer; }
 .hidden { display: none !important; }
@@ -36,9 +36,8 @@ button { font: inherit; cursor: pointer; }
 .topbar {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 14px;
-  background: linear-gradient(#4a2c17, #2e1b0e);
-  border-bottom: 2px solid #1a0f07;
-  box-shadow: 0 2px 8px #0008;
+  /* Franja oscura semitransparente sobre la mesa. */
+  background: #0a0603a6;
 }
 .brand { font-family: 'Pirata One', cursive; font-size: 30px; color: var(--gold-2); letter-spacing: 1px; text-shadow: 0 2px 0 #000; }
 .status { flex: 1; font-size: 16px; color: var(--paper-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -166,10 +165,10 @@ button { font: inherit; cursor: pointer; }
 }
 .cell { position: relative; overflow: visible; }
 .cell.fog {
-  /* Nubes de tormenta: la lámina de niebla oscurecida. */
-  background: linear-gradient(#0d141bb3, #0d141bb3), url(img/niebla.webp) #2a333b;
-  background-size: 100% 100%, calc(var(--cell) * 12) calc(var(--cell) * 12);
-  background-position: 0 0, calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+  /* Lo no descubierto es pergamino en blanco: un solo papel que cubre todo el tablero. */
+  background: url(img/pergamino-centro.webp) #e8d3a4;
+  background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
 /* El mar y la tierra son texturas continuas: cada casilla muestra su trozo (--x, --y). */
 .cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto {
@@ -178,11 +177,13 @@ button { font: inherit; cursor: pointer; }
   background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
 .cell.arrecife { background: url(img/arrecife.webp) center / cover; }
+/* Borde de playa: la lámina de costa girada hacia la tierra; solo se ve su franja de playa. */
+.coast { position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: var(--m); mask-image: var(--m); }
+.coast > i { position: absolute; inset: 0; background: url(img/costa.webp) center / cover; transform: rotate(var(--rot)) scale(var(--sc, 1)); }
 .land {
   position: absolute; inset: 0;
-  background: url(img/tierra.webp) var(--sand);
-  background-size: calc(var(--cell) * 3) calc(var(--cell) * 3);
-  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+  /* Cada casilla de tierra muestra la lámina entera, a su tamaño. */
+  background: url(img/tierra.webp) center / cover var(--sand);
 }
 .land.poblado { background: url(img/poblado.webp) center / cover; }
 .land.colina { background: url(img/colina.webp) center / cover; }

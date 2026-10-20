@@ -368,6 +368,45 @@ function portMask(x, y, isla, giro) {
   return `-webkit-mask-image:${m};mask-image:${m};-webkit-mask-composite:source-in;mask-composite:intersect`;
 }
 
+// Islote de una casilla: tierra sin tierra vecina en cruz (y con sus vecinas ya descubiertas).
+function isIslet(x, y) {
+  const N = S.map.size;
+  return [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= N || ny >= N) return true;
+    const n = S.map.tiles[ny][nx];
+    return n !== null && !isLandT(n);
+  });
+}
+
+// Playa en cada lado de la casilla de agua que toca tierra, y en las esquinas que la tocan solo
+// en diagonal. Puertos e islotes ya traen su costa en la lámina: junto a ellos no se pinta.
+// La lámina de costa tiene la playa arriba: se gira hacia la tierra.
+function coastHtml(x, y) {
+  const land = (dx, dy) => {
+    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
+    return isLandT(n) && n.t !== 'puerto' && !isIslet(x + dx, y + dy);
+  };
+  let html = '';
+  const sides = [[0, -1, 0, 'to bottom'], [1, 0, 90, 'to left'], [0, 1, 180, 'to top'], [-1, 0, 270, 'to right']];
+  for (const [dx, dy, rot, dir] of sides) {
+    if (!land(dx, dy)) continue;
+    html += `<div class="coast" style="--m:linear-gradient(${dir}, #000 0, #000 20%, transparent 42%)"><i style="--rot:${rot}deg"></i></div>`;
+  }
+  // Esquina de playa solo si la tierra toca en diagonal y no hay arrecife entre medias.
+  const reef = (dx, dy) => {
+    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
+    return !!n && n.t === 'arrecife';
+  };
+  const corners = [[1, -1, 45, '100% 0'], [1, 1, 135, '100% 100%'], [-1, 1, 225, '0 100%'], [-1, -1, 315, '0 0']];
+  for (const [dx, dy, rot, at] of corners) {
+    if (!land(dx, dy) || land(dx, 0) || land(0, dy) || reef(dx, 0) || reef(0, dy)) continue;
+    html += `<div class="coast" style="--m:radial-gradient(circle at ${at}, #000 0, #000 22%, transparent 40%)"><i style="--rot:${rot}deg;--sc:1.42"></i></div>`;
+  }
+  return html;
+}
+
 function renderBoard() {
   const me = S.me;
   const N = S.map.size;
@@ -437,6 +476,7 @@ function renderBoard() {
         }
         if (me.explorables.includes(c.isla) && myTurn) clickable = true;
       }
+      if (c.t === 'mar') inner += coastHtml(x, y);
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);
         inner += `<div class="port-icon" title="${esc(p ? p.name : 'Puerto')}">⚓</div><div class="port-name">${esc(p ? p.name : '')}</div>`;
