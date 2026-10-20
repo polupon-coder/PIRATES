@@ -599,13 +599,20 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 /* ---------- zoom del mapa en el móvil */
 .board-view { max-width: 100%; }
 .zoom-btn {
-  position: absolute; z-index: 15; top: 10px; right: 10px;
-  width: 52px; height: 52px; border-radius: 50%; padding: 0;
-  display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 35%, #f6e8c6, #d9bd84);
-  border: 2px solid #7a4d2b; box-shadow: 0 3px 8px #000a;
+  position: absolute; z-index: 15; top: 6px; right: 6px;
+  width: 60px; height: 60px; padding: 0; border: 0; background: none;
+  filter: drop-shadow(0 3px 4px #000c);
 }
-.zoom-btn svg { display: block; filter: drop-shadow(0 1px 1px #0006); }
+.zoom-btn img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+/* cristal (zona transparente de la ilustración) y signo centrado sobre él */
+.zoom-btn .lens-glass {
+  position: absolute; left: 34%; top: 35%; width: 52%; height: 52%; transform: translate(-50%, -50%);
+  border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fbf3dcee, #e3cfa0dd);
+}
+.zoom-btn .lens-sign {
+  position: absolute; left: 34%; top: 35%; transform: translate(-50%, -54%);
+  font: 700 28px/1 Georgia, serif; color: #3b2414; text-shadow: 0 1px 0 #fff8;
+}
 @media (max-width: 900px) {
   body.zoomed .board-view {
     /* Ventana cuadrada sobre el mapa acercado (unas 6,5 casillas de ancho); se mueve con el dedo. */

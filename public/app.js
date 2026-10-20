@@ -750,18 +750,9 @@ addEventListener('resize', () => { if (S && S.map) { drawSea(); drawVeil(); } })
 
 // ------------------------------------------------------------ zoom del mapa en el móvil
 
-// Lupa de latón con mango de madera y un + o un − en el cristal.
+// Lupa de la ilustración con un + o un − pintado sobre el cristal.
 function lens(sign) {
-  const bar = '<path d="M14 21h12" stroke="#3b2414" stroke-width="3" stroke-linecap="round"/>';
-  const vert = sign === '+' ? '<path d="M20 15v12" stroke="#3b2414" stroke-width="3" stroke-linecap="round"/>' : '';
-  return `<svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true">
-    <path d="M30 30l11 11" stroke="#5a2f12" stroke-width="7" stroke-linecap="round"/>
-    <path d="M30 30l3.5 3.5" stroke="#c9952e" stroke-width="7.5" stroke-linecap="round"/>
-    <circle cx="20" cy="21" r="14" fill="#e9f3f6" fill-opacity=".88" stroke="#b07d26" stroke-width="4.5"/>
-    <circle cx="20" cy="21" r="11.6" fill="none" stroke="#e7bf5f" stroke-width="1.2"/>
-    <path d="M12 15a10 10 0 0 1 6-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>
-    ${bar}${vert}
-  </svg>`;
+  return `<span class="lens-glass"></span><img src="img/lupa.webp" alt=""><span class="lens-sign">${sign === '+' ? '+' : '−'}</span>`;
 }
 
 // En el móvil el mapa empieza acercado y centrado en tu barco; el botón alterna con el mapa entero.
