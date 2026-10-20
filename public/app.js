@@ -334,10 +334,14 @@ setInterval(() => {
 
 const isLandT = (c) => c && (c.t === 'tierra' || c.t === 'puerto');
 
-// Playa en cada lado de la casilla de mar que toca tierra, y en las esquinas que la tocan
+// Playa en cada lado de la casilla de mar que toca tierra (no puerto), y en las esquinas que la tocan
 // solo en diagonal. La lámina de costa tiene la playa arriba: se gira hacia la tierra.
 function coastHtml(x, y) {
-  const land = (dx, dy) => isLandT(S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx]);
+  // Los puertos ya traen su costa en la lámina: junto a ellos no se pinta playa.
+  const land = (dx, dy) => {
+    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
+    return isLandT(n) && n.t !== 'puerto';
+  };
   let html = '';
   const sides = [[0, -1, 0, 'to bottom'], [1, 0, 90, 'to left'], [0, 1, 180, 'to top'], [-1, 0, 270, 'to right']];
   for (const [dx, dy, rot, dir] of sides) {
