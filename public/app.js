@@ -111,16 +111,18 @@ const FALLBACK = {
   mercante: svgShip({ masts: 1, hull: '#9a6b3a', sail: '#ffffff', flag: '#3f8f4a' }),
   fragata: svgShip({ masts: 3, hull: '#1f3550', sail: '#ffffff', flag: '#c0392b' }),
 };
+// Mercantes y fragatas usan las mismas ilustraciones que los piratas.
 function shipImgName(s) {
   if (s.kind === 'pirata') return `barco-${tierOf(s.niveles)}`;
-  return s.kind;
+  return s.kind === 'mercante' ? 'barco-1' : 'barco-3';
 }
+const NEUTRAL_COLOR = { mercante: '#3f8f4a', fragata: '#1f3550' };
 // Busca la ilustración en .webp y luego en .png; si no existe, usa el dibujo provisional.
 // Se recuerda qué archivo funcionó para no repetir peticiones fallidas en cada repintado.
 const SHIP_SRC = {};
 function shipImg(s, cls = '') {
   const n = shipImgName(s);
-  return `<img class="${cls}" src="${SHIP_SRC[n] || `img/${n}.webp`}" data-ship="${n}" alt="" onerror="shipFallback(this)" onload="SHIP_SRC[this.dataset.ship]=this.getAttribute('src')">`;
+  return `<img class="${cls} kind-${s.kind || 'pirata'}" src="${SHIP_SRC[n] || `img/${n}.webp`}" data-ship="${n}" alt="" onerror="shipFallback(this)" onload="SHIP_SRC[this.dataset.ship]=this.getAttribute('src')">`;
 }
 function shipFallback(img) {
   const n = img.dataset.ship;
@@ -468,7 +470,7 @@ function renderBoard() {
       for (const s of shipsAt.get(k) || []) {
         const docked = s.kind === 'pirata' && s.docked !== null && s.docked !== undefined;
         inner += shipImg(s, `ship ${docked ? 'docked' : ''} ${s.id === S.you ? 'me-ship' : ''}`);
-        if (s.kind === 'pirata') inner += `<span class="ship-badge" style="background:${s.color}"></span>`;
+        inner += `<span class="ship-badge" style="background:${s.kind === 'pirata' ? s.color : NEUTRAL_COLOR[s.kind]}"></span>`;
         if (targets.has(s.id) && myTurn) cls.push('target');
         if (s.id !== S.you) clickable = true;
       }

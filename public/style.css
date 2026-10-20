@@ -214,6 +214,9 @@ button { font: inherit; cursor: pointer; }
   position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
   width: 40%; height: 5px; border-radius: 3px; z-index: 6; border: 1px solid #000a;
 }
+/* Mercantes más claros; la Armada, con tono de acero azulado. */
+img.kind-mercante { filter: sepia(.35) brightness(1.12) drop-shadow(0 3px 2px #0009); }
+img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop-shadow(0 3px 2px #0009); }
 .ship.docked { width: 70%; height: 70%; left: 30%; top: 30%; }
 .ship.me-ship { filter: drop-shadow(0 0 4px var(--gold-2)) drop-shadow(0 3px 2px #0009); }
 

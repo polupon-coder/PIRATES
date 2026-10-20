@@ -59,8 +59,8 @@ Se buscan en `public/img/` en `.webp` o `.png`. Si falta alguna, se usa un dibuj
 | `barco-1` | Barco pirata inicial (un mástil). Suma de niveles de las 5 mejoras: 5–7. |
 | `barco-2` | Barco pirata mejorado (tres mástiles). Suma 8–11. |
 | `barco-3` | Barco pirata de leyenda (el más grande). Suma 12–15. |
-| `mercante` | Mercante. |
-| `fragata` | Fragata de la Armada. |
+| `mercante` | Opcional. Si no existe, el mercante usa `barco-1` aclarado y con franja verde. |
+| `fragata` | Opcional. Si no existe, la fragata usa `barco-3` en tono acero y con franja azul marino. |
 
 Mejor con fondo transparente. El color de cada jugador se muestra con una franja bajo su barco.
 
