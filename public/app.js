@@ -639,8 +639,8 @@ function renderPanel() {
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
     <div class="log-buttons">
-      <button class="btn block" data-open="cronica">📜 Crónica</button>
-      <button class="btn block" data-open="chat">💬 Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>
+      <button class="btn block log-btn" data-open="cronica">Crónica</button>
+      <button class="btn block log-btn" data-open="chat">Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>
     </div>`;
 
   // Crónica o chat: ventana flotante con marco de madera.

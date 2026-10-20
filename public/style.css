@@ -140,6 +140,8 @@ button { font: inherit; cursor: pointer; }
   filter: drop-shadow(0 8px 14px #000b);
 }
 .log-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* Crónica y Chat: letra pirata grande, clara y con sombra para leerse bien sobre la madera. */
+.btn.log-btn { font-family: 'Pirata One', cursive; font-size: 24px; letter-spacing: .5px; color: #fff3dc; text-shadow: 0 1px 0 #000, 0 0 6px #000c; padding: 6px 2px 8px; }
 .unread { display: inline-block; min-width: 20px; padding: 0 5px; border-radius: 10px; background: #c0392b; color: #fff; font-size: 13px; line-height: 20px; }
 .actions-float.log-float { left: 34px; top: 34px; right: auto; bottom: auto; width: 380px; }
 .log-float .log { max-height: 320px; }
@@ -162,7 +164,8 @@ button { font: inherit; cursor: pointer; }
 .btn.flag-btn {
   border-style: solid; border-color: transparent; border-width: 0 64px 0 11px; border-radius: 0;
   border-image: url(img/banderin.webp) 0 230 0 40 fill / 0 64px 0 11px stretch;
-  background: none; min-height: 46px; padding: 4px 0 8px;
+  /* Borde izquierdo 11px y cola derecha 64px: se compensa para que el texto quede centrado en el banderín. */
+  background: none; min-height: 46px; padding: 4px 0 8px 53px;
   color: #fff3dc; font-family: 'Pirata One', cursive; font-size: 22px; text-shadow: 0 1px 2px #000c;
 }
 
