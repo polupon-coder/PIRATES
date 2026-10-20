@@ -2,7 +2,7 @@
 
 Juego de estrategia y aventura naval para **2 a 4 jugadores** (amigos y bots), basado en el **Reglamento V1.39**
 
-Cada jugador lleva un barco pirata por un archipiélago de 12 × 12 casillas con niebla de guerra: explora islas, comercia entre puertos, mejora su barco y combate contra mercantes, otros piratas y la Armada. Gana quien llegue a 24 Puntos de Leyenda, o quien tenga más tras la ronda 15.
+Cada jugador lleva un barco pirata por un archipiélago de 12 × 12 casillas con niebla de guerra: explora islas, comercia entre puertos, mejora su barco y combate contra mercantes, otros piratas y la Armada. Gana quien llegue a 24 Puntos de Leyenda, o quien tenga más tras la ronda 20.
 
 ## Jugar en local
 
@@ -115,7 +115,7 @@ Texturas del tablero (en `public/img/`):
 Con 60 partidas simuladas de bots:
 
 - Con la meta en 12 PL, las partidas duraban unas **10 rondas**, y el 80 % terminaba por alcanzar los 12 PL.
-- Con la meta actual de **24 PL** y el tope de 15 rondas, la mayoría de las partidas llegan a la ronda 15 (solo el 18 % alcanza los 24 PL).
+- Con la meta actual de **24 PL** y el tope de **20 rondas**, las partidas duran unas 18 rondas y cerca de la mitad (45 %) terminan porque alguien alcanza los 24 PL.
 - Hay 0,5 hundimientos por jugador y 3 mejoras por jugador de media.
 - Los PL salen sobre todo de **tesoros (40 %)** y **comercio (37 %)**. Después vienen fragatas (10 %), mercantes (4 %) y piratas (2 %).
 - Los bots juegan de forma sencilla: las cifras sirven para comparar cambios, no para predecir partidas entre personas.

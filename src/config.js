@@ -13,7 +13,7 @@ module.exports = {
   REEF_RATE: 0.1,
   START_MIN_DIST: 6,
   ACTIONS_PER_TURN: 3,
-  MAX_ROUNDS: 15,
+  MAX_ROUNDS: 20,
   WIN_PL: 24,
 
   // Visión: el terreno se descubre en 3 × 3 (radio 1). Los barcos se ven hasta el alcance

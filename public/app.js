@@ -1318,9 +1318,10 @@ function pricesHtml() {
 
 function rulesHtml() {
   const WIN_PL = S ? S.reglas.winPL : 24;
+  const MAX_R = S ? S.reglas.maxRounds : 20;
   if (LANG === 'en') {
     return `<div class="rules"><h2>Pirates rules</h2>
-    <p><b>Goal:</b> get ${WIN_PL} ${LEYENDA} Legend Points. The game ends when the round in which someone reaches ${WIN_PL} is completed, or after round 15. Whoever has the most points wins (tie-break: gold, then islands explored).</p>
+    <p><b>Goal:</b> get ${WIN_PL} ${LEYENDA} Legend Points. The game ends when the round in which someone reaches ${WIN_PL} is completed, or after round ${MAX_R}. Whoever has the most points wins (tie-break: gold, then islands explored).</p>
     <h3>Your turn: 3 actions</h3>
     <ul>
       <li><b>Sail:</b> move as many tiles as your Sails (3/4/5), in 8 directions. Reefs cost 2. You cannot cross corners closed by land or tiles with ships at sea.</li>
@@ -1347,7 +1348,7 @@ function rulesHtml() {
   </div>`;
   }
   return `<div class="rules"><h2>Reglas de Piratas</h2>
-    <p><b>Objetivo:</b> conseguir ${WIN_PL} ${LEYENDA} Puntos de Leyenda. La partida termina al completar la ronda en que alguien llega a ${WIN_PL}, o tras la ronda 15. Gana quien más puntos tenga (desempate: oro, luego islas exploradas).</p>
+    <p><b>Objetivo:</b> conseguir ${WIN_PL} ${LEYENDA} Puntos de Leyenda. La partida termina al completar la ronda en que alguien llega a ${WIN_PL}, o tras la ronda ${MAX_R}. Gana quien más puntos tenga (desempate: oro, luego islas exploradas).</p>
     <h3>Tu turno: 3 acciones</h3>
     <ul>
       <li><b>Navegar:</b> mueve tantas casillas como tus Velas (3/4/5), en 8 direcciones. Los arrecifes cuestan 2. No se cruzan esquinas cerradas por tierra ni casillas con barcos en el mar.</li>
