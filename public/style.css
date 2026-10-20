@@ -157,7 +157,7 @@ button { font: inherit; cursor: pointer; }
 .status .sep { opacity: .4; margin: 0 4px; }
 .status .clock { font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 6px; background: #0007; }
 .status .clock.low { color: #ff9d8a; }
-.status .ico { height: 1.2em; }
+.status .ico { height: 1.55em; vertical-align: -0.45em; }
 /* Terminar turno: el banderín rojo, con su remate y su cola a escala. */
 .btn.flag-btn {
   border-style: solid; border-color: transparent; border-width: 0 64px 0 11px; border-radius: 0;
@@ -257,23 +257,23 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 /* ---------- panel lateral */
 .panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
 .box { padding: 24px 26px; }
-.ico, .ship-head .ico { height: 1.35em; width: auto; vertical-align: -0.35em; }
-.choice-ico { height: 34px; width: auto; }
-.toast-ico { display: block; height: 72px; margin: 0 auto 4px; }
-.ico.head { height: 1.1em; vertical-align: -0.15em; }
-.ico.good { height: 2em; vertical-align: -0.65em; margin-right: 2px; }
+.ico, .ship-head .ico { height: 1.75em; width: auto; vertical-align: -0.55em; }
+.choice-ico { height: 46px; width: auto; }
+.toast-ico { display: block; height: 92px; margin: 0 auto 4px; }
+.ico.head { height: 1.4em; vertical-align: -0.25em; }
+.ico.good { height: 2.5em; vertical-align: -0.85em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
 .ship-head { display: flex; gap: 10px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }
 .ship-head .who { font-family: 'Pirata One', cursive; font-size: 26px; line-height: 1; }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 8px; font-size: 16px; }
-.stat { display: flex; justify-content: space-between; border-bottom: 1px dotted #8a6a3a66; }
+.stat { display: flex; align-items: center; justify-content: space-between; gap: 4px; border-bottom: 1px dotted #8a6a3a66; }
 .stat b { font-variant-numeric: tabular-nums; }
 .bar { height: 8px; border-radius: 4px; background: #0002; overflow: hidden; margin-top: 2px; }
 .bar > i { display: block; height: 100%; background: linear-gradient(90deg, #b5382a, #e3833a); }
 .bar.ok > i { background: linear-gradient(90deg, #3f8f4a, #7cc06b); }
 .levels { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-.lvl { font-size: 13px; padding: 1px 7px; border-radius: 10px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
+.lvl { font-size: 13px; padding: 1px 7px; white-space: nowrap; border-radius: 10px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
 .actions { display: flex; flex-direction: column; gap: 6px; }
 .actions .row .btn { flex: 1; }
 .pips { display: inline-flex; gap: 4px; vertical-align: middle; }
@@ -379,6 +379,18 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .topbar { flex-wrap: wrap; row-gap: 4px; }
   .actions-float { position: fixed; left: 8px !important; right: 8px !important; top: auto !important; bottom: 8px !important; width: auto; max-height: 45vh; }
   .log-float { z-index: 21; max-height: 60vh; }
+  body.float-open .game { padding-bottom: calc(45vh + 16px); }
+  /* Tabla de comercio en el móvil: columnas estrechas y el icono encima del nombre. */
+  table.trade { font-size: 13px; }
+  table.trade th { font-size: 11px; }
+  table.trade th, table.trade td { padding: 4px 1px; }
+  table.trade td:first-child { font-size: 12px; line-height: 1.1; }
+  table.trade td:first-child .ico.good { display: block; height: 2em; margin: 0 0 2px; }
+  .stepper { gap: 1px; }
+  .stepper button { width: 22px; height: 22px; font-size: 13px; }
+  .stepper span { min-width: 12px; }
+  .dialog { padding: 6px 4px; }
+  body.float-min .game { padding-bottom: 90px; }
   .actions-float .float-head { cursor: default; }
   .status { order: 5; flex-basis: 100%; white-space: normal; line-height: 1.3; }
   .status .sep { display: none; }

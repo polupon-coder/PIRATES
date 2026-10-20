@@ -667,6 +667,9 @@ function renderPanel() {
   const showFloat = myTurn || S.phase === 'fin';
   fl.classList.toggle('hidden', !showFloat);
   fl.classList.toggle('collapsed', !!ui.actionsCollapsed && showFloat);
+  // En el móvil la ventana va fija abajo: se deja sitio para poder llegar al final del panel.
+  document.body.classList.toggle('float-open', showFloat && !ui.actionsCollapsed);
+  document.body.classList.toggle('float-min', showFloat && !!ui.actionsCollapsed);
   fl.innerHTML = showFloat
     ? `<div class="float-head"><h3>Acciones</h3><button class="float-toggle" id="floatToggle" title="${ui.actionsCollapsed ? 'Mostrar' : 'Ocultar'}">${ui.actionsCollapsed ? '▴' : '▾'}</button></div><div class="actions">${acts}</div>`
     : '';
