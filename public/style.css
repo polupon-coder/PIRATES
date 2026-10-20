@@ -261,7 +261,7 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 .ico, .ship-head .ico { height: 1.75em; width: auto; vertical-align: -0.55em; }
 .choice-ico { height: 46px; width: auto; }
 .toast-ico { display: block; height: 92px; margin: 0 auto 4px; }
-.ico.head { height: 1.4em; vertical-align: -0.25em; }
+.ico.head { height: 1.05em; vertical-align: -0.12em; }
 .ico.place { height: 1.3em; vertical-align: -0.3em; margin-right: -1px; }
 h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 /* Iconos de las acciones (pestañas del puerto y botones) más grandes. */
@@ -272,6 +272,11 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .btn.small .ico { height: 1.8em; vertical-align: -0.6em; }
 .ico.good { height: 2.5em; vertical-align: -0.85em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
+/* Títulos de los paneles centrados (icono y texto juntos); avisos y mercancías también al centro. */
+.box > .hint { text-align: center; }
+.goods { justify-items: center; }
+.goods > span { display: inline-flex; align-items: center; gap: 4px; }
+.box h3 { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
 .ship-head { display: flex; gap: 16px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }
 .ship-head .who { font-family: 'Pirata One', cursive; font-size: 26px; line-height: 1; }
