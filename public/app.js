@@ -806,14 +806,14 @@ function renderPanel() {
       acts += `<p class="hint">Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.</p>
         <button class="btn block" data-act="parar">Detener el barco</button>`;
     } else {
-      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar (${me.velas} casillas)</button>`;
+      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar <span class="long">(${me.velas} casillas)</span></button>`;
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
-      acts += `<button class="btn gold block" data-dock="${id}">Atracar en ${LUGAR(p ? p.name : 'el puerto')} (gratis)</button>`;
+      acts += `<button class="btn gold block" data-dock="${id}">Atracar<span class="long"> en</span> ${LUGAR(p ? p.name : 'el puerto')} <span class="long"> (gratis)</span></button>`;
     }
     for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} Explorar la isla</button>`;
-    if (port) acts += `<button class="btn gold block" id="portBtn">Puerto de ${LUGAR(port.name)}</button>`;
+    if (port) acts += `<button class="btn gold block" id="portBtn">Puerto<span class="long"> de</span> ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
       if (near) acts += `<p class="hint">No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.</p>`;

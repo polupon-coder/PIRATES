@@ -192,7 +192,9 @@ button { font: inherit; cursor: pointer; }
   border-style: solid; border-color: transparent; border-width: 0 64px 0 11px; border-radius: 0;
   border-image: url(img/banderin.webp) 0 230 0 40 fill / 0 64px 0 11px stretch;
   /* Borde izquierdo 11px y cola derecha 64px: se compensa para que el texto quede centrado en el banderín. */
+  /* Texto siempre en el centro del banderín, a cualquier ancho. */
   background: none; min-height: 46px; padding: 4px 0 8px 53px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
   color: #fff3dc; font-family: 'Pirata One', cursive; font-size: 22px; text-shadow: 0 1px 2px #000c;
   filter: brightness(.78) saturate(1.05) drop-shadow(0 2px 2px #0009);
 }
@@ -459,7 +461,14 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .actions-float h3 { font-size: 18px; margin: 0; }
   .actions-float .actions { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .actions-float .actions .btn.block { width: auto; flex: 1 1 45%; font-size: 14px; padding: 4px 2px; }
-  .actions-float .actions .btn.flag-btn { flex-basis: 100%; min-height: 38px; font-size: 18px; }
+  .actions-float .actions .btn.flag-btn { flex-basis: 100%; min-height: 40px; font-size: 18px; }
+  /* Botones de una sola línea y altura fija: el tablón y el cartel no se recortan ni se estiran. */
+  .actions-float .actions .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 42px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .actions-float .actions .btn .long { display: none; }
+  .actions-float .actions .btn.gold { font-size: 13.5px; padding-left: 4px; padding-right: 4px; }
+  /* El banderín compensa su cola (64 px) con el mismo hueco a la izquierda: texto centrado. */
+  .actions-float .actions .btn.flag-btn { padding: 0 0 4px 53px; }
+  .btn .ico:not(.place) { height: 1.7em; }
   .actions-float .actions .hint { display: none; }
   .log-float { z-index: 21; max-height: 60vh; }
   body.float-open .game { padding-bottom: calc(34vh + 12px); }
