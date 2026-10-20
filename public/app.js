@@ -528,6 +528,25 @@ function shipLabel(s) {
   return s.kind === 'mercante' ? `Mercante → ${esc(s.destino)}` : 'Fragata de la Armada';
 }
 
+// Arrastrar la ventana de acciones por su título (se queda donde la dejes, dentro del tablero).
+function dragFloat(e, fl) {
+  if (e.target.closest('button') || matchMedia('(max-width: 900px)').matches) return;
+  const wrap = fl.parentElement.getBoundingClientRect();
+  const box = fl.getBoundingClientRect();
+  const dx = e.clientX - box.left;
+  const dy = e.clientY - box.top;
+  const move = (ev) => {
+    const x = Math.max(0, Math.min(wrap.width - box.width, ev.clientX - wrap.left - dx));
+    const y = Math.max(0, Math.min(wrap.height - box.height, ev.clientY - wrap.top - dy));
+    ui.floatPos = { x, y };
+    Object.assign(fl.style, { left: `${x}px`, top: `${y}px`, right: 'auto', bottom: 'auto' });
+  };
+  const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+  addEventListener('pointermove', move);
+  addEventListener('pointerup', up);
+  e.preventDefault();
+}
+
 function renderPanel() {
   const me = S.me;
   if (!me) return;
@@ -614,7 +633,6 @@ function renderPanel() {
       </div>
       <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
-    <div class="box parchment"><h3>Acciones</h3><div class="actions">${acts}</div></div>
     <div class="box parchment"><h3>${ICON('catalejo', 'head')} A la vista</h3>${sight}</div>
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
@@ -624,13 +642,28 @@ function renderPanel() {
       <form class="chat-form" id="chatForm"><input class="input" id="chatInput" maxlength="200" placeholder="Escribe a la tripulación…" autocomplete="off"><button class="btn small">Enviar</button></form>
     </div>`;
 
-  const P = $('panel');
+  // Acciones: ventana flotante sobre el tablero, solo cuando hay algo que hacer o mirar.
+  const fl = $('actionsFloat');
+  const showFloat = myTurn || S.phase === 'fin';
+  fl.classList.toggle('hidden', !showFloat);
+  fl.classList.toggle('collapsed', !!ui.actionsCollapsed && showFloat);
+  fl.innerHTML = showFloat
+    ? `<div class="float-head"><h3>Acciones</h3><button class="float-toggle" id="floatToggle" title="${ui.actionsCollapsed ? 'Mostrar' : 'Ocultar'}">${ui.actionsCollapsed ? '▴' : '▾'}</button></div><div class="actions">${acts}</div>`
+    : '';
+  if ($('floatToggle')) $('floatToggle').onclick = () => { ui.actionsCollapsed = !ui.actionsCollapsed; renderPanel(); };
+  if (ui.floatPos) Object.assign(fl.style, { left: `${ui.floatPos.x}px`, top: `${ui.floatPos.y}px`, right: 'auto', bottom: 'auto' });
+  const head = fl.querySelector('.float-head');
+  if (head) head.onpointerdown = (e) => dragFloat(e, fl);
+
+  for (const P of [$('panel'), fl]) {
   P.querySelectorAll('[data-act]').forEach((b) => { b.onclick = () => act(b.dataset.act); });
   P.querySelectorAll('[data-dock]').forEach((b) => { b.onclick = () => act('atracar', { port: Number(b.dataset.dock) }); });
   P.querySelectorAll('[data-explore]').forEach((b) => { b.onclick = () => act('explorar', { island: Number(b.dataset.explore) }); });
   P.querySelectorAll('[data-atk]').forEach((b) => { b.onclick = () => act('atacar', { id: b.dataset.atk, modo: b.dataset.modo }); });
   P.querySelectorAll('[data-merchant]').forEach((b) => { b.onclick = () => openModal('mercante', b.dataset.merchant); });
   P.querySelectorAll('[data-deal]').forEach((b) => { b.onclick = () => openModal('trato', b.dataset.deal); });
+  }
+  const P = $('panel');
   P.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { ui.panelTab = b.dataset.tab; renderPanel(); }; });
   if ($('portBtn')) $('portBtn').onclick = () => openModal('puerto');
   if ($('finalBtn')) $('finalBtn').onclick = () => { ui.finalSeen = false; renderModal(); };
