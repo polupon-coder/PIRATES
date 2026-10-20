@@ -631,6 +631,35 @@ function drawVeil() {
 }
 addEventListener('resize', () => { if (S && S.map) { drawSea(); drawVeil(); } });
 
+// ------------------------------------------------------------ zoom del mapa en el móvil
+
+// En el móvil el mapa empieza acercado y centrado en tu barco; el botón alterna con el mapa entero.
+const isMobile = () => matchMedia('(max-width: 900px)').matches;
+let zoomed = true;
+let centeredOn = '';
+function applyZoom(force) {
+  const on = isMobile() && zoomed && S && S.phase !== 'lobby';
+  document.body.classList.toggle('zoomed', on);
+  const btn = $('zoomBtn');
+  btn.classList.toggle('hidden', !(isMobile() && S && S.phase !== 'lobby'));
+  btn.innerHTML = on ? `${ICON('catalejo', 'tiny')} Ver mapa entero` : `${ICON('catalejo', 'tiny')} Acercar`;
+  if (!on || !S.me) { centeredOn = ''; return; }
+  const key = `${S.me.x},${S.me.y}`;
+  if (!force && key === centeredOn) return;
+  centeredOn = key;
+  const view = $('boardView');
+  const cell = $('board').clientWidth / S.map.size;
+  view.scrollTo({ left: (S.me.x + 0.5) * cell - view.clientWidth / 2, top: (S.me.y + 0.5) * cell - view.clientHeight / 2, behavior: force ? 'auto' : 'smooth' });
+}
+$('zoomBtn').onclick = () => {
+  zoomed = !zoomed;
+  seaKey = '';
+  centeredOn = '';
+  renderBoard();
+  applyZoom(true);
+};
+addEventListener('resize', () => { if (S && S.map) applyZoom(true); });
+
 function renderBoard() {
   const me = S.me;
   const N = S.map.size;
@@ -728,11 +757,13 @@ function renderBoard() {
       html += `<div class="${cls.join(' ')}" style="--x:${x};--y:${y}" data-x="${x}" data-y="${y}" ${rc ? `data-cost="${rc.coste}"` : ''}>${inner}</div>`;
     }
   }
+  document.body.classList.toggle('zoomed', isMobile() && zoomed && S.phase !== 'lobby');
   $('board').innerHTML = html;
   $('board').prepend(seaCanvas);
   $('board').append(veilCanvas);
   drawSea();
   drawVeil();
+  applyZoom(false);
 }
 
 $('board').addEventListener('click', (e) => {

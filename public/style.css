@@ -595,3 +595,22 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .rival-acts .btn.small.red { color: #8d2a1f; border-color: #8d2a1f66; }
 .rival-acts .btn.small.green { color: #2e6d36; border-color: #2e6d3666; }
 .rival-acts .btn .ico:not(.place) { height: 1.45em; vertical-align: -0.4em; margin-right: 2px; }
+
+/* ---------- zoom del mapa en el móvil */
+.board-view { max-width: 100%; }
+.zoom-btn {
+  position: absolute; z-index: 15; top: 14px; right: 14px;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  border: 9px solid transparent; border-image: url(img/cartel.webp) 44 fill / 9px stretch;
+  background: none; padding: 0 6px; filter: drop-shadow(0 2px 2px #0009);
+}
+@media (max-width: 900px) {
+  body.zoomed .board-view {
+    /* Ventana cuadrada sobre el mapa acercado (unas 6,5 casillas de ancho); se mueve con el dedo. */
+    width: calc(100vw - 8px); height: calc(100vw - 8px);
+    overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    border: 3px solid #3a2414; border-radius: 6px; box-shadow: 0 6px 16px #000a;
+  }
+  body.zoomed .board { --cell: calc((100vw - 14px) / 6.5); margin: 0; width: calc(var(--cell) * 12); }
+  body.zoomed .board::after { display: none; }
+}
