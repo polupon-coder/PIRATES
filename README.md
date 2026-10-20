@@ -75,7 +75,7 @@ Texturas del tablero (en `public/img/`):
 | `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Se giran para que el muelle mire al lado con más mar. |
 | `niebla.webp` | Niebla de guerra sobre lo que aún no se ha descubierto. |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
-| `pergamino.webp` | Fondo de los paneles, la portada y las ventanas. |
+| `pergamino.webp`, `pergamino-centro.webp` | Silueta rota (como máscara, con los bordes repetidos sin estirar) y papel del centro (a escala) de paneles, portada y ventanas. |
 | `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro, bodega y tripulación. |
 | `comida.webp`, `materiales.webp`, `manufacturas.webp`, `lujos.webp` | Iconos de las mercancías. |
 | `casco.webp`, `tesoro.webp`, `sables.webp` | Casco, Puntos de Leyenda y aviso de tesoro, y la maniobra de Abordar. |

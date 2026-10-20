@@ -48,21 +48,26 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- botones */
 .btn {
-  background: url(img/tablon.webp) center / 100% 100% no-repeat, transparent;
+  /* Tablón: puntas con clavos a escala y madera del centro recortada, sin estirar. */
+  border: solid transparent; border-width: 0 16px;
+  border-image: url(img/tablon.webp) 0 110 / 0 16px stretch;
+  background: url(img/tablon-centro.webp) center / cover padding-box;
   color: var(--paper);
   text-shadow: 0 1px 2px #000;
-  border: 0;
-  border-radius: 7px;
-  padding: 7px 16px;
+  border-radius: 0;
+  padding: 8px 4px;
   filter: drop-shadow(0 2px 2px #0009);
   transition: transform .06s, filter .1s;
 }
+.btn.small { border-width: 0 11px; border-image-width: 0 11px; padding: 4px 2px; }
 .btn:hover:not(:disabled) { filter: brightness(1.15) drop-shadow(0 2px 2px #0009); }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn.gold { background: linear-gradient(#f2c76a, #c98f2a); color: #2a1606; font-weight: 700; text-shadow: none; border: 1px solid #1a0f07; }
-.btn.red { background: linear-gradient(#c6493a, #8d2a1f); border: 1px solid #1a0f07; }
-.btn.green { background: linear-gradient(#4f9e58, #2e6d36); border: 1px solid #1a0f07; }
+.btn.gold, .btn.red, .btn.green { border: 1px solid #1a0f07; border-image: none; border-radius: 7px; padding: 7px 16px; }
+.btn.gold { background: linear-gradient(#f2c76a, #c98f2a); color: #2a1606; font-weight: 700; text-shadow: none; }
+.btn.red { background: linear-gradient(#c6493a, #8d2a1f); }
+.btn.green { background: linear-gradient(#4f9e58, #2e6d36); }
+.btn.small.gold, .btn.small.red, .btn.small.green { padding: 3px 9px; }
 .btn.big { font-size: 20px; padding: 10px 20px; }
 .btn.small { font-size: 14px; padding: 3px 9px; }
 .btn.block { width: 100%; }
@@ -77,11 +82,15 @@ button { font: inherit; cursor: pointer; }
 .home-card {
   width: min(500px, 100%);
   display: flex; flex-direction: column; gap: 12px; text-align: center;
-  padding: 44px 48px;
+  padding: 46px 52px;
   color: var(--ink);
-  background: url(img/pergamino.webp) center / 100% 100% no-repeat;
-  filter: drop-shadow(0 10px 20px #000c);
+  background: url(img/pergamino-centro.webp) center / cover no-repeat;
+  box-shadow: inset 0 0 30px 10px #8a4f1fa0, inset 0 0 6px 2px #5a2f0f80;
+  -webkit-mask-box-image: url(img/pergamino.webp) 60 / 30px round;
+  mask-border: url(img/pergamino.webp) 60 / 30px round;
 }
+/* La sombra va en el contenedor, porque la máscara recortaría la del propio pergamino. */
+.home, .lobby, .panel { filter: drop-shadow(0 8px 12px #000b); }
 .home-title { font-family: 'Pirata One', cursive; font-size: 64px; margin: 0; color: var(--wood); line-height: 1; }
 .home-sub { margin: 0 0 6px; font-style: italic; }
 .join-row { display: flex; gap: 8px; }
@@ -91,8 +100,13 @@ button { font: inherit; cursor: pointer; }
 .lobby { display: grid; place-items: center; padding: 20px 16px; }
 .parchment {
   color: var(--ink);
-  background: url(img/pergamino.webp) center / 100% 100% no-repeat;
-  filter: drop-shadow(0 6px 10px #000a);
+  /* Un solo papel continuo; la silueta rota de tu pergamino se recorta con una máscara
+     (bordes repetidos, no estirados) y el tostado de los bordes es una sombra interior. */
+  padding: 26px;
+  background: url(img/pergamino-centro.webp) center / cover no-repeat;
+  box-shadow: inset 0 0 26px 8px #8a4f1fa0, inset 0 0 6px 2px #5a2f0f80;
+  -webkit-mask-box-image: url(img/pergamino.webp) 60 / 26px round;
+  mask-border: url(img/pergamino.webp) 60 / 26px round;
 }
 .lobby-card { width: min(560px, 100%); padding: 36px 44px; }
 .lobby-card h2 { font-family: 'Pirata One', cursive; font-size: 36px; margin: 0 0 6px; color: var(--wood); }
@@ -123,9 +137,11 @@ button { font: inherit; cursor: pointer; }
 }
 /* En tu turno, el aviso va sobre el banderín rojo. */
 .banner.mine {
-  width: min(620px, 100%); min-height: 54px; padding: 4px 70px 8px 40px;
-  background: url(img/banderin.webp) center / 100% 100% no-repeat;
-  color: #fff3dc; text-shadow: 0 1px 2px #000c;
+  /* Remate y cola del banderín a escala; solo se alarga un poco la tela del centro. */
+  width: fit-content; max-width: 100%; height: 62px; padding: 0 12px 4px 6px;
+  border-style: solid; border-color: transparent; border-width: 0 95px 0 16px;
+  border-image: url(img/banderin.webp) 0 230 0 40 fill / 0 95px 0 16px stretch;
+  color: #fff3dc; text-shadow: 0 1px 2px #000c; white-space: nowrap;
 }
 .banner.mine .me-turn { color: #fff3dc; font-family: 'Pirata One', cursive; font-size: 26px; font-weight: 400; }
 .banner .me-turn { color: var(--gold-2); font-weight: 700; }
@@ -235,7 +251,7 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 
 /* ---------- panel lateral */
 .panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
-.box { padding: 16px 20px; }
+.box { padding: 24px 26px; }
 .ico, .ship-head .ico { height: 1.35em; width: auto; vertical-align: -0.35em; }
 .choice-ico { height: 34px; width: auto; }
 .toast-ico { display: block; height: 72px; margin: 0 auto 4px; }
@@ -279,9 +295,9 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
   display: grid; place-items: center; padding: 16px;
   background: #050a0dcc;
 }
-.dialog { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 30px 34px; position: relative; }
+.dialog { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 32px 36px; position: relative; }
 .dialog h2 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 34px; margin: 0 0 8px; color: var(--wood); }
-.close { position: absolute; right: 18px; top: 12px; background: none; border: 0; font-size: 28px; color: var(--wood); }
+.close { position: absolute; right: 24px; top: 16px; background: none; border: 0; font-size: 28px; color: var(--wood); }
 table.trade { width: 100%; border-collapse: collapse; font-size: 16px; }
 table.trade th, table.trade td { padding: 5px 4px; text-align: center; border-bottom: 1px dashed #8a6a3a55; }
 table.trade th { font-size: 14px; color: #6b5a3e; font-weight: 600; }
@@ -299,8 +315,8 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .combat-modal .dialog { width: min(720px, 100%); }
 .duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
 .fighter { text-align: center; }
-.fighter img { width: 120px; height: 100px; object-fit: contain; }
-.fighter.right img { transform: scaleX(-1); }
+.fighter > img { width: 120px; height: 100px; object-fit: contain; }
+.fighter.right > img { transform: scaleX(-1); }
 .fighter .fname { font-family: 'Pirata One', cursive; font-size: 24px; }
 .vs { font-family: 'Pirata One', cursive; font-size: 40px; color: var(--red); }
 .badges { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; min-height: 22px; margin-top: 4px; }
@@ -308,6 +324,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .badge.adv { background: #d9a43b55; }
 .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 8px; }
 .choice { display: flex; flex-direction: column; gap: 2px; padding: 10px 6px; text-align: center; }
+.btn.choice:not(.red):not(.green):not(.gold) { border-width: 0 30px; border-image-width: 0 30px; }
 .choice .big-ico { font-size: 28px; }
 .choice small { font-size: 13px; opacity: .85; }
 .history { margin-top: 10px; }
@@ -349,8 +366,8 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .status { font-size: 14px; }
   .brand { font-size: 24px; }
   .choices { grid-template-columns: 1fr; }
-  .fighter img { width: 80px; height: 70px; }
+  .fighter > img { width: 80px; height: 70px; }
   .port-name { display: none; }
-  .banner.mine { padding: 4px 44px 8px 22px; font-size: 15px; gap: 6px; white-space: nowrap; }
+  .banner.mine { height: 50px; padding: 0 4px 3px 2px; border-width: 0 77px 0 13px; border-image-width: 0 77px 0 13px; font-size: 15px; gap: 6px; }
   .banner.mine .me-turn { font-size: 21px; }
 }

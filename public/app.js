@@ -911,7 +911,7 @@ function renderCombat() {
   if (live && !c.eligio) {
     choose = `<p class="center"><b>Elige tu maniobra</b> · <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>
       <div class="choices">${['canon', 'abordaje', 'maniobra'].map((k) => `
-        <button class="btn choice ${k === 'canon' ? 'red' : k === 'abordaje' ? '' : 'green'}" data-pick="${k}" ${c.opciones.includes(k) ? '' : 'disabled'}>
+        <button class="btn choice ${k === 'canon' ? 'red' : k === 'abordaje' ? 'gold' : 'green'}" data-pick="${k}" ${c.opciones.includes(k) ? '' : 'disabled'}>
           <span class="big-ico">${ICON[k]}</span><b>${PICK_LABEL[k]}</b><small>${DESC[k]}</small></button>`).join('')}</div>`;
   } else if (live) {
     choose = `<p class="waiting">Esperando la decisión del rival… <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>`;
