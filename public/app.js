@@ -45,6 +45,8 @@ const GOOD_ICON = { comida: ICON('comida', 'good'), materiales: ICON('materiales
 const TRIP = ICON('tripulacion');
 const CASCO = ICON('casco');
 const LEYENDA = ICON('tesoro');
+// Icono de cada mejora del barco.
+const ATTR_ICON = { velas: ICON('velas'), canones: ICON('canon'), casco: ICON('casco'), bodega: ICON('carga'), tripulacion: ICON('tripulacion') };
 const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
 const PICK_LABEL = { canon: 'Cañonear', abordaje: 'Abordar', maniobra: 'Maniobrar' };
 
@@ -318,7 +320,7 @@ function renderStatus() {
   else if (!t) html = 'Mercantes y Armada se mueven…';
   else if (t.pid === S.you) {
     html = `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span> ${t.actions} acción(es)`;
-    if (t.moving) html += ` · ⛵ ${t.moving.mp} de movimiento`;
+    if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp} de movimiento`;
   } else html = `Turno de <b>${esc(playerName(t.pid))}</b>`;
   const ms = t && remaining(t.deadlineIn);
   if (ms !== null && ms !== undefined && !S.combat) html += ` <span class="clock ${ms < 15000 ? 'low' : ''}" id="clock">${fmt(ms)}</span>`;
@@ -531,7 +533,7 @@ function renderPanel() {
       acts += `<p class="hint">Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.</p>
         <button class="btn block" data-act="parar">Detener el barco</button>`;
     } else {
-      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>⛵ Navegar (${me.velas} casillas)</button>`;
+      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('velas')} Navegar (${me.velas} casillas)</button>`;
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
@@ -554,7 +556,7 @@ function renderPanel() {
     const can = myTurn && S.turn.actions > 0;
     const docked = s.kind === 'pirata' && s.docked !== null;
     const btns = [];
-    if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>Cañonear</button>`);
+    if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>${ICON('canon')} Cañonear</button>`);
     if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>Abordar</button>`);
     if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>Comerciar</button>`);
     const adj = Math.max(Math.abs(s.x - me.x), Math.abs(s.y - me.y)) <= 1;
@@ -596,7 +598,7 @@ function renderPanel() {
         <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
         <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
       </div>
-      <div class="levels">${R.attrs.map((a) => `<span class="lvl">${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
+      <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
     <div class="box parchment"><h3>Acciones</h3><div class="actions">${acts}</div></div>
     <div class="box parchment"><h3>A la vista</h3>${sight}</div>
@@ -707,7 +709,7 @@ function renderModal() {
   } else if (ui.modal === 'puerto') {
     const port = S.map.ports.find((p) => p.id === me.docked);
     if (!port) return closeModal();
-    const tabs = [['comercio', 'Comerciar'], ['mejoras', 'Mejorar'], ['reparar', 'Reparar'], ['reclutar', 'Reclutar']];
+    const tabs = [['comercio', `${ORO} Comerciar`], ['mejoras', `${ICON('yunque')} Mejorar`], ['reparar', `${ICON('martillo')} Reparar`], ['reclutar', `${ICON('tripulacion')} Reclutar`]];
     let content = '';
     const hasAct = S.turn && S.turn.pid === S.you && S.turn.actions > 0;
     if (ui.portTab === 'comercio') content = tradeTable(port.precios, null, { noResell: me.compradoAqui });
@@ -715,7 +717,7 @@ function renderModal() {
       content = R.attrs.map((a) => {
         const l = me.niveles[a];
         const cost = l < 3 ? R.upgradeCost[a][l - 1] : null;
-        return `<div class="up-row"><span><b>${R.attrLabel[a]}</b> ${ROMAN[l]} <span class="muted">(${R.levels[a][l - 1]}${l < 3 ? ` → ${R.levels[a][l]}` : ''})</span></span>
+        return `<div class="up-row"><span>${ATTR_ICON[a]} <b>${R.attrLabel[a]}</b> ${ROMAN[l]} <span class="muted">(${R.levels[a][l - 1]}${l < 3 ? ` → ${R.levels[a][l]}` : ''})</span></span>
           <span>${cost !== null ? `${cost} oros` : 'Máximo'}</span>
           <button class="btn small gold" data-up="${a}" ${cost === null || me.oro < cost || !hasAct ? 'disabled' : ''}>Mejorar a ${ROMAN[l + 1] || '—'}</button></div>`;
       }).join('') + '<p class="hint">Cada mejora cuesta 1 acción y es permanente, aunque te hundan.</p>';
@@ -895,7 +897,7 @@ function renderCombat() {
   }
   const c = live || done;
   if (!c) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const ICON = { canon: '💥', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
+  const ICON = { canon: '<img class="choice-ico" src="img/canon.webp" alt="">', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
   const DESC = {
     canon: `Dispara ${c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)} dados`,
     abordaje: `Lucha con ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} dados de tripulación`,
