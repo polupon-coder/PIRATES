@@ -411,7 +411,7 @@ function renderLobby() {
     <div class="lobby-card parchment">
       <h2>${L('Tripulación de la sala', 'Crew of room')} ${esc(S.code)}</h2>
       <p class="muted">${L('De 2 a 4 piratas. Comparte el enlace o el código con tus amigos, o añade jugadores que jueguen en este mismo dispositivo.', 'From 2 to 4 pirates. Share the link or the code with your friends, or add players on this same device.')}</p>
-      <div class="share"><input class="input" readonly value="${esc(link)}" id="shareInput"><button class="btn small" id="copyBtn">${L('Copiar', 'Copy')}</button></div>
+      <div class="share"><input class="input" readonly value="${esc(link)}" id="shareInput"><button class="btn gold" id="copyBtn">${L('Copiar', 'Copy')}</button></div>
       ${S.players.map((p) => `
         <div class="player-row">
           <span class="flag" style="background:${p.color}"></span>
@@ -422,12 +422,12 @@ function renderLobby() {
           ${host && p.id !== S.you ? `<button class="btn small red" data-kick="${p.id}">${L('Expulsar', 'Remove')}</button>` : ''}
         </div>`).join('')}
       ${S.players.length < 4 ? `<div class="share local-add">
-        <input class="input" id="localName" maxlength="20" placeholder="${L('Otro jugador en este dispositivo', 'Another player on this device')}">
-        <button class="btn small" id="localBtn">${L('Añadir', 'Add')}</button>
+        <input class="input" id="localName" maxlength="20" placeholder="${L('Otro jugador aquí', 'Another player here')}">
+        <button class="btn gold" id="localBtn">${L('Añadir', 'Add')}</button>
       </div>` : ''}
-      <div class="row" style="margin-top:14px">
-        ${host ? `<button class="btn" id="botBtn" ${S.players.length >= 4 ? 'disabled' : ''}>${L('Añadir bot', 'Add bot')}</button>
-        <button class="btn gold" id="startBtn" ${S.players.length < 2 ? 'disabled' : ''}>${L('¡Zarpar!', 'Set sail!')}</button>` : `<p class="muted">${L('Esperando a que el anfitrión empiece la partida…', 'Waiting for the host to start the game…')}</p>`}
+      <div class="lobby-btns">
+        ${host ? `<button class="btn gold block" id="botBtn" ${S.players.length >= 4 ? 'disabled' : ''}>${L('Añadir bot', 'Add bot')}</button>
+        <button class="btn flag-btn block" id="startBtn" ${S.players.length < 2 ? 'disabled' : ''}>${L('¡Zarpar!', 'Set sail!')}</button>` : `<p class="muted">${L('Esperando a que el anfitrión empiece la partida…', 'Waiting for the host to start the game…')}</p>`}
       </div>
     </div>`;
   const cb = $('copyBtn');
