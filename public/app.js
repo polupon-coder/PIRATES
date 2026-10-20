@@ -454,16 +454,14 @@ function renderBoard() {
         if (me.explorables.includes(c.isla) && myTurn) clickable = true;
       }
       if (c.t === 'mar') {
-        const coast = coastHtml(x, y);
-        if (coast) inner += coast;
-        else if (isDeep(x, y)) {
-          // Se difumina solo hacia los lados que no son mar profundo.
-          const e = (dx, dy) => (x + dx < 0 || y + dy < 0 || x + dx >= N || y + dy >= N || isDeep(x + dx, y + dy) ? '#000' : 'transparent');
-          const mh = `linear-gradient(to right, ${e(-1, 0)}, #000 40%, #000 60%, ${e(1, 0)})`;
-          const mv = `linear-gradient(to bottom, ${e(0, -1)}, #000 40%, #000 60%, ${e(0, 1)})`;
-          inner += `<div class="deep" style="--mh:${mh};--mv:${mv}"></div>`;
+        if (isDeep(x, y)) inner += '<div class="deep"></div>';
+        else {
+          // Mar normal junto a mar profundo: la lámina de transición, con lo profundo hacia él.
+          const side = [[0, -1, 0], [1, 0, 90], [0, 1, 180], [-1, 0, 270]].find(([dx, dy]) => isDeep(x + dx, y + dy));
+          if (side) inner += `<div class="shelf" style="--rot:${side[2]}deg"></div>`;
+          inner += coastHtml(x, y);
         }
-      }
+     }
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);
         inner += `<div class="port-icon" title="${esc(p ? p.name : 'Puerto')}">⚓</div><div class="port-name">${esc(p ? p.name : '')}</div>`;

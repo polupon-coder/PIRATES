@@ -84,7 +84,8 @@ Texturas del tablero (en `public/img/`):
 | `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, banderín del aviso de turno y fondo de los botones de madera. |
 | `arrecife.webp` | Arrecifes. |
 | `costa.webp` | Borde de playa en cada lado (y esquina) de una casilla de mar que toca tierra: la lámina se gira hacia la tierra y solo se usa su franja de playa. |
-| `oceano.webp` | Mar profundo: casillas de mar rodeadas de mar por los 8 lados; se funde con el mar normal. |
+| `oceano.webp` | Mar profundo: casillas de mar rodeadas de mar por los 8 lados. |
+| `transicion.webp` | Mar normal junto a mar profundo, girado con lo profundo hacia él. |
 | `poblado.webp` | La casilla de tierra más cercana al puerto en las islas con puerto. |
 
 ## Decisiones tomadas donde el reglamento no lo especifica
