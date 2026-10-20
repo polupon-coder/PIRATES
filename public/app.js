@@ -84,8 +84,19 @@ const Sounds = (() => {
     get muted() { return muted; },
   };
 })();
+// Campana de barco (dorada, a juego con el título); tachada cuando no hay sonido.
+const BELL = `<svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 3.5v3"/><circle cx="16" cy="3" r="1.4" fill="currentColor" stroke="none"/>
+  <path d="M10.5 9.5c0-2 2.4-3.2 5.5-3.2s5.5 1.2 5.5 3.2c0 5 1 9.2 3.5 12.3H7c2.5-3.1 3.5-7.3 3.5-12.3z" fill="currentColor" fill-opacity=".22"/>
+  <path d="M6 21.8h20M7.2 24.6h17.6"/><path d="M16 24.6v2.6"/><circle cx="16" cy="28.4" r="1.6" fill="currentColor" stroke="none"/>
+  <path d="M12.5 11c0 3-.4 6-1.6 8.6" opacity=".55"/>
+</svg>`;
+const BELL_OFF = BELL.replace('</svg>', '<path d="M4 4l24 24" stroke-width="2.4"/></svg>');
 function paintSound() {
-  $('soundBtn').textContent = Sounds.muted ? '🔇' : '🔊';
+  const b = $('soundBtn');
+  b.innerHTML = Sounds.muted ? BELL_OFF : BELL;
+  b.title = Sounds.muted ? 'Activar sonidos' : 'Silenciar sonidos';
+  b.classList.toggle('muted', Sounds.muted);
 }
 
 // ------------------------------------------------------------ barcos (ilustración o dibujo provisional)

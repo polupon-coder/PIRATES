@@ -43,6 +43,9 @@ button { font: inherit; cursor: pointer; }
 .status { flex: 1; font-size: 16px; color: var(--paper-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top-btn { background: #0003; color: var(--paper); border: 1px solid #a8784566; border-radius: 6px; padding: 3px 10px; }
 .top-btn:hover { background: #0006; }
+#soundBtn { color: var(--gold-2); display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; }
+#soundBtn svg { display: block; filter: drop-shadow(0 1px 0 #000); }
+#soundBtn.muted { color: #a08a6a; }
 .room-code { font-family: 'Pirata One', cursive; font-size: 20px; color: var(--gold); letter-spacing: 2px; }
 
 /* ---------- botones */
