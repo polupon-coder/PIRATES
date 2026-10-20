@@ -248,7 +248,7 @@ class Game {
   startTurn(idx) {
     this.turnIdx = idx;
     const p = this.player(this.order[idx]);
-    this.turn = { pid: p.id, actions: C.ACTIONS_PER_TURN, moving: null, deadline: this.now() + C.TURN_MS, left: null };
+    this.turn = { pid: p.id, actions: C.ACTIONS_PER_TURN, moving: null, deadline: C.TURN_MS ? this.now() + C.TURN_MS : null, left: null };
     this.say(T(`— Ronda ${this.round}: turno de ${p.name}.`, `— Round ${this.round}: ${p.name}'s turn.`));
   }
 
@@ -259,7 +259,7 @@ class Game {
   }
 
   resumeTurn() {
-    if (!this.turn || this.turn.deadline !== null) return;
+    if (!this.turn || this.turn.deadline !== null || !C.TURN_MS) return;
     this.turn.deadline = this.now() + Math.max(this.turn.left || 0, 10000);
     this.turn.left = null;
   }

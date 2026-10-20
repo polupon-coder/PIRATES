@@ -411,7 +411,7 @@ test('niebla: solo se ven los barcos cercanos y el terreno descubierto', () => {
   assert.ok(g.view(a.id).ships.some((s) => s.id === b.id), 'a distancia 2 se ve');
 });
 
-test('plazos: el turno termina a los 90 s y el combate cañonea a los 20 s', () => {
+test('plazos: el turno no tiene límite de tiempo y el combate cañonea a los 20 s', () => {
   let t = 0;
   const { g, a, b } = setup(['..........'], { now: () => t });
   g.startTurn(0);
@@ -425,9 +425,9 @@ test('plazos: el turno termina a los 90 s y el combate cañonea a los 20 s', () 
   assert.strictEqual(g.combat.historial[0].picks.d, 'canon');
   g.combat = null;
   g.resumeTurn();
-  t += C.TURN_MS + 1000;
-  assert.ok(g.tick());
-  assert.strictEqual(g.turn.pid, b.id);
+  t += 3600 * 1000;
+  assert.ok(!g.tick());
+  assert.strictEqual(g.turn.pid, a.id);
 });
 
 test('la Armada ataca a un pirata cercano en la fase neutral', () => {

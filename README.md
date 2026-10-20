@@ -29,7 +29,7 @@ Cada cambio en la rama `main` se publica solo. En el plan gratuito el servidor s
 ## Cómo se juega en la web
 
 - **Sala:** el anfitrión crea la partida, comparte el enlace o el código y puede **añadir bots**. Se empieza con **¡Zarpar!**.
-- **Tu turno (90 s, 3 acciones):**
+- **Tu turno (sin límite de tiempo, 3 acciones):**
   - **Navegar:** pulsa el botón y después las casillas marcadas. Como solo se ve el 3 × 3, normalmente se avanza casilla a casilla.
   - **Explorar** y **Atracar:** desde el panel o pulsando la isla o el puerto.
   - **Atacar o comerciar:** desde «A la vista».
@@ -106,7 +106,7 @@ Texturas del tablero (en `public/img/`):
 8. **Mercantes y Armada** nunca abordan. Los mercantes no atacan; las fragatas siempre empiezan cañoneando. Hundir un mercante no da su carga.
 9. **Comercio con mercantes:** se puede comprar su carga y venderle (hasta 6 mercancías de bodega) a los precios de su puerto de destino. Las ventas cuentan para el beneficio neto.
 10. **Venta:** las unidades se venden empezando por las más antiguas (su coste de compra cuenta para el beneficio). En una visita no se puede revender en el mismo puerto una mercancía comprada allí.
-11. **Plazos:** 90 s por turno (se pausa durante combates y propuestas). 20 s para elegir maniobra o responder a un trato; si no, se cañonea o se rechaza.
+11. **Plazos:** el turno no tiene límite de tiempo. 20 s para elegir maniobra o responder a un trato; si no, se cañonea o se rechaza.
 12. **Islas con puerto** también se pueden explorar (desde el mar). Las mercancías encontradas que no caben se pierden.
 13. **Bots en el comercio:** aceptan un trato si reciben al menos el valor base de lo que dan.
 

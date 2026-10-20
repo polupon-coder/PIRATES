@@ -22,7 +22,7 @@ module.exports = {
   SHIP_VIEW: 2,
 
   // Tiempos (ms).
-  TURN_MS: 90000,
+  TURN_MS: null, // sin límite de tiempo por turno (un número en ms lo activa)
   CHOICE_MS: 20000,
   OFFER_MS: 20000,
 

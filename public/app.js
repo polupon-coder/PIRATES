@@ -1340,7 +1340,7 @@ function rulesHtml() {
     <ul><li>Treasure: +3 ${LEYENDA} · Sink a merchant: +1 ${LEYENDA} · Sink a pirate: +2 ${LEYENDA} · Sink a frigate: +3 ${LEYENDA}</li>
     <li>Every 4 gold of accumulated net trade profit (sale − purchase cost): +1 ${LEYENDA}</li></ul>
     <h3>The sea</h3>
-    <p>You see the terrain 3 × 3 around your ship and ships up to 2 tiles away. Merchants sail between ports and the Navy patrols and attacks the pirates it sees. You have 90 s per turn and 20 s to choose a maneuver.</p>
+    <p>You see the terrain 3 × 3 around your ship and ships up to 2 tiles away. Merchants sail between ports and the Navy patrols and attacks the pirates it sees. You have 20 s to choose a maneuver.</p>
     <h3>Same device</h3>
     <p>In the room you can add players who play on this same device: when it is their turn, the game asks you to hand them the device.</p>
   </div>`;
@@ -1367,7 +1367,7 @@ function rulesHtml() {
     <ul><li>Tesoro: +3 ${LEYENDA} · Hundir mercante: +1 ${LEYENDA} · Hundir pirata: +2 ${LEYENDA} · Hundir fragata: +3 ${LEYENDA}</li>
     <li>Cada 4 oros de beneficio comercial neto acumulado (venta − coste de compra): +1 ${LEYENDA}</li></ul>
     <h3>Mar</h3>
-    <p>Ves el terreno en 3 × 3 alrededor de tu barco y los barcos hasta 2 casillas. Los mercantes viajan entre puertos y la Armada patrulla y ataca a los piratas que ve. Tienes 90 s por turno y 20 s para elegir maniobra.</p>
+    <p>Ves el terreno en 3 × 3 alrededor de tu barco y los barcos hasta 2 casillas. Los mercantes viajan entre puertos y la Armada patrulla y ataca a los piratas que ve. Tienes 20 s para elegir maniobra.</p>
     <h3>Mismo dispositivo</h3>
     <p>En la sala puedes añadir jugadores que juegan en este mismo dispositivo: cuando les toca, el juego te pide que les pases el dispositivo.</p>
   </div>`;

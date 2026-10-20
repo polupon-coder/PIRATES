@@ -202,7 +202,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Plazos (turnos de 90 s, maniobras y propuestas de 20 s) y limpieza de salas viejas.
+// Plazos (maniobras y propuestas de 20 s) y limpieza de salas viejas.
 setInterval(() => {
   const now = Date.now();
   for (const [code, room] of rooms) {
