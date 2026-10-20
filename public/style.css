@@ -18,7 +18,7 @@
   --red: #b5382a;
   --green: #3f8f4a;
   --muted: #8a7a5e;
-  --cell: min(calc((100vw - 470px) / 12.4), calc((100vh - 112px) / 12.4), 84px);
+  --cell: min(calc((100vw - 510px) / 12.4), calc((100vh - 112px) / 12.4), 84px);
 }
 
 * { box-sizing: border-box; }
@@ -122,7 +122,7 @@ button { font: inherit; cursor: pointer; }
 /* ---------- partida */
 .game {
   display: grid;
-  grid-template-columns: auto minmax(300px, 380px);
+  grid-template-columns: auto minmax(320px, 420px);
   gap: 14px;
   padding: 10px 14px;
   justify-content: center;
@@ -257,7 +257,7 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 
 /* ---------- panel lateral */
 .panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
-.box { padding: 24px 26px; }
+.box { padding: 28px 32px; }
 .ico, .ship-head .ico { height: 1.75em; width: auto; vertical-align: -0.55em; }
 .choice-ico { height: 46px; width: auto; }
 .toast-ico { display: block; height: 92px; margin: 0 auto 4px; }
@@ -272,16 +272,16 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .btn.small .ico { height: 1.8em; vertical-align: -0.6em; }
 .ico.good { height: 2.5em; vertical-align: -0.85em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
-.ship-head { display: flex; gap: 10px; align-items: center; }
+.ship-head { display: flex; gap: 16px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }
 .ship-head .who { font-family: 'Pirata One', cursive; font-size: 26px; line-height: 1; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 8px; font-size: 16px; }
-.stat { display: flex; align-items: center; justify-content: space-between; gap: 4px; border-bottom: 1px dotted #8a6a3a66; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-top: 16px; font-size: 16px; }
+.stat { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 3px; border-bottom: 1px dotted #8a6a3a66; }
 .stat b { font-variant-numeric: tabular-nums; }
 .bar { height: 8px; border-radius: 4px; background: #0002; overflow: hidden; margin-top: 2px; }
 .bar > i { display: block; height: 100%; background: linear-gradient(90deg, #b5382a, #e3833a); }
 .bar.ok > i { background: linear-gradient(90deg, #3f8f4a, #7cc06b); }
-.levels { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.levels { display: flex; gap: 8px 8px; flex-wrap: wrap; margin-top: 16px; }
 .lvl { font-size: 13px; padding: 1px 7px; white-space: nowrap; border-radius: 10px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
 .actions { display: flex; flex-direction: column; gap: 6px; }
 .actions .row .btn { flex: 1; }

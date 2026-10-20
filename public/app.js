@@ -516,7 +516,7 @@ function drawSea() {
           const shallow = Math.max(0, 1 - (dist - beach) / (REACH - beach));
           if (dist > beach) {
             const k = 0.55 * shallow * shallow;
-            r0 += (120 - r0) * k; g0 += (225 - g0) * k; b0 += (215 - b0) * k;
+            r0 += (130 - r0) * k; g0 += (200 - g0) * k; b0 += (205 - b0) * k;
           }
           // Espuma junto a la arena.
           const foamW = 0.05 + 0.03 * n2;
