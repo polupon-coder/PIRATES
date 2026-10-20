@@ -370,21 +370,6 @@ function coastHtml(x, y) {
   return html;
 }
 
-// Mar profundo: las 8 casillas vecinas son mar conocido (fuera del tablero cuenta como mar).
-function isDeep(x, y) {
-  const N = S.map.size;
-  const c = S.map.tiles[y] && S.map.tiles[y][x];
-  if (!c || c.t !== 'mar') return false;
-  for (const [dx, dy] of [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]]) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
-    const n = S.map.tiles[ny][nx];
-    if (!n || (n.t !== 'mar' && n.t !== 'arrecife')) return false;
-  }
-  return true;
-}
-
 function renderBoard() {
   const me = S.me;
   const N = S.map.size;
@@ -454,14 +439,8 @@ function renderBoard() {
         if (me.explorables.includes(c.isla) && myTurn) clickable = true;
       }
       if (c.t === 'mar') {
-        if (isDeep(x, y)) inner += '<div class="deep"></div>';
-        else {
-          // Mar normal junto a mar profundo: la lámina de transición, con lo profundo hacia él.
-          const side = [[0, -1, 0], [1, 0, 90], [0, 1, 180], [-1, 0, 270]].find(([dx, dy]) => isDeep(x + dx, y + dy));
-          if (side) inner += `<div class="shelf" style="--rot:${side[2]}deg"></div>`;
-          inner += coastHtml(x, y);
-        }
-     }
+        inner += coastHtml(x, y);
+      }
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);
         inner += `<div class="port-icon" title="${esc(p ? p.name : 'Puerto')}">⚓</div><div class="port-name">${esc(p ? p.name : '')}</div>`;
