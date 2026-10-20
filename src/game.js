@@ -662,6 +662,10 @@ class Game {
     };
     this.combat = c;
     this.pauseTurn();
+    // Cada pirata del combate descubre la casilla de su rival (si atacan desde 2 casillas).
+    for (const [me, foe] of [[att, def], [def, att]]) {
+      if (me.kind === 'pirata') me.known[foe.y * C.SIZE + foe.x] = 1;
+    }
     c.obs = this.observers([att.x, att.y], [def.x, def.y]);
     const verb = first === 'abordaje' ? 'aborda' : 'cañonea';
     this.say(`⚔ ${this.shipName(att)} ${verb} a ${this.shipName(def)}.`, c.obs);

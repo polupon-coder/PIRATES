@@ -215,6 +215,9 @@ button { font: inherit; cursor: pointer; }
 .coast-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .cell.reach::after, .cell.target::after { z-index: 3; }
 .cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto { background: transparent; }
+/* Debajo de toda la tierra va la vegetación normal: poblados y colinas se funden con ella. */
+.cell.tierra::after { content: ''; position: absolute; inset: 0; z-index: -1; background: url(img/tierra.webp) center / cover; }
+.cell.tierra { isolation: isolate; }
 /* Fuera de tu vista: un velo oscuro (la tierra se oscurece con su propio filtro). */
 /* Fuera de tu vista: un único velo oscuro sobre mar, tierra y arena (los barcos quedan encima). */
 .cell.dim::before { content: ''; position: absolute; inset: 0; background: #00000057; z-index: 2; pointer-events: none; }
@@ -223,6 +226,10 @@ button { font: inherit; cursor: pointer; }
   position: absolute; inset: 0;
   /* Cada casilla de tierra muestra la lámina entera, a su tamaño. */
   background: url(img/tierra.webp) center / cover var(--sand);
+}
+.land.poblado, .land.colina {
+  -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
 }
 .land.poblado { background: url(img/poblado.webp) center / cover; }
 .land.colina { background: url(img/colina.webp) center / cover; }

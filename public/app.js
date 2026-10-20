@@ -574,7 +574,7 @@ function drawCoast() {
     const n = S.map.tiles[y] && S.map.tiles[y][x];
     return !!n && (n.t === 'mar' || n.t === 'arrecife');
   };
-  const MAXIN = 0.32;
+  const MAXIN = 0.42;
   for (let ty = 0; ty < N; ty++) {
     for (let tx = 0; tx < N; tx++) {
       const c = S.map.tiles[ty][tx];
@@ -594,9 +594,11 @@ function drawCoast() {
             if (dd < din) din = dd;
           }
           if (din > MAXIN) continue;
-          const n3 = vnoise(fx * 5.5 + 11, fy * 5.5 + 5);
-          const n4 = vnoise(fx * 13 + 2, fy * 13 + 9);
-          const sIn = (n3 - 0.38) * 0.42 + (n4 - 0.5) * 0.12; // cuánto entra la arena (a veces nada)
+          const n3 = vnoise(fx * 2.6 + 11, fy * 2.6 + 5);
+          const n4 = vnoise(fx * 7 + 2, fy * 7 + 9);
+          const n5 = vnoise(fx * 19 + 4, fy * 19 + 1);
+          // Cuánto entra la arena: siempre algo y con entrantes y salientes, nunca recto.
+          const sIn = 0.03 + 0.3 * n3 * n3 + 0.1 * (n4 - 0.5) + 0.04 * (n5 - 0.5);
           if (din >= sIn) continue;
           const a = Math.min(1, (sIn - din) * px / 2.5);
           const grain = (hash2(pxx, py) - 0.5) * 18 + (n4 - 0.5) * 14;
@@ -656,7 +658,16 @@ function renderBoard() {
     for (let x = 0; x < N; x++) {
       const c = S.map.tiles[y][x];
       const k = `${x},${y}`;
-      if (!c) { html += `<div class="cell fog" style="--x:${x};--y:${y}" data-x="${x}" data-y="${y}"></div>`; continue; }
+      if (!c) {
+        // Barcos a la vista sobre casillas aún no descubiertas (a 2 casillas): también se dibujan.
+        let ships = '';
+        for (const sh of shipsAt.get(k) || []) {
+          ships += shipImg(sh, `ship ${facing(sh, 'left')}`);
+          ships += `<span class="ship-badge" style="background:${sh.kind === 'pirata' ? sh.color : NEUTRAL_COLOR[sh.kind]}"></span>`;
+        }
+        html += `<div class="cell fog ${ships ? 'clickable' : ''}" style="--x:${x};--y:${y}" data-x="${x}" data-y="${y}">${ships}</div>`;
+        continue;
+      }
       const inView = Math.max(Math.abs(me.x - x), Math.abs(me.y - y)) <= S.reglas.terrainView;
       const cls = ['cell', c.t];
       if (!inView) cls.push('dim');
@@ -672,7 +683,7 @@ function renderBoard() {
           inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${giro}deg;${portFeather(x, y, c.isla, giro)}"></div>`;
         } else {
           const kind = solo ? ' solo' : village.get(c.isla) === k ? ' poblado' : hill.get(c.isla) === k ? ' colina' : '';
-          inner += `<div class="land${kind}" style="${solo ? '' : landFeather(x, y, c.isla)}"></div>`;
+          inner += `<div class="land${kind}" style="${solo || kind ? '' : landFeather(x, y, c.isla)}"></div>`;
         }
         if (!islandMarked.has(c.isla)) {
           islandMarked.add(c.isla);
