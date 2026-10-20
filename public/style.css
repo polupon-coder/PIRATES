@@ -232,7 +232,12 @@ button { font: inherit; cursor: pointer; }
 .land.poblado { background: url(img/poblado.webp) center / cover; }
 .land.colina { background: url(img/colina.webp) center / cover; }
 .land.puerto { background: var(--port-img) center / cover; transform: rotate(var(--rot)); }
-.land.solo { background: url(img/isla.webp) center / 135%; }
+.land.solo {
+  /* Islote: la misma vegetación, recortada en forma redondeada y fundida con su playa. */
+  background: url(img/tierra.webp) center / cover;
+  -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent 80%);
+  mask-image: radial-gradient(closest-side, #000 60%, transparent 80%);
+}
 .port-icon {
   position: absolute; left: 2px; top: 2px;
   width: 34%; height: 34%; border-radius: 50%; display: grid; place-items: center;
@@ -513,3 +518,14 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .life .bar { height: 7px; margin: 3px 0 2px; }
 .rival .life { margin-left: 20px; }
 .me-life { width: 150px; max-width: 100%; }
+
+/* Botones del panel Rivales: pequeños y discretos, como notas en el pergamino. */
+.rival-acts { gap: 4px; margin-top: 4px; margin-left: 20px; }
+.rival-acts .btn.small {
+  font-size: 13px; padding: 1px 8px; border-radius: 6px; border: 1px solid #8a5a2a88;
+  background: #5a3a1c14; color: var(--ink); text-shadow: none; box-shadow: none; filter: none; font-weight: 600;
+}
+.rival-acts .btn.small:hover:not(:disabled) { background: #5a3a1c2e; filter: none; }
+.rival-acts .btn.small.red { color: #8d2a1f; border-color: #8d2a1f66; }
+.rival-acts .btn.small.green { color: #2e6d36; border-color: #2e6d3666; }
+.rival-acts .btn .ico:not(.place) { height: 1.45em; vertical-align: -0.4em; margin-right: 2px; }

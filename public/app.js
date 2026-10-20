@@ -470,7 +470,9 @@ function landRects() {
   for (let y = 0; y < N; y++) {
     for (let x = 0; x < N; x++) {
       const c = S.map.tiles[y][x];
-      if (!isLandT(c) || isIslet(x, y)) continue;
+      if (!isLandT(c)) continue;
+      // Islote: su vegetación es redonda, así que la playa se calcula desde un poco más adentro.
+      if (c.t === 'tierra' && isIslet(x, y)) { rects.push([x, y, x + 1, y + 1, 'circulo']); continue; }
       if (c.t === 'puerto') {
         const g = giro.get(c.puerto) || 0;
         const d = 0.3; // la arena queda bajo la orilla de la propia lámina, nunca ante el muelle
@@ -532,9 +534,17 @@ function drawSea() {
           const fx = (pxx + 0.5) / px;
           let dist = 9;
           for (const r of rs) {
-            const dx = Math.max(r[0] - fx, 0, fx - r[2]);
-            const dy = Math.max(r[1] - fy, 0, fy - r[3]);
-            const dd = Math.hypot(dx, dy);
+            let dd;
+            if (r[4] === 'circulo') {
+              // Islote: orilla redonda y algo irregular alrededor del centro de la casilla.
+              const ang = Math.atan2(fy - (r[1] + 0.5), fx - (r[0] + 0.5));
+              const rad = 0.3 + 0.05 * vnoise(Math.cos(ang) * 2 + r[0] * 7, Math.sin(ang) * 2 + r[1] * 7);
+              dd = Math.max(0, Math.hypot(fx - r[0] - 0.5, fy - r[1] - 0.5) - rad);
+            } else {
+              const dx = Math.max(r[0] - fx, 0, fx - r[2]);
+              const dy = Math.max(r[1] - fy, 0, fy - r[3]);
+              dd = Math.hypot(dx, dy);
+            }
             if (dd < dist) dist = dd;
           }
           if (dist >= REACH) continue;
@@ -568,7 +578,7 @@ function drawSea() {
             r0 += (sr - r0) * edge; g0 += (sg - g0) * edge; b0 += (sb - b0) * edge;
             // Matas que se asoman desde la isla sobre la arena seca.
             const reach = beach * (0.1 + 0.85 * vnoise(fx * 5 + 3, fy * 5 + 8)); // la vegetación invade la arena a trozos
-            if (dist < reach) {
+            if (dist > 0 && dist < reach) {
               const vg = vegAt(fx, fy);
               if (vg) { r0 = vg[0]; g0 = vg[1]; b0 = vg[2]; }
             }
