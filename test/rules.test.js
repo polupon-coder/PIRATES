@@ -196,6 +196,26 @@ test('atracar: gratis, sin volver al último puerto y salir navegando', () => {
   assert.strictEqual(a.docked, 0);
 });
 
+test('no se puede atracar en un puerto con un rival atracado', () => {
+  const { g, a, b } = setup([
+    '..........',
+    '.P......P.',
+    '..........',
+  ]);
+  b.docked = 0;
+  b.x = 1;
+  b.y = 1;
+  a.lastPort = 1;
+  place(g, a, 2, 2);
+  assert.deepStrictEqual(g.dockablePorts(a).map((p) => p.id), []);
+  assert.deepStrictEqual(g.view(a.id).me.cerrados.map((p) => p.rival), ['Beto']);
+  assert.throws(() => g.act(a.id, 'atracar', { port: 0 }), /rival atracado/);
+  b.docked = null;
+  place(g, b, 9, 9);
+  g.act(a.id, 'atracar', { port: 0 });
+  assert.strictEqual(a.docked, 0);
+});
+
 test('comercio en puerto: beneficio neto, umbrales de PL y no revender', () => {
   const { g, a, b } = setup(['.P........']);
   place(g, b, 9, 9);

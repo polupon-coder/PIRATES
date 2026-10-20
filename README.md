@@ -98,7 +98,7 @@ Texturas del tablero (en `public/img/`):
 
 1. **Precios:** cada puerto paga por cada mercancía su valor base −1…+2 y la vende 1 oro más cara. Son fijos toda la partida. Los precios de un puerto se conocen en cuanto se descubre su casilla.
 2. **Carga de un barco hundido:** si lo hunde otro pirata, este se lleva la mitad perdida, si le cabe en la bodega (a coste 0). Si lo hunde la Armada, un mercante o un peligro, se pierde.
-3. **Atracado:** el barco está en la casilla del puerto. Al salir, la primera casilla de mar cuesta movimiento normal. Se puede atracar a mitad de un movimiento y seguir usando las acciones que queden. La restricción de regreso impide atracar en el último puerto visitado.
+3. **Atracado:** el barco está en la casilla del puerto. Al salir, la primera casilla de mar cuesta movimiento normal. Se puede atracar a mitad de un movimiento y seguir usando las acciones que queden. La restricción de regreso impide atracar en el último puerto visitado, y no se puede atracar en un puerto donde ya hay un rival atracado.
 4. **Visión:** el terreno se descubre en 3 × 3, pero los **barcos se ven hasta 2 casillas** (el alcance de los cañones); si no, nunca se podría cañonear a distancia 2. Las fragatas detectan piratas a esa misma distancia.
 5. **Iniciar un combate:** la acción elegida (Cañonear o Abordar) es la maniobra del atacante en el primer asalto. Si el combate empieza a distancia 2, nadie puede abordar en ese combate.
 6. **Abordajes:** quien gana el abordaje captura hasta 2 mercancías (las más valiosas, a coste 0), el perdedor pierde un marinero y el combate termina. Si quien aborda es rechazado (cañoneo contra abordaje), pierde un marinero y el combate sigue. El empate favorece al defensor original del combate.

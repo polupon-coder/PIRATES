@@ -87,6 +87,7 @@ const ERR_EN = {
   'No puedes abordar desde el puerto': 'You cannot board from port', 'No puedes atacar desde el puerto': 'You cannot attack from port',
   'No puedes comprar y vender la misma mercancía': 'You cannot buy and sell the same goods', 'No puedes expulsarte': 'You cannot remove yourself',
   'No puedes navegar ahí': 'You cannot sail there', 'No puedes volver al último puerto que visitaste hasta atracar en otro': 'You cannot return to the last port you visited until you dock at another one',
+  'Hay un rival atracado en ese puerto': 'A rival is docked at that port',
   'No te quedan acciones': 'No actions left', 'No te quedan puntos de movimiento': 'No movement points left', 'No tienes marineros para abordar': 'You have no sailors to board with',
   'No tienes ninguna propuesta': 'You have no offer', 'No tienes oro suficiente': 'Not enough gold', 'Objetivo no válido': 'Invalid target',
   'Para abordar tienes que estar junto al barco': 'To board you must be next to the ship', 'Primero pulsa Navegar': 'Press Sail first', 'Ruta no válida': 'Invalid route',
@@ -980,6 +981,7 @@ function renderPanel() {
       acts += `<button class="btn gold block" data-dock="${id}">${L('Atracar', 'Dock')}<span class="long"> ${L('en', 'at')}</span> ${LUGAR(p ? p.name : L('el puerto', 'the port'))} <span class="long"> ${L('(gratis)', '(free)')}</span></button>`;
     }
     for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} ${L('Explorar la isla', 'Explore the island')}</button>`;
+    for (const b of me.cerrados || []) acts += `<p class="hint">${L(`${esc(b.rival)} está atracado en ${esc(b.name)}: no puedes atracar hasta que se vaya.`, `${esc(b.rival)} is docked at ${esc(b.name)}: you can't dock until they leave.`)}</p>`;
     if (port) acts += `<button class="btn gold block" id="portBtn">${L('Puerto', 'Port')}<span class="long"> ${L('de', 'of')}</span> ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
@@ -1328,7 +1330,7 @@ function rulesHtml() {
       <li><b>Explore:</b> next to an island you have not explored. Treasure 25% (3–8 gold and +3 ${LEYENDA}), cargo 35%, danger 25% (1–2 damage) or nothing.</li>
       <li><b>Fire</b> (up to 2 tiles, with line of fire) or <b>Board</b> (next to the ship): starts a fight.</li>
       <li><b>In port:</b> trade, upgrade, repair (1 gold per point) and recruit (2 gold per sailor). Each one is 1 action.</li>
-      <li><b>Docking</b> is free from a tile next to the port, but you cannot return to the last port visited until you dock at another one.</li>
+      <li><b>Docking</b> is free from a tile next to the port, but you cannot return to the last port visited until you dock at another one, nor dock where a rival is already docked.</li>
       <li><b>Trade</b> with a merchant or offer a deal to another pirate next to you.</li>
     </ul>
     <h3>Fights</h3>
@@ -1355,7 +1357,7 @@ function rulesHtml() {
       <li><b>Explorar:</b> junto a una isla que no hayas explorado. Tesoro 25 % (3–8 oros y +3 ${LEYENDA}), mercancías 35 %, peligro 25 % (1–2 de daño) o nada.</li>
       <li><b>Cañonear</b> (hasta 2 casillas, con línea de tiro) o <b>Abordar</b> (junto al barco): empieza un combate.</li>
       <li><b>En puerto:</b> comerciar, mejorar, reparar (1 oro por punto) y reclutar (2 oros por marinero). Cada una es 1 acción.</li>
-      <li><b>Atracar</b> es gratis desde una casilla vecina al puerto, pero no puedes volver al último puerto visitado hasta atracar en otro.</li>
+      <li><b>Atracar</b> es gratis desde una casilla vecina al puerto, pero no puedes volver al último puerto visitado hasta atracar en otro, ni atracar donde ya hay un rival atracado.</li>
       <li><b>Comerciar</b> con un mercante o proponer un trato a otro pirata junto a ti.</li>
     </ul>
     <h3>Combate</h3>

@@ -365,9 +365,20 @@ class Game {
     if (mv.mp <= 0) this.turn.moving = null;
   }
 
+  // Rival atracado en ese puerto (no se puede atracar mientras siga allí).
+  portRival(portId, p) {
+    return this.players.find((o) => o.id !== p.id && o.docked === portId) || null;
+  }
+
   dockablePorts(p) {
     if (p.docked !== null) return [];
-    return this.map.ports.filter((port) => cheb(port.x, port.y, p.x, p.y) === 1 && port.id !== p.lastPort);
+    return this.map.ports.filter((port) => cheb(port.x, port.y, p.x, p.y) === 1 && port.id !== p.lastPort && !this.portRival(port.id, p));
+  }
+
+  // Puertos vecinos cerrados porque hay un rival atracado.
+  blockedPorts(p) {
+    if (p.docked !== null) return [];
+    return this.map.ports.filter((port) => cheb(port.x, port.y, p.x, p.y) === 1 && port.id !== p.lastPort && this.portRival(port.id, p));
   }
 
   a_atracar(p, { port }) {
@@ -376,6 +387,7 @@ class Game {
     const pt = this.map.ports[Number(port)];
     if (!pt || p.docked !== null || cheb(pt.x, pt.y, p.x, p.y) !== 1) fail('Tienes que estar junto al puerto');
     if (pt.id === p.lastPort) fail('No puedes volver al último puerto que visitaste hasta atracar en otro');
+    if (this.portRival(pt.id, p)) fail('Hay un rival atracado en ese puerto');
     this.turn.moving = null;
     this.dock(p, pt.id);
     this.say(T(`${p.name} atraca en ${pt.name}.`, `${p.name} docks at ${pt.name}.`), this.observers([pt.x, pt.y]));
@@ -1245,6 +1257,7 @@ class Game {
         siguientePL: (me.profitPL + 1) * C.PROFIT_PER_PL,
         explorables: this.explorableIslands(me),
         atracables: this.dockablePorts(me).map((p) => p.id),
+        cerrados: this.blockedPorts(me).map((pt) => ({ id: pt.id, name: pt.name, rival: this.portRival(pt.id, me).name })),
         objetivos: this.targetsFor(me),
         reach: this.reachFor(me),
         avisos: me.avisos,

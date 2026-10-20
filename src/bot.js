@@ -38,7 +38,7 @@ function wantsPort(g, p) {
 function chooseGoal(g, p) {
   const S = C.SIZE;
   if (wantsPort(g, p)) {
-    const ports = g.map.ports.filter((pt) => pt.id !== p.lastPort && knownTile(g, p, pt.x, pt.y));
+    const ports = g.map.ports.filter((pt) => pt.id !== p.lastPort && !g.portRival(pt.id, p) && knownTile(g, p, pt.x, pt.y));
     if (ports.length) return { kind: 'puerto', tiles: ports.flatMap((pt) => g.map.portExits(pt).filter(([x, y]) => knownTile(g, p, x, y))) };
   }
   const islands = new Set();
@@ -66,7 +66,7 @@ function chooseGoal(g, p) {
     }
   }
   if (frontier.length) return { kind: 'frontera', tiles: frontier };
-  const ports = g.map.ports.filter((pt) => pt.id !== p.lastPort);
+  const ports = g.map.ports.filter((pt) => pt.id !== p.lastPort && !g.portRival(pt.id, p));
   return { kind: 'puerto', tiles: ports.flatMap((pt) => g.map.portExits(pt)) };
 }
 
