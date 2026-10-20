@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PIRATAS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏴‍☠️</text></svg>">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Piratas</div>
+    <div id="status" class="status"></div>
+    <button id="pricesBtn" class="top-btn hidden">Precios</button>
+    <button id="rulesBtn" class="top-btn">Reglas</button>
+    <button id="soundBtn" class="top-btn icon" title="Silenciar sonidos" aria-label="Silenciar sonidos">🔊</button>
+    <span id="roomInfo" class="room-code"></span>
+  </header>
+
+  <main id="home" class="home hidden">
+    <div class="home-card">
+      <h1 class="home-title">Piratas</h1>
+      <p class="home-sub">Explora el archipiélago, comercia, mejora tu barco y conviértete en leyenda.</p>
+      <input id="nameInput" class="input" maxlength="20" placeholder="Tu nombre de capitán" aria-label="Tu nombre">
+      <button id="createBtn" class="btn gold big">Crear partida</button>
+      <div class="join-row">
+        <input id="codeInput" class="input code" maxlength="4" placeholder="CÓDIGO" aria-label="Código de sala">
+        <button id="joinBtn" class="btn">Unirse</button>
+      </div>
+      <p id="homeError" class="error"></p>
+    </div>
+  </main>
+
+  <main id="lobby" class="lobby hidden"></main>
+
+  <main id="game" class="game hidden">
+    <section class="board-wrap">
+      <div id="banner" class="banner"></div>
+      <div id="board" class="board"></div>
+    </section>
+    <aside id="panel" class="panel"></aside>
+  </main>
+
+  <div id="modal" class="modal hidden"></div>
+  <div id="combat" class="modal combat-modal hidden"></div>
+  <div id="toasts" class="toasts"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+/* PIRATAS — estilos */
+:root {
+  --ink: #2a1d10;
+  --paper: #f3e6c8;
+  --paper-2: #e8d5a8;
+  --wood: #3b2414;
+  --wood-2: #573620;
+  --wood-3: #7a4d2b;
+  --gold: #d9a43b;
+  --gold-2: #f2c76a;
+  --sea: #1f5f7a;
+  --sea-2: #2b7896;
+  --sea-deep: #143f55;
+  --reef: #3f8a8a;
+  --sand: #d9c08a;
+  --grass: #7f9a4a;
+  --fog: #1b2228;
+  --red: #b5382a;
+  --green: #3f8f4a;
+  --muted: #8a7a5e;
+  --cell: min(calc((100vw - 400px) / 12.6), calc((100vh - 110px) / 12.6), 62px);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  color: var(--paper);
+  background: radial-gradient(ellipse at top, #24485a 0%, #10222d 60%, #0a161d 100%) fixed;
+}
+button { font: inherit; cursor: pointer; }
+.hidden { display: none !important; }
+
+/* ---------- barra superior */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px;
+  background: linear-gradient(#4a2c17, #2e1b0e);
+  border-bottom: 2px solid #1a0f07;
+  box-shadow: 0 2px 8px #0008;
+}
+.brand { font-family: 'Pirata One', cursive; font-size: 30px; color: var(--gold-2); letter-spacing: 1px; text-shadow: 0 2px 0 #000; }
+.status { flex: 1; font-size: 16px; color: var(--paper-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-btn { background: #0003; color: var(--paper); border: 1px solid #a8784566; border-radius: 6px; padding: 3px 10px; }
+.top-btn:hover { background: #0006; }
+.room-code { font-family: 'Pirata One', cursive; font-size: 20px; color: var(--gold); letter-spacing: 2px; }
+
+/* ---------- botones */
+.btn {
+  background: linear-gradient(#6b4325, #4a2c17);
+  color: var(--paper);
+  border: 1px solid #1a0f07;
+  border-radius: 7px;
+  padding: 6px 14px;
+  box-shadow: inset 0 1px 0 #ffffff22, 0 2px 0 #0008;
+  transition: transform .06s, filter .1s;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.15); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.gold { background: linear-gradient(#f2c76a, #c98f2a); color: #2a1606; font-weight: 700; }
+.btn.red { background: linear-gradient(#c6493a, #8d2a1f); }
+.btn.green { background: linear-gradient(#4f9e58, #2e6d36); }
+.btn.big { font-size: 20px; padding: 10px 20px; }
+.btn.small { font-size: 14px; padding: 3px 9px; }
+.btn.block { width: 100%; }
+.input {
+  font: inherit; padding: 8px 12px; border-radius: 7px;
+  border: 1px solid var(--wood-3); background: var(--paper); color: var(--ink);
+}
+.error { color: #ff9d8a; min-height: 1.2em; margin: 6px 0 0; }
+
+/* ---------- portada */
+.home { display: grid; place-items: center; min-height: calc(100vh - 52px); padding: 16px; }
+.home-card {
+  width: min(440px, 100%);
+  display: flex; flex-direction: column; gap: 12px; text-align: center;
+  padding: 28px 26px;
+  color: var(--ink);
+  background: radial-gradient(ellipse at center, #f8edd2 0%, #ead6a6 75%, #d6bb82 100%);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px #000a, inset 0 0 40px #8a5a2a44;
+}
+.home-title { font-family: 'Pirata One', cursive; font-size: 64px; margin: 0; color: var(--wood); line-height: 1; }
+.home-sub { margin: 0 0 6px; font-style: italic; }
+.join-row { display: flex; gap: 8px; }
+.join-row .input { flex: 1; text-transform: uppercase; letter-spacing: 4px; text-align: center; }
+
+/* ---------- sala */
+.lobby { display: grid; place-items: center; padding: 20px 16px; }
+.parchment {
+  color: var(--ink);
+  background: radial-gradient(ellipse at center, #f8edd2 0%, #ead6a6 80%, #d6bb82 100%);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px #0009, inset 0 0 30px #8a5a2a33;
+}
+.lobby-card { width: min(520px, 100%); padding: 22px; }
+.lobby-card h2 { font-family: 'Pirata One', cursive; font-size: 36px; margin: 0 0 6px; color: var(--wood); }
+.player-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #8a6a3a55; }
+.flag { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #0006; flex: none; }
+.player-row .name { flex: 1; font-weight: 600; }
+.tag { font-size: 13px; padding: 1px 7px; border-radius: 10px; background: #0001; border: 1px solid #0002; }
+.share { display: flex; gap: 8px; margin: 12px 0; }
+.share .input { flex: 1; font-size: 14px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.muted { color: var(--muted); }
+.center { text-align: center; }
+
+/* ---------- partida */
+.game {
+  display: grid;
+  grid-template-columns: auto minmax(300px, 380px);
+  gap: 14px;
+  padding: 10px 14px;
+  justify-content: center;
+  align-items: start;
+}
+.board-wrap { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.banner {
+  min-height: 34px; width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 18px; text-align: center;
+}
+.banner .me-turn { color: var(--gold-2); font-weight: 700; }
+.banner .clock { font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 6px; background: #0005; }
+.banner .clock.low { color: #ff9d8a; }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(12, var(--cell));
+  grid-template-rows: repeat(12, var(--cell));
+  padding: 6px;
+  background: #2d1b0e;
+  border: 3px solid #1a0f07;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px #000a, inset 0 0 0 2px #7a4d2b;
+  user-select: none;
+}
+.cell { position: relative; overflow: visible; }
+.cell.fog {
+  background: url(img/niebla.webp) #dfe7ef;
+  background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+}
+/* El mar y la tierra son texturas continuas: cada casilla muestra su trozo (--x, --y). */
+.cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto {
+  background: url(img/mar.webp) var(--sea);
+  background-size: calc(var(--cell) * 4) calc(var(--cell) * 4);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+}
+.cell.arrecife { background: url(img/arrecife.webp) center / cover; }
+/* Mar profundo: casillas rodeadas de mar; se funde con el mar normal en los bordes. */
+.deep {
+  position: absolute; inset: 0;
+  background: url(img/oceano.webp);
+  background-size: calc(var(--cell) * 4) calc(var(--cell) * 4);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+  opacity: .85;
+  -webkit-mask-image: var(--mh), var(--mv);
+  mask-image: var(--mh), var(--mv);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+/* Borde de playa: la lámina de costa girada hacia la tierra; solo se ve su franja de playa. */
+.coast { position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: var(--m); mask-image: var(--m); }
+.coast > i { position: absolute; inset: 0; background: url(img/costa.webp) center / cover; transform: rotate(var(--rot)) scale(var(--sc, 1)); }
+.land {
+  position: absolute; inset: 0;
+  background: url(img/tierra.webp) var(--sand);
+  background-size: calc(var(--cell) * 3) calc(var(--cell) * 3);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+}
+.land.poblado { background: url(img/poblado.webp) center / cover; }
+.land.colina { background: url(img/colina.webp) center / cover; }
+.land.puerto { background: var(--port-img) center / cover; transform: rotate(var(--rot)); }
+.land.solo { background: url(img/isla.webp) center / 135%; }
+.dim > * , .cell.dim { filter: brightness(.72) saturate(.8); }
+.cell.dim .ship, .cell.dim .mark { filter: none; }
+.port-icon {
+  position: absolute; left: 2px; top: 2px;
+  width: 34%; height: 34%; border-radius: 50%; display: grid; place-items: center;
+  font-size: calc(var(--cell) * .2); background: #f3e6c8e6; border: 1.5px solid #5a3a1c;
+  box-shadow: 0 1px 3px #0009; z-index: 2;
+}
+.port-name {
+  position: absolute; left: 50%; bottom: -2px; transform: translate(-50%, 100%);
+  font-size: 11px; line-height: 1; white-space: nowrap; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000;
+  pointer-events: none; z-index: 3;
+}
+.mark { position: absolute; right: 2px; top: 1px; font-size: 12px; text-shadow: 0 1px 1px #000; z-index: 2; }
+.cell.reach { cursor: pointer; }
+.cell.reach::after {
+  content: attr(data-cost); position: absolute; inset: 3px;
+  border: 2px dashed var(--gold-2); border-radius: 6px;
+  color: var(--gold-2); font-size: 12px; font-weight: 700; display: grid; place-items: end;
+  padding: 0 3px 1px 0; text-shadow: 0 1px 2px #000;
+  background: #f2c76a22;
+}
+.cell.reach:hover::after { background: #f2c76a55; }
+.cell.clickable { cursor: pointer; }
+.cell.clickable:hover { outline: 2px solid var(--gold-2); outline-offset: -2px; z-index: 4; }
+.cell.target::after {
+  content: ''; position: absolute; inset: 2px; border: 2px solid #ff6b57; border-radius: 50%;
+  animation: pulse 1.2s infinite;
+}
+@keyframes pulse { 50% { opacity: .35; } }
+
+.ship {
+  position: absolute; left: -12%; top: -18%; width: 124%; height: 124%;
+  object-fit: contain; z-index: 5; pointer-events: none;
+  filter: drop-shadow(0 3px 2px #0009);
+}
+.ship-badge {
+  position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
+  width: 40%; height: 5px; border-radius: 3px; z-index: 6; border: 1px solid #000a;
+}
+.ship.docked { width: 70%; height: 70%; left: 30%; top: 30%; }
+.ship.me-ship { filter: drop-shadow(0 0 4px var(--gold-2)) drop-shadow(0 3px 2px #0009); }
+
+/* ---------- panel lateral */
+.panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
+.box { padding: 12px 14px; }
+.box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
+.ship-head { display: flex; gap: 10px; align-items: center; }
+.ship-head img { width: 76px; height: 76px; object-fit: contain; }
+.ship-head .who { font-family: 'Pirata One', cursive; font-size: 26px; line-height: 1; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 8px; font-size: 16px; }
+.stat { display: flex; justify-content: space-between; border-bottom: 1px dotted #8a6a3a66; }
+.stat b { font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 4px; background: #0002; overflow: hidden; margin-top: 2px; }
+.bar > i { display: block; height: 100%; background: linear-gradient(90deg, #b5382a, #e3833a); }
+.bar.ok > i { background: linear-gradient(90deg, #3f8f4a, #7cc06b); }
+.levels { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.lvl { font-size: 13px; padding: 1px 7px; border-radius: 10px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
+.actions { display: flex; flex-direction: column; gap: 6px; }
+.actions .row .btn { flex: 1; }
+.pips { display: inline-flex; gap: 4px; vertical-align: middle; }
+.pips i { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); border: 1px solid #0007; }
+.pips i.off { background: #0002; }
+.target-row { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px dashed #8a6a3a55; flex-wrap: wrap; }
+.target-row .name { flex: 1; font-weight: 600; min-width: 120px; }
+.hint { font-size: 14px; color: #6b5a3e; font-style: italic; }
+.goods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 12px; font-size: 15px; }
+.score-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.score-row .name { flex: 1; }
+.score-row.turn .name { font-weight: 700; }
+.score-row.turn .name::before { content: '➤ '; color: var(--red); }
+.tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+.tabs button { flex: 1; background: #0001; border: 1px solid #5a3a1c44; border-radius: 6px 6px 0 0; padding: 3px; color: var(--ink); }
+.tabs button.on { background: #5a3a1c22; font-weight: 700; }
+.log { max-height: 180px; overflow: auto; font-size: 14px; line-height: 1.3; }
+.log p { margin: 0 0 3px; }
+.chat-form { display: flex; gap: 6px; margin-top: 6px; }
+.chat-form input { flex: 1; font-size: 14px; padding: 4px 8px; }
+
+/* ---------- ventanas */
+.modal {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center; padding: 16px;
+  background: #050a0dcc;
+}
+.dialog { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 18px 20px; position: relative; }
+.dialog h2 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 34px; margin: 0 0 8px; color: var(--wood); }
+.close { position: absolute; right: 10px; top: 6px; background: none; border: 0; font-size: 28px; color: var(--wood); }
+table.trade { width: 100%; border-collapse: collapse; font-size: 16px; }
+table.trade th, table.trade td { padding: 5px 4px; text-align: center; border-bottom: 1px dashed #8a6a3a55; }
+table.trade th { font-size: 14px; color: #6b5a3e; font-weight: 600; }
+table.trade td:first-child, table.trade th:first-child { text-align: left; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper button { width: 26px; height: 26px; padding: 0; border-radius: 50%; border: 1px solid #5a3a1c; background: #fff6; color: var(--ink); font-weight: 700; }
+.stepper button:disabled { opacity: .3; }
+.stepper span { min-width: 18px; display: inline-block; font-weight: 700; }
+.summary { margin: 10px 0; font-size: 17px; }
+.up-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #8a6a3a55; }
+.prices-port { margin-bottom: 10px; }
+.prices-port h4 { margin: 4px 0; font-size: 18px; }
+
+/* ---------- combate */
+.combat-modal .dialog { width: min(720px, 100%); }
+.duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.fighter { text-align: center; }
+.fighter img { width: 120px; height: 100px; object-fit: contain; }
+.fighter.right img { transform: scaleX(-1); }
+.fighter .fname { font-family: 'Pirata One', cursive; font-size: 24px; }
+.vs { font-family: 'Pirata One', cursive; font-size: 40px; color: var(--red); }
+.badges { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; min-height: 22px; margin-top: 4px; }
+.badge { font-size: 12px; padding: 1px 6px; border-radius: 9px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
+.badge.adv { background: #d9a43b55; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 8px; }
+.choice { display: flex; flex-direction: column; gap: 2px; padding: 10px 6px; text-align: center; }
+.choice .big-ico { font-size: 28px; }
+.choice small { font-size: 13px; opacity: .85; }
+.history { margin-top: 10px; }
+.round-log { padding: 6px 8px; margin-bottom: 6px; background: #5a3a1c14; border-radius: 6px; font-size: 15px; }
+.dice { display: inline-flex; gap: 3px; vertical-align: middle; margin: 0 4px; }
+.die {
+  width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center;
+  background: #fffaf0; color: var(--ink); border: 1px solid #5a3a1c; font-weight: 700; font-size: 14px;
+}
+.die.hit { background: #c6493a; color: #fff; border-color: #6d1d14; }
+.die.roll { animation: roll .5s ease-out; }
+@keyframes roll { 0% { transform: rotate(-200deg) scale(.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.waiting { text-align: center; font-style: italic; margin: 10px 0; }
+
+/* ---------- avisos */
+.toasts { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.toast {
+  background: #1d130bee; color: var(--paper); padding: 8px 16px; border-radius: 8px;
+  border: 1px solid var(--gold); box-shadow: 0 4px 16px #000a; max-width: min(520px, 92vw); text-align: center;
+  animation: toastIn .25s ease-out;
+}
+.toast.tesoro { border-color: var(--gold-2); color: var(--gold-2); font-weight: 700; }
+.toast.peligro, .toast.hundido, .toast.error { border-color: #ff6b57; }
+@keyframes toastIn { from { transform: translateY(10px); opacity: 0; } }
+
+.final-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.final-table td, .final-table th { padding: 6px; border-bottom: 1px dashed #8a6a3a55; text-align: center; }
+.final-table td:nth-child(2) { text-align: left; }
+.winner-title { font-family: 'Pirata One', cursive; font-size: 44px; text-align: center; color: var(--wood); margin: 0; }
+
+.rules h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 12px 0 4px; color: var(--wood); }
+.rules p, .rules li { margin: 3px 0; }
+
+/* ---------- móvil */
+@media (max-width: 900px) {
+  :root { --cell: min(calc((100vw - 32px) / 12.4), 54px); }
+  .game { grid-template-columns: 1fr; padding: 8px 16px; }
+  .panel { max-height: none; overflow: visible; }
+  .status { font-size: 14px; }
+  .brand { font-size: 24px; }
+  .choices { grid-template-columns: 1fr; }
+  .fighter img { width: 80px; height: 70px; }
+  .port-name { display: none; }
+}

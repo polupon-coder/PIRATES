@@ -1,0 +1,10 @@
+# Configuración para publicar en Render.com (New → Blueprint)
+services:
+  - type: web
+    name: piratas
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz

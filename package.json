@@ -1,0 +1,19 @@
+{
+  "name": "piratas",
+  "version": "0.1.0",
+  "description": "PIRATAS — juego de mesa virtual de piratas para 2 a 4 jugadores por internet",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.4"
+  }
+}
