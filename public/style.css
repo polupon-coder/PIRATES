@@ -211,16 +211,14 @@ button { font: inherit; cursor: pointer; }
 }
 /* El mar, los arrecifes y la playa se dibujan en el lienzo de debajo (.sea-layer). */
 .sea-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
-/* Arena sobre el borde de la tierra: encima de las losetas, debajo de barcos y marcas. */
-.coast-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .cell.reach::after, .cell.target::after { z-index: 3; }
 .cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto { background: transparent; }
 /* Debajo de toda la tierra va la vegetación normal: poblados y colinas se funden con ella. */
 .cell.tierra::after { content: ''; position: absolute; inset: 0; z-index: -1; background: url(img/tierra.webp) center / cover; }
 .cell.tierra { isolation: isolate; }
+.cell.tierra.islet::after { display: none; }
+.veil-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
 /* Fuera de tu vista: un velo oscuro (la tierra se oscurece con su propio filtro). */
-/* Fuera de tu vista: un único velo oscuro sobre mar, tierra y arena (los barcos quedan encima). */
-.cell.dim::before { content: ''; position: absolute; inset: 0; background: #00000057; z-index: 2; pointer-events: none; }
 
 .land {
   position: absolute; inset: 0;
@@ -510,3 +508,8 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 }
 .btn:not(.gold):not(.red):not(.green):disabled { opacity: .6; }
 .btn .ico.small:not(.place) { height: 1.5em; vertical-align: -0.45em; }
+
+/* Franja de vida (casco) bajo el nombre. */
+.life .bar { height: 7px; margin: 3px 0 2px; }
+.rival .life { margin-left: 20px; }
+.me-life { width: 150px; max-width: 100%; }

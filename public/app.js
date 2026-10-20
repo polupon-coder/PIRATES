@@ -115,8 +115,10 @@ const FALLBACK = {
   fragata: svgShip({ masts: 3, hull: '#1f3550', sail: '#ffffff', flag: '#c0392b' }),
 };
 // Mercantes y fragatas usan las mismas ilustraciones que los piratas.
+// Velas del color de cada jugador.
+const SAIL = { '#c0392b': 'rojo', '#2471a3': 'azul', '#229954': 'verde', '#d4ac0d': 'amarillo' };
 function shipImgName(s) {
-  if (s.kind === 'pirata') return `barco-${tierOf(s.niveles)}`;
+  if (s.kind === 'pirata') return `barco-${tierOf(s.niveles)}${SAIL[s.color] ? `-${SAIL[s.color]}` : ''}`;
   return s.kind;
 }
 // Hacia dónde mira cada ilustración: piratas y fragata, a la derecha; el mercante, a la izquierda.
@@ -137,7 +139,7 @@ function shipImg(s, cls = '') {
 function shipFallback(img) {
   const n = img.dataset.ship;
   if (img.getAttribute('src').endsWith('.webp')) img.src = `img/${n}.png`;
-  else { img.onerror = null; img.src = FALLBACK[n]; }
+  else { img.onerror = null; img.src = FALLBACK[n] || FALLBACK[n.replace(/-[a-z]+$/, '')]; }
 }
 
 // ------------------------------------------------------------ conexión
@@ -362,10 +364,34 @@ const isLandT = (c) => c && (c.t === 'tierra' || c.t === 'puerto');
 // alrededor de toda la tierra conocida: rodea las esquinas y rellena los rincones de forma
 // natural, en cualquier forma de isla. Los puertos solo aportan su lado de tierra.
 const SEA_IMG = {};
-for (const n of ['mar', 'arrecife']) {
+for (const n of ['mar', 'arrecife', 'tierra']) {
   SEA_IMG[n] = new Image();
   SEA_IMG[n].onload = () => { seaKey = ''; if (S && S.map) drawSea(); };
   SEA_IMG[n].src = `img/${n}.webp`;
+}
+// Píxeles de la lámina de tierra, para asomar matas de vegetación sobre la arena.
+let VEG = null;
+function vegPixels() {
+  if (VEG || !SEA_IMG.tierra.complete || !SEA_IMG.tierra.naturalWidth) return VEG;
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 256;
+  const cx = c.getContext('2d');
+  cx.drawImage(SEA_IMG.tierra, 0, 0, 256, 256);
+  VEG = cx.getImageData(0, 0, 256, 256).data;
+  return VEG;
+}
+// Color de vegetación en (fx, fy) casillas, o null si en ese punto la lámina es arena clara.
+function vegAt(fx, fy) {
+  const v = vegPixels();
+  if (!v) return null;
+  const x = Math.floor((((fx % 1) + 1) % 1) * 256);
+  const y = Math.floor((((fy % 1) + 1) % 1) * 256);
+  const i = (y * 256 + x) * 4;
+  const r = v[i];
+  const g = v[i + 1];
+  const b = v[i + 2];
+  return g > r + 6 && g > b ? [r, g, b] : null; // solo lo verde
 }
 const seaCanvas = document.createElement('canvas');
 seaCanvas.className = 'sea-layer';
@@ -514,7 +540,7 @@ function drawSea() {
           if (dist >= REACH) continue;
           const n1 = vnoise(fx * 3.2, fy * 3.2);
           const n2 = vnoise(fx * 9 + 7, fy * 9 + 3);
-          const beach = 0.03 + 0.17 * n1 + 0.06 * n2; // ancho irregular de la arena (calas y salientes)
+          const beach = 0.04 + 0.1 * n1 + 0.03 * n2; // ancho irregular de la arena (calas y salientes)
           const i = (py * W + pxx) * 4;
           let r0 = d[i];
           let g0 = d[i + 1];
@@ -540,6 +566,12 @@ function drawSea() {
             const sb = 158 - 20 * wet + grain * 0.8;
             const edge = Math.min(1, (beach - dist) * px / 1.5); // borde suavizado
             r0 += (sr - r0) * edge; g0 += (sg - g0) * edge; b0 += (sb - b0) * edge;
+            // Matas que se asoman desde la isla sobre la arena seca.
+            const reach = beach * (0.1 + 0.85 * vnoise(fx * 5 + 3, fy * 5 + 8)); // la vegetación invade la arena a trozos
+            if (dist < reach) {
+              const vg = vegAt(fx, fy);
+              if (vg) { r0 = vg[0]; g0 = vg[1]; b0 = vg[2]; }
+            }
           }
           d[i] = r0; d[i + 1] = g0; d[i + 2] = b0;
         }
@@ -549,69 +581,32 @@ function drawSea() {
   ctx.putImageData(img, 0, 0);
 }
 
-// Arena que entra de forma irregular sobre el borde de las losetas de tierra (capa encima de
-// la tierra y debajo de los barcos), para que la orilla no sea la línea recta de la loseta.
-const coastCanvas = document.createElement('canvas');
-coastCanvas.className = 'coast-layer';
-let coastKey = '';
-function drawCoast() {
+// Velo oscuro de lo que queda fuera de tu vista, de una sola pieza (sin costuras entre casillas).
+const veilCanvas = document.createElement('canvas');
+veilCanvas.className = 'veil-layer';
+function drawVeil() {
   const N = S.map.size;
   const cell = $('board').clientWidth / N;
   if (!cell) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const px = Math.round(cell * dpr);
+  const px = cell * dpr;
+  const W = Math.round(px * N);
+  veilCanvas.width = W;
+  veilCanvas.height = W;
+  const ctx = veilCanvas.getContext('2d');
+  ctx.fillStyle = 'rgba(0,0,0,0.34)';
   const me = S.me;
-  const key = `${seaKey}|${me.x},${me.y}|${S.reglas.terrainView}`;
-  if (key === coastKey) return;
-  coastKey = key;
-  const W = px * N;
-  coastCanvas.width = W;
-  coastCanvas.height = W;
-  const ctx = coastCanvas.getContext('2d');
-  const img = ctx.createImageData(W, W);
-  const d = img.data;
-  const isWater = (x, y) => {
-    const n = S.map.tiles[y] && S.map.tiles[y][x];
-    return !!n && (n.t === 'mar' || n.t === 'arrecife');
-  };
-  const MAXIN = 0.42;
-  for (let ty = 0; ty < N; ty++) {
-    for (let tx = 0; tx < N; tx++) {
-      const c = S.map.tiles[ty][tx];
-      if (!c || c.t !== 'tierra' || isIslet(tx, ty)) continue;
-      const waters = [];
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && isWater(tx + dx, ty + dy)) waters.push([tx + dx, ty + dy]);
-      if (!waters.length) continue;
-      for (let py = ty * px; py < (ty + 1) * px; py++) {
-        const fy = (py + 0.5) / px;
-        for (let pxx = tx * px; pxx < (tx + 1) * px; pxx++) {
-          const fx = (pxx + 0.5) / px;
-          let din = 9;
-          for (const [wx, wy] of waters) {
-            const dx = Math.max(wx - fx, 0, fx - (wx + 1));
-            const dy = Math.max(wy - fy, 0, fy - (wy + 1));
-            const dd = Math.hypot(dx, dy);
-            if (dd < din) din = dd;
-          }
-          if (din > MAXIN) continue;
-          const n3 = vnoise(fx * 2.6 + 11, fy * 2.6 + 5);
-          const n4 = vnoise(fx * 7 + 2, fy * 7 + 9);
-          const n5 = vnoise(fx * 19 + 4, fy * 19 + 1);
-          // Cuánto entra la arena: siempre algo y con entrantes y salientes, nunca recto.
-          const sIn = 0.03 + 0.3 * n3 * n3 + 0.1 * (n4 - 0.5) + 0.04 * (n5 - 0.5);
-          if (din >= sIn) continue;
-          const a = Math.min(1, (sIn - din) * px / 2.5);
-          const grain = (hash2(pxx, py) - 0.5) * 18 + (n4 - 0.5) * 14;
-          const k = 1;
-          const i = (py * W + pxx) * 4;
-          d[i] = (228 + grain) * k; d[i + 1] = (207 + grain) * k; d[i + 2] = (158 + grain * 0.8) * k; d[i + 3] = a * 255;
-        }
-      }
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      if (!S.map.tiles[y][x]) continue;
+      if (Math.max(Math.abs(me.x - x), Math.abs(me.y - y)) <= S.reglas.terrainView) continue;
+      const x0 = Math.round(x * px);
+      const y0 = Math.round(y * px);
+      ctx.fillRect(x0, y0, Math.round((x + 1) * px) - x0, Math.round((y + 1) * px) - y0);
     }
   }
-  ctx.putImageData(img, 0, 0);
 }
-addEventListener('resize', () => { if (S && S.map) { drawSea(); drawCoast(); } });
+addEventListener('resize', () => { if (S && S.map) { drawSea(); drawVeil(); } });
 
 function renderBoard() {
   const me = S.me;
@@ -671,6 +666,7 @@ function renderBoard() {
       const inView = Math.max(Math.abs(me.x - x), Math.abs(me.y - y)) <= S.reglas.terrainView;
       const cls = ['cell', c.t];
       if (!inView) cls.push('dim');
+      if (isLandT(c) && c.t === 'tierra' && isIslet(x, y)) cls.push('islet');
       let inner = '';
       let clickable = false;
       if (isLandT(c)) {
@@ -711,9 +707,9 @@ function renderBoard() {
   }
   $('board').innerHTML = html;
   $('board').prepend(seaCanvas);
-  $('board').append(coastCanvas);
+  $('board').append(veilCanvas);
   drawSea();
-  drawCoast();
+  drawVeil();
 }
 
 $('board').addEventListener('click', (e) => {
@@ -828,6 +824,7 @@ function renderPanel() {
         ${s ? `<span class="seen-tag" title="A la vista">${ICON('catalejo', 'tiny')}</span><span class="hull" title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>` : ''}
         <b class="pts" title="Logros">${LEYENDA} ${p.pl}</b>
       </div>
+      ${s ? `<div class="life">${statBar(s.casco, s.cascoMax)}</div>` : ''}
       ${docked ? '<div class="hint">Atracado</div>' : ''}
       ${s ? shipActions(s) : ''}
     </div>`;
@@ -838,6 +835,7 @@ function renderPanel() {
         <span class="name">${shipLabel(s)}</span>
         <span class="hull" title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>
       </div>
+      <div class="life">${statBar(s.casco, s.cascoMax)}</div>
       ${shipActions(s)}
     </div>`).join('');
 
@@ -851,11 +849,12 @@ function renderPanel() {
   $('panel').innerHTML = `
     <div class="box parchment me-box">
       <div class="ship-head">
-        ${shipImg({ kind: 'pirata', niveles: me.niveles }, facing({ kind: 'pirata' }, 'right'))}
+        ${shipImg({ kind: 'pirata', niveles: me.niveles, color: me.color }, facing({ kind: 'pirata' }, 'right'))}
         <div class="who-wrap">
           <div class="who-row">
             <div>
               <div class="who" style="color:${me.color}">${esc(me.name)}</div>
+              <div class="life me-life" title="Casco ${me.casco}/${me.cascoMax}">${statBar(me.casco, me.cascoMax)}</div>
               <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
             </div>
             <div class="mine">
