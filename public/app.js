@@ -348,31 +348,24 @@ setInterval(() => {
 
 const isLandT = (c) => c && (c.t === 'tierra' || c.t === 'puerto');
 
-// Playa en cada lado de la casilla de mar que toca tierra (no puerto), y en las esquinas que la tocan
-// solo en diagonal. La lámina de costa tiene la playa arriba: se gira hacia la tierra.
-function coastHtml(x, y) {
-  // Los puertos ya traen su costa en la lámina: junto a ellos no se pinta playa.
-  const land = (dx, dy) => {
-    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return isLandT(n) && n.t !== 'puerto';
+// La lámina de puerto tiene tierra arriba y a los lados. Donde la casilla vecina no es tierra
+// de la misma isla, ese borde se funde con el mar (máscara en el sistema de la lámina, antes de girarla).
+function portMask(x, y, isla, giro) {
+  const turn = ([dx, dy]) => {
+    let v = [dx, dy];
+    for (let i = 0; i < giro / 90; i++) v = [-v[1], v[0]];
+    return v;
   };
-  let html = '';
-  const sides = [[0, -1, 0, 'to bottom'], [1, 0, 90, 'to left'], [0, 1, 180, 'to top'], [-1, 0, 270, 'to right']];
-  for (const [dx, dy, rot, dir] of sides) {
-    if (!land(dx, dy)) continue;
-    html += `<div class="coast" style="--m:linear-gradient(${dir}, #000 0, #000 20%, transparent 42%)"><i style="--rot:${rot}deg"></i></div>`;
-  }
-  // Esquina de playa solo si la tierra toca en diagonal y no hay arrecife entre medias.
-  const reef = (dx, dy) => {
+  const sameIsland = ([dx, dy]) => {
     const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return !!n && n.t === 'arrecife';
+    return n === null || (isLandT(n) && n.isla === isla); // lo no descubierto no se funde
   };
-  const corners = [[1, -1, 45, '100% 0'], [1, 1, 135, '100% 100%'], [-1, 1, 225, '0 100%'], [-1, -1, 315, '0 0']];
-  for (const [dx, dy, rot, at] of corners) {
-    if (!land(dx, dy) || land(dx, 0) || land(0, dy) || reef(dx, 0) || reef(0, dy)) continue;
-    html += `<div class="coast" style="--m:radial-gradient(circle at ${at}, #000 0, #000 22%, transparent 40%)"><i style="--rot:${rot}deg;--sc:1.42"></i></div>`;
-  }
-  return html;
+  const fades = [[[0, -1], 'to bottom'], [[-1, 0], 'to right'], [[1, 0], 'to left']]
+    .filter(([dir]) => !sameIsland(turn(dir)))
+    .map(([, to]) => `linear-gradient(${to}, transparent 0, #000 14%)`);
+  if (!fades.length) return '';
+  const m = fades.join(', ');
+  return `-webkit-mask-image:${m};mask-image:${m};-webkit-mask-composite:source-in;mask-composite:intersect`;
 }
 
 function renderBoard() {
@@ -432,7 +425,8 @@ function renderBoard() {
           return n === null && x + dx >= 0 && y + dy >= 0 && x + dx < N && y + dy < N;
         });
         if (c.t === 'puerto') {
-          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${(portsById.get(c.puerto) || {}).giro || 0}deg"></div>`;
+          const giro = (portsById.get(c.puerto) || {}).giro || 0;
+          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${giro}deg;${portMask(x, y, c.isla, giro)}"></div>`;
         } else {
           const kind = solo ? ' solo' : village.get(c.isla) === k ? ' poblado' : hill.get(c.isla) === k ? ' colina' : '';
           inner += `<div class="land${kind}"></div>`;
@@ -442,9 +436,6 @@ function renderBoard() {
           if (S.map.explored.includes(c.isla)) inner += '<span class="mark" title="Isla explorada">✔️</span>';
         }
         if (me.explorables.includes(c.isla) && myTurn) clickable = true;
-      }
-      if (c.t === 'mar') {
-        inner += coastHtml(x, y);
       }
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);

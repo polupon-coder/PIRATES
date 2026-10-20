@@ -72,7 +72,7 @@ Texturas del tablero (en `public/img/`):
 | `tierra.webp` | Tierra de las islas de varias casillas. |
 | `colina.webp` | La casilla más interior de cada isla sin puerto de 3 o más casillas. |
 | `isla.webp` | Islotes de una sola casilla. |
-| `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Se giran para que el muelle mire al lado con más mar. |
+| `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Van en las islas más grandes, con tierra detrás y a los lados si se puede, y el muelle hacia el mar; donde su tierra toca agua, el borde se funde. |
 | `niebla.webp` | Niebla de guerra sobre lo que aún no se ha descubierto. |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
 | `pergamino.webp`, `pergamino-centro.webp` | Silueta rota (como máscara, con los bordes repetidos sin estirar) y papel del centro (a escala) de paneles, portada y ventanas. |
@@ -83,7 +83,6 @@ Texturas del tablero (en `public/img/`):
 | `timon.webp`, `catalejo.webp`, `balanza.webp` | Navegar; Explorar y «A la vista»; Comerciar y tratos. |
 | `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, banderín del aviso de turno y fondo de los botones de madera. |
 | `arrecife.webp` | Arrecifes. |
-| `costa.webp` | Borde de playa en cada lado (y esquina) de una casilla de mar que toca tierra: la lámina se gira hacia la tierra y solo se usa su franja de playa. |
 | `poblado.webp` | La casilla de tierra más cercana al puerto en las islas con puerto. |
 
 ## Decisiones tomadas donde el reglamento no lo especifica

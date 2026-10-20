@@ -143,14 +143,18 @@ function pickWeighted(rng, pairs) {
 // Giro en grados: 0 = muelle abajo, 90 = izquierda, 180 = arriba, 270 = derecha.
 const PORT_SIDES = [[0, 1, 0], [-1, 0, 90], [0, -1, 180], [1, 0, 270]];
 function portOrientation(m, x, y, island) {
+  const own = (px, py) => m.inside(px, py) && m.island[py][px] === island;
   let best = null;
   for (const [dx, dy, rot] of PORT_SIDES) {
     if (!isNav(m.t(x + dx, y + dy))) continue;
     let score = 4;
-    if (m.inside(x - dx, y - dy) && m.island[y - dy][x - dx] === island) score += 3;
+    // Tierra detrás y a los lados: la parte de tierra de la lámina encaja con la isla.
+    if (own(x - dx, y - dy)) score += 4;
+    const sides = dx ? [[x, y - 1], [x, y + 1]] : [[x - 1, y], [x + 1, y]];
+    for (const [sx, sy] of sides) if (own(sx, sy)) score += 2;
     // Mar a ambos lados del frente: el muelle no queda encajonado.
-    const side = dx ? [[x + dx, y - 1], [x + dx, y + 1]] : [[x - 1, y + dy], [x + 1, y + dy]];
-    for (const [sx, sy] of side) if (isNav(m.t(sx, sy))) score += 1;
+    const front = dx ? [[x + dx, y - 1], [x + dx, y + 1]] : [[x - 1, y + dy], [x + 1, y + dy]];
+    for (const [fx, fy] of front) if (isNav(m.t(fx, fy))) score += 1;
     if (!best || score > best.score) best = { rot, score };
   }
   return best;
@@ -206,7 +210,8 @@ function tryGenerate(rng, nPlayers) {
   if (!m.seaConnected()) return null;
 
   const names = shuffle(rng, [...C.PORT_NAMES]);
-  const portIslands = shuffle(rng, [...m.islands]).slice(0, C.PORTS);
+  // Puertos en las islas más grandes (a igualdad, al azar): los islotes de una casilla, solo si faltan.
+  const portIslands = shuffle(rng, [...m.islands]).sort((a, b) => b.cells.length - a.cells.length).slice(0, C.PORTS);
   for (const isl of portIslands) {
     // La casilla y el giro con mejor colocación: muelle hacia el mar y tierra detrás.
     let best = null;

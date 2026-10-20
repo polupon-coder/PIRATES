@@ -178,9 +178,6 @@ button { font: inherit; cursor: pointer; }
   background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
 .cell.arrecife { background: url(img/arrecife.webp) center / cover; }
-/* Borde de playa: la lámina de costa girada hacia la tierra; solo se ve su franja de playa. */
-.coast { position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: var(--m); mask-image: var(--m); }
-.coast > i { position: absolute; inset: 0; background: url(img/costa.webp) center / cover; transform: rotate(var(--rot)) scale(var(--sc, 1)); }
 .land {
   position: absolute; inset: 0;
   background: url(img/tierra.webp) var(--sand);
