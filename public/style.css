@@ -216,7 +216,8 @@ button { font: inherit; cursor: pointer; }
 .cell.reach::after, .cell.target::after { z-index: 3; }
 .cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto { background: transparent; }
 /* Fuera de tu vista: un velo oscuro (la tierra se oscurece con su propio filtro). */
-.cell.dim { box-shadow: inset 0 0 0 999px #0000004d; }
+/* Fuera de tu vista: un único velo oscuro sobre mar, tierra y arena (los barcos quedan encima). */
+.cell.dim::before { content: ''; position: absolute; inset: 0; background: #00000057; z-index: 2; pointer-events: none; }
 
 .land {
   position: absolute; inset: 0;
@@ -227,8 +228,6 @@ button { font: inherit; cursor: pointer; }
 .land.colina { background: url(img/colina.webp) center / cover; }
 .land.puerto { background: var(--port-img) center / cover; transform: rotate(var(--rot)); }
 .land.solo { background: url(img/isla.webp) center / 135%; }
-.dim > * , .cell.dim { filter: brightness(.72) saturate(.8); }
-.cell.dim .ship, .cell.dim .mark { filter: none; }
 .port-icon {
   position: absolute; left: 2px; top: 2px;
   width: 34%; height: 34%; border-radius: 50%; display: grid; place-items: center;
@@ -268,8 +267,6 @@ button { font: inherit; cursor: pointer; }
   width: 40%; height: 5px; border-radius: 3px; z-index: 6; border: 1px solid #000a;
 }
 /* Mercantes más claros; la Armada, con tono de acero azulado. */
-img.kind-mercante { filter: sepia(.35) brightness(1.12) drop-shadow(0 3px 2px #0009); }
-img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop-shadow(0 3px 2px #0009); }
 .ship.me-ship { filter: drop-shadow(0 0 4px var(--gold-2)) drop-shadow(0 3px 2px #0009); }
 
 /* ---------- panel lateral */
@@ -375,7 +372,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
 .fighter { text-align: center; }
 .fighter > img { width: 120px; height: 100px; object-fit: contain; }
-.fighter.right > img { transform: scaleX(-1); }
+.fighter > img.flip, .ship-head img.flip { transform: scaleX(-1); }
 .fighter .fname { font-family: 'Pirata One', cursive; font-size: 24px; }
 .vs { font-family: 'Pirata One', cursive; font-size: 40px; color: var(--red); }
 .badges { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; min-height: 22px; margin-top: 4px; }
@@ -493,3 +490,16 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .chip.good { flex-direction: column; gap: 0; font-size: 15px; }
 .chip.good small, .chip.profit small { font-size: 12px; color: #5a4a30; line-height: 1.1; }
 .chip.profit { flex-direction: column; gap: 0; }
+
+.chip.good, .chip.profit { align-items: center; }
+.chip.good .ico.good, .chip.profit .ico { margin: 0; }
+
+/* Barcos del tablero vueltos hacia la izquierda. */
+.ship.flip { transform: scaleX(-1); }
+/* Texto sobre madera: crema claro, más grueso y con contorno oscuro para leerse bien. */
+.btn:not(.gold):not(.red):not(.green):not(.flag-btn) {
+  color: #fff6e2; font-weight: 600; letter-spacing: .2px;
+  text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 6px #000c, 1px 1px 0 #2a1606, -1px -1px 0 #2a1606;
+}
+.btn:not(.gold):not(.red):not(.green):disabled { opacity: .6; }
+.btn .ico.small:not(.place) { height: 1.5em; vertical-align: -0.45em; }

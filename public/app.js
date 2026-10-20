@@ -117,7 +117,14 @@ const FALLBACK = {
 // Mercantes y fragatas usan las mismas ilustraciones que los piratas.
 function shipImgName(s) {
   if (s.kind === 'pirata') return `barco-${tierOf(s.niveles)}`;
-  return s.kind === 'mercante' ? 'barco-1' : 'barco-3';
+  return s.kind;
+}
+// Hacia dónde mira cada ilustración: piratas y fragata, a la derecha; el mercante, a la izquierda.
+const FACES_LEFT = { mercante: true };
+// Clase para que el barco mire al lado pedido ('left' | 'right').
+function facing(s, want) {
+  const left = !!FACES_LEFT[s.kind || 'pirata'];
+  return (want === 'left') === left ? '' : 'flip';
 }
 const NEUTRAL_COLOR = { mercante: '#3f8f4a', fragata: '#1f3550' };
 // Busca la ilustración en .webp y luego en .png; si no existe, usa el dibujo provisional.
@@ -575,7 +582,6 @@ function drawCoast() {
       const waters = [];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && isWater(tx + dx, ty + dy)) waters.push([tx + dx, ty + dy]);
       if (!waters.length) continue;
-      const out = Math.max(Math.abs(me.x - tx), Math.abs(me.y - ty)) > S.reglas.terrainView;
       for (let py = ty * px; py < (ty + 1) * px; py++) {
         const fy = (py + 0.5) / px;
         for (let pxx = tx * px; pxx < (tx + 1) * px; pxx++) {
@@ -594,7 +600,7 @@ function drawCoast() {
           if (din >= sIn) continue;
           const a = Math.min(1, (sIn - din) * px / 2.5);
           const grain = (hash2(pxx, py) - 0.5) * 18 + (n4 - 0.5) * 14;
-          const k = out ? 0.72 : 1; // como el oscurecido de la tierra fuera de la vista
+          const k = 1;
           const i = (py * W + pxx) * 4;
           d[i] = (228 + grain) * k; d[i + 1] = (207 + grain) * k; d[i + 2] = (158 + grain * 0.8) * k; d[i + 3] = a * 255;
         }
@@ -680,7 +686,8 @@ function renderBoard() {
       }
       for (const s of shipsAt.get(k) || []) {
         const docked = s.kind === 'pirata' && s.docked !== null && s.docked !== undefined;
-        inner += shipImg(s, `ship ${docked ? 'docked' : ''} ${s.id === S.you ? 'me-ship' : ''}`);
+        // El barco propio mira a la derecha; todos los demás, a la izquierda.
+        inner += shipImg(s, `ship ${docked ? 'docked' : ''} ${s.id === S.you ? 'me-ship' : ''} ${facing(s, s.id === S.you ? 'right' : 'left')}`);
         inner += `<span class="ship-badge" style="background:${s.kind === 'pirata' ? s.color : NEUTRAL_COLOR[s.kind]}"></span>`;
         if (targets.has(s.id) && myTurn) cls.push('target');
         if (s.id !== S.you) clickable = true;
@@ -775,7 +782,7 @@ function renderPanel() {
       const p = S.map.ports.find((x) => x.id === id);
       acts += `<button class="btn green block" data-dock="${id}">Atracar en ${LUGAR(p ? p.name : 'el puerto')} (gratis)</button>`;
     }
-    for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo')} Explorar la isla</button>`;
+    for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} Explorar la isla</button>`;
     if (port) acts += `<button class="btn gold block" id="portBtn">Puerto de ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
@@ -824,7 +831,7 @@ function renderPanel() {
     </div>`).join('');
 
   // Mercancías en una línea: solo icono y número (el nombre y el coste, al pasar el ratón).
-  const goods = R.goods.map((g) => `<span class="chip good" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}"><span>${GOOD_ICON[g]} <b>${me.mercancias[g]}</b></span><small>${R.goodLabel[g]}</small></span>`).join('');
+  const goods = R.goods.map((g) => `<span class="chip good" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}"><b>${me.mercancias[g]}</b>${GOOD_ICON[g]}<small>${R.goodLabel[g]}</small></span>`).join('');
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
   const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || '<p class="hint">Aún no hay mensajes.</p>';
@@ -833,7 +840,7 @@ function renderPanel() {
   $('panel').innerHTML = `
     <div class="box parchment me-box">
       <div class="ship-head">
-        ${shipImg({ kind: 'pirata', niveles: me.niveles })}
+        ${shipImg({ kind: 'pirata', niveles: me.niveles }, facing({ kind: 'pirata' }, 'right'))}
         <div class="who-wrap">
           <div class="who-row">
             <div>
@@ -855,11 +862,11 @@ function renderPanel() {
           ['bodega', `${me.carga}/${me.bodega}`, 'carga / capacidad'],
           ['tripulacion', `${me.tripulacion}/${me.tripMax}`, 'marineros / máximo'],
         ].map(([a, v, what]) => `<div class="attr ${a === 'casco' && low ? 'low' : ''}" title="${R.attrLabel[a]}: ${what} · nivel ${ROMAN[me.niveles[a]]}">
-          ${ATTR_ICON[a]}<span class="name">${R.attrLabel[a]}</span><b>${v}</b><span class="lv">Nivel ${ROMAN[me.niveles[a]]}</span></div>`).join('')}
+          <b>${v}</b>${ATTR_ICON[a]}<span class="name">${R.attrLabel[a]}</span><span class="lv">Nivel ${ROMAN[me.niveles[a]]}</span></div>`).join('')}
       </div>
       <div class="cargo">
         <div class="chips goods-line">${goods}</div>
-        <span class="chip profit" title="Beneficio comercial: próximo punto de logro al llegar a ${me.siguientePL}"><span>${ORO} <b>${me.netProfit}/${me.siguientePL}</b></span><small>Beneficio</small></span>
+        <span class="chip profit" title="Beneficio comercial: próximo punto de logro al llegar a ${me.siguientePL}"><b>${me.netProfit}/${me.siguientePL}</b>${ORO}<small>Beneficio</small></span>
       </div>
     </div>
     <div class="box parchment rivals-box"><h3>Rivales</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
@@ -997,7 +1004,7 @@ function renderModal() {
     const s = S.ships.find((x) => x.id === ui.modalId);
     if (!s) return closeModal();
     body = `<h2>${shipLabel(s)}</h2>
-      <div class="ship-head">${shipImg(s)}<div>
+      <div class="ship-head">${shipImg(s, facing(s, 'left'))}<div>
         <div>${KIND_LABEL[s.kind]}</div>
         <div>${CASCO} Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
         ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${R.attrLabel[a]} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>Carga: ${s.carga} mercancías</div>` : ''}
@@ -1164,7 +1171,7 @@ function fighter(s, side, c, right) {
   if (!s) return `<div class="fighter ${right ? 'right' : ''}"><div class="fname">${esc((c.nombres || {})[side] || 'Hundido')}</div><p>☠ Hundido</p></div>`;
   const name = s.name.charAt(0).toUpperCase() + s.name.slice(1);
   return `<div class="fighter ${right ? 'right' : ''}">
-    ${shipImg(s)}
+    ${shipImg(s, facing(s, right ? 'left' : 'right'))}
     <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? ' (tú)' : ''}</div>
     <div>${CASCO} ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
     <div>🎯 ${s.canones} dados · ${TRIP} ${s.tripulacion}</div>
