@@ -262,6 +262,12 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 .ico.head { height: 1.4em; vertical-align: -0.25em; }
 .ico.place { height: 1.3em; vertical-align: -0.3em; margin-right: -1px; }
 h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
+/* Iconos de las acciones (pestañas del puerto y botones) más grandes. */
+.tabs button .ico { height: 2.3em; vertical-align: -0.8em; margin-right: 3px; }
+.tabs button { padding: 4px 3px; }
+@media (min-width: 901px) { .tabs button { white-space: nowrap; } }
+.btn .ico:not(.place) { height: 2.1em; vertical-align: -0.75em; margin-right: 3px; }
+.btn.small .ico { height: 1.8em; vertical-align: -0.6em; }
 .ico.good { height: 2.5em; vertical-align: -0.85em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
 .ship-head { display: flex; gap: 10px; align-items: center; }
