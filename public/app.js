@@ -16,7 +16,8 @@ const ui = {
   repair: 1,
   recruit: 1,
   deal: { dar: { oro: 0, goods: {} }, pedir: { oro: 0, goods: {} } },
-  panelTab: 'cronica',
+  logOpen: null, // 'cronica' | 'chat'
+  unread: 0,
   seenAvisos: null,
   combatSeen: null,
   lastRound: null,
@@ -167,6 +168,7 @@ socket.on('state', (st) => {
 });
 socket.on('chat', (m) => {
   ui.chat.push(m);
+  if (ui.logOpen !== 'chat') ui.unread += 1;
   if (ui.chat.length > 60) ui.chat.shift();
   if (S) renderPanel();
 });
@@ -529,7 +531,7 @@ function shipLabel(s) {
 }
 
 // Arrastrar la ventana de acciones por su título (se queda donde la dejes, dentro del tablero).
-function dragFloat(e, fl) {
+function dragFloat(e, fl, key) {
   if (e.target.closest('button') || matchMedia('(max-width: 900px)').matches) return;
   const wrap = fl.parentElement.getBoundingClientRect();
   const box = fl.getBoundingClientRect();
@@ -538,7 +540,7 @@ function dragFloat(e, fl) {
   const move = (ev) => {
     const x = Math.max(0, Math.min(wrap.width - box.width, ev.clientX - wrap.left - dx));
     const y = Math.max(0, Math.min(wrap.height - box.height, ev.clientY - wrap.top - dy));
-    ui.floatPos = { x, y };
+    ui[key] = { x, y };
     Object.assign(fl.style, { left: `${x}px`, top: `${y}px`, right: 'auto', bottom: 'auto' });
   };
   const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
@@ -636,11 +638,29 @@ function renderPanel() {
     <div class="box parchment"><h3>${ICON('catalejo', 'head')} A la vista</h3>${sight}</div>
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
-    <div class="box parchment">
-      <div class="tabs"><button data-tab="cronica" class="${ui.panelTab === 'cronica' ? 'on' : ''}">Crónica</button><button data-tab="chat" class="${ui.panelTab === 'chat' ? 'on' : ''}">Chat</button></div>
-      <div class="log">${ui.panelTab === 'chat' ? chat : log}</div>
-      <form class="chat-form" id="chatForm"><input class="input" id="chatInput" maxlength="200" placeholder="Escribe a la tripulación…" autocomplete="off"><button class="btn small">Enviar</button></form>
+    <div class="log-buttons">
+      <button class="btn block" data-open="cronica">📜 Crónica</button>
+      <button class="btn block" data-open="chat">💬 Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>
     </div>`;
+
+  // Crónica o chat: ventana flotante con marco de madera.
+  const lf = $('logFloat');
+  const draft = $('chatInput') ? $('chatInput').value : '';
+  const typing = document.activeElement && document.activeElement.id === 'chatInput';
+  lf.classList.toggle('hidden', !ui.logOpen);
+  if (ui.logOpen) {
+    if (ui.logOpen === 'chat') ui.unread = 0;
+    lf.innerHTML = `<div class="float-head"><h3>${ui.logOpen === 'chat' ? 'Chat' : 'Crónica'}</h3><button class="float-toggle" id="logClose" title="Cerrar">×</button></div>
+      <div class="log">${ui.logOpen === 'chat' ? chat : log}</div>
+      ${ui.logOpen === 'chat' ? '<form class="chat-form" id="chatForm"><input class="input" id="chatInput" maxlength="200" placeholder="Escribe a la tripulación…" autocomplete="off"><button class="btn small">Enviar</button></form>' : ''}`;
+    if (ui.logPos) Object.assign(lf.style, { left: `${ui.logPos.x}px`, top: `${ui.logPos.y}px`, right: 'auto', bottom: 'auto' });
+    lf.querySelector('.float-head').onpointerdown = (e) => dragFloat(e, lf, 'logPos');
+    $('logClose').onclick = () => { ui.logOpen = null; renderPanel(); };
+    if ($('chatInput')) {
+      $('chatInput').value = draft;
+      if (typing) $('chatInput').focus();
+    }
+  } else lf.innerHTML = '';
 
   // Acciones: ventana flotante sobre el tablero, solo cuando hay algo que hacer o mirar.
   const fl = $('actionsFloat');
@@ -653,7 +673,7 @@ function renderPanel() {
   if ($('floatToggle')) $('floatToggle').onclick = () => { ui.actionsCollapsed = !ui.actionsCollapsed; renderPanel(); };
   if (ui.floatPos) Object.assign(fl.style, { left: `${ui.floatPos.x}px`, top: `${ui.floatPos.y}px`, right: 'auto', bottom: 'auto' });
   const head = fl.querySelector('.float-head');
-  if (head) head.onpointerdown = (e) => dragFloat(e, fl);
+  if (head) head.onpointerdown = (e) => dragFloat(e, fl, 'floatPos');
 
   for (const P of [$('panel'), fl]) {
   P.querySelectorAll('[data-act]').forEach((b) => { b.onclick = () => act(b.dataset.act); });
@@ -664,16 +684,19 @@ function renderPanel() {
   P.querySelectorAll('[data-deal]').forEach((b) => { b.onclick = () => openModal('trato', b.dataset.deal); });
   }
   const P = $('panel');
-  P.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { ui.panelTab = b.dataset.tab; renderPanel(); }; });
+  P.querySelectorAll('[data-open]').forEach((b) => {
+    b.onclick = () => { ui.logOpen = ui.logOpen === b.dataset.open ? null : b.dataset.open; renderPanel(); };
+  });
   if ($('portBtn')) $('portBtn').onclick = () => openModal('puerto');
   if ($('finalBtn')) $('finalBtn').onclick = () => { ui.finalSeen = false; renderModal(); };
-  $('chatForm').onsubmit = (e) => {
-    e.preventDefault();
-    const text = $('chatInput').value.trim();
-    if (text) socket.emit('chat', { text });
-    $('chatInput').value = '';
-    ui.panelTab = 'chat';
-  };
+  if ($('chatForm')) {
+    $('chatForm').onsubmit = (e) => {
+      e.preventDefault();
+      const text = $('chatInput').value.trim();
+      if (text) socket.emit('chat', { text });
+      $('chatInput').value = '';
+    };
+  }
 }
 
 // ------------------------------------------------------------ ventanas
@@ -810,7 +833,7 @@ function renderModal() {
       <p class="hint">Proponer cuesta 1 acción. ${esc(other.name)} tiene 20 segundos para aceptar. La Leyenda comercial solo se gana vendiendo en puertos o a mercantes.</p>
       <button class="btn gold block" id="doDeal">Proponer trato (1 acción)</button>`;
   }
-  m.innerHTML = `<div class="dialog parchment"><button class="close" id="closeModal" aria-label="Cerrar">×</button>${body}</div>`;
+  m.innerHTML = `<div class="dialog framed"><button class="close" id="closeModal" aria-label="Cerrar">×</button>${body}</div>`;
   m.classList.remove('hidden');
   bindModal();
 }
@@ -889,7 +912,7 @@ function renderFinal() {
   const m = $('modal');
   const f = S.final;
   const win = f.winners.includes(S.you);
-  m.innerHTML = `<div class="dialog parchment">
+  m.innerHTML = `<div class="dialog framed">
     <button class="close" id="closeModal" aria-label="Cerrar">×</button>
     <p class="winner-title">${win ? '¡Eres una leyenda!' : `Gana ${f.winners.map(playerName).map(esc).join(' y ')}`}</p>
     <table class="final-table"><tr><th>#</th><th>Pirata</th><th>PL</th><th>Oro</th><th>Islas</th></tr>
@@ -930,7 +953,7 @@ function renderCombat() {
   if (offer) {
     const R = S.reglas;
     const list = (part) => [part.oro ? `${ORO} ${part.oro} oros` : '', ...R.goods.filter((g) => part.goods[g]).map((g) => `${GOOD_ICON[g]} ${part.goods[g]} ${R.goodLabel[g].toLowerCase()}`)].filter(Boolean).join(', ') || 'nada';
-    box.innerHTML = `<div class="dialog parchment">
+    box.innerHTML = `<div class="dialog framed">
       <h2>Propuesta de ${esc(offer.fromName)}</h2>
       <p>Te da: <b>${list(offer.dar)}</b></p>
       <p>Te pide: <b>${list(offer.pedir)}</b></p>
@@ -976,7 +999,7 @@ function renderCombat() {
     }).join(' · ');
     return `<div class="round-log"><b>Asalto ${r.ronda}</b> — ${line}<br>${esc(r.texto.join(' '))}</div>`;
   }).join('');
-  box.innerHTML = `<div class="dialog parchment">
+  box.innerHTML = `<div class="dialog framed">
     <h2>⚔ Combate · Asalto ${Math.min(c.ronda, 3)} de 3</h2>
     <div class="duel">${fighter(c.a, 'a', c, false)}<div class="vs">VS</div>${fighter(c.d, 'd', c, true)}</div>
     ${choose}${result}
