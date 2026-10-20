@@ -167,7 +167,9 @@ button { font: inherit; cursor: pointer; }
   /* Borde izquierdo 11px y cola derecha 64px: se compensa para que el texto quede centrado en el banderín. */
   background: none; min-height: 46px; padding: 4px 0 8px 53px;
   color: #fff3dc; font-family: 'Pirata One', cursive; font-size: 22px; text-shadow: 0 1px 2px #000c;
+  filter: brightness(.78) saturate(1.05) drop-shadow(0 2px 2px #0009);
 }
+.btn.flag-btn:hover:not(:disabled) { filter: brightness(.9) saturate(1.05) drop-shadow(0 2px 2px #0009); }
 
 .board {
   position: relative;
