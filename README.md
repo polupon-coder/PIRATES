@@ -74,6 +74,9 @@ Texturas del tablero (en `public/img/`):
 | `isla.webp` | Islotes de una sola casilla. |
 | `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Se giran para que el muelle mire al lado con más mar. |
 | `niebla.webp` | Niebla de guerra sobre lo que aún no se ha descubierto. |
+| `mesa.webp` | Fondo de la página (mesa de capitán). |
+| `pergamino.webp` | Fondo de los paneles, la portada y las ventanas. |
+| `oro.webp`, `carga.webp` | Iconos de oro y de bodega. |
 | `arrecife.webp` | Arrecifes. |
 | `costa.webp` | Borde de playa en cada lado (y esquina) de una casilla de mar que toca tierra: la lámina se gira hacia la tierra y solo se usa su franja de playa. |
 | `oceano.webp` | Mar profundo: casillas de mar rodeadas de mar por los 8 lados; se funde con el mar normal. |

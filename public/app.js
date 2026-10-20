@@ -37,6 +37,8 @@ function saveSession(s) {
   try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(s)) : localStorage.removeItem(SESSION_KEY); } catch { /* sin almacenamiento */ }
 }
 const ROMAN = ['', 'I', 'II', 'III'];
+const ORO = '<img class="ico" src="img/oro.webp" alt="oro">';
+const CARGA = '<img class="ico" src="img/carga.webp" alt="carga">';
 const GOOD_ICON = { comida: '🍖', materiales: '🪵', manufacturas: '🧵', lujos: '💎' };
 const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
 const PICK_LABEL = { canon: 'Cañonear', abordaje: 'Abordar', maniobra: 'Maniobrar' };
@@ -595,21 +597,21 @@ function renderPanel() {
         ${shipImg({ kind: 'pirata', niveles: me.niveles })}
         <div>
           <div class="who" style="color:${me.color}">${esc(me.name)}</div>
-          <div><b>${me.pl}</b> / ${R.winPL} PL · <b>${me.oro}</b> oros</div>
+          <div><b>${me.pl}</b> / ${R.winPL} PL · ${ORO} <b>${me.oro}</b> oros</div>
           <div class="hint">${port ? `Atracado en ${esc(port.name)}` : 'En alta mar'}</div>
         </div>
       </div>
       <div class="stats">
         <div><div class="stat"><span>🛡 Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
         <div><div class="stat"><span>👥 Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
-        <div class="stat"><span>📦 Bodega</span><b>${me.carga}/${me.bodega}</b></div>
-        <div class="stat"><span>💰 Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
+        <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
+        <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
       </div>
       <div class="levels">${R.attrs.map((a) => `<span class="lvl">${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
     <div class="box parchment"><h3>Acciones</h3><div class="actions">${acts}</div></div>
     <div class="box parchment"><h3>A la vista</h3>${sight}</div>
-    <div class="box parchment"><h3>Bodega</h3><div class="goods">${goods}</div></div>
+    <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
     <div class="box parchment">
       <div class="tabs"><button data-tab="cronica" class="${ui.panelTab === 'cronica' ? 'on' : ''}">Crónica</button><button data-tab="chat" class="${ui.panelTab === 'chat' ? 'on' : ''}">Chat</button></div>
@@ -744,14 +746,14 @@ function renderModal() {
         : `<p>${me.tripulacion >= me.tripMax ? 'Tu tripulación está completa.' : 'No tienes oro para reclutar.'}</p>`;
     }
     body = `<h2>⚓ ${esc(port.name)}</h2>
-      <p class="muted">Oro: <b>${me.oro}</b> · Acciones: <b>${S.turn && S.turn.pid === S.you ? S.turn.actions : 0}</b></p>
+      <p class="muted">${ORO} Oro: <b>${me.oro}</b> · Acciones: <b>${S.turn && S.turn.pid === S.you ? S.turn.actions : 0}</b></p>
       <div class="tabs">${tabs.map(([k, l]) => `<button data-ptab="${k}" class="${ui.portTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       ${content}`;
   } else if (ui.modal === 'mercante') {
     const s = S.ships.find((x) => x.id === ui.modalId);
     if (!s || !s.precios) return closeModal();
     body = `<h2>Mercante rumbo a ${esc(s.destino)}</h2>
-      <p class="muted">Comercia a los precios de ${esc(s.destino)}. Oro: <b>${me.oro}</b></p>
+      <p class="muted">Comercia a los precios de ${esc(s.destino)}. ${ORO} Oro: <b>${me.oro}</b></p>
       ${tradeTable(s.precios, s.cargamento, {})}`;
   } else if (ui.modal === 'trato') {
     const other = S.ships.find((x) => x.id === ui.modalId);
@@ -759,7 +761,7 @@ function renderModal() {
     const d = ui.deal;
     const side = (key, who, gold, goods) => `
       <div><h4>${who}</h4>
-        <p>💰 Oro ${stepper(`${key}.oro`, d[key].oro, 0, gold)}</p>
+        <p>${ORO} Oro ${stepper(`${key}.oro`, d[key].oro, 0, gold)}</p>
         ${R.goods.map((g) => `<p>${GOOD_ICON[g]} ${R.goodLabel[g]} ${stepper(`${key}.goods.${g}`, d[key].goods[g] || 0, 0, goods ? goods[g] : 9)}</p>`).join('')}
       </div>`;
     body = `<h2>Trato con ${esc(other.name)}</h2>
@@ -889,7 +891,7 @@ function renderCombat() {
   const offer = !live && S.offer && S.offer.to === S.you ? S.offer : null;
   if (offer) {
     const R = S.reglas;
-    const list = (part) => [part.oro ? `💰 ${part.oro} oros` : '', ...R.goods.filter((g) => part.goods[g]).map((g) => `${GOOD_ICON[g]} ${part.goods[g]} ${R.goodLabel[g].toLowerCase()}`)].filter(Boolean).join(', ') || 'nada';
+    const list = (part) => [part.oro ? `${ORO} ${part.oro} oros` : '', ...R.goods.filter((g) => part.goods[g]).map((g) => `${GOOD_ICON[g]} ${part.goods[g]} ${R.goodLabel[g].toLowerCase()}`)].filter(Boolean).join(', ') || 'nada';
     box.innerHTML = `<div class="dialog parchment">
       <h2>Propuesta de ${esc(offer.fromName)}</h2>
       <p>Te da: <b>${list(offer.dar)}</b></p>

@@ -27,7 +27,7 @@ body {
   font-family: 'EB Garamond', Georgia, serif;
   font-size: 17px;
   color: var(--paper);
-  background: radial-gradient(ellipse at top, #24485a 0%, #10222d 60%, #0a161d 100%) fixed;
+  background: linear-gradient(#0a0603aa, #0a0603cc), url(img/mesa.webp) center / cover fixed #1d120a;
 }
 button { font: inherit; cursor: pointer; }
 .hidden { display: none !important; }
@@ -74,13 +74,12 @@ button { font: inherit; cursor: pointer; }
 /* ---------- portada */
 .home { display: grid; place-items: center; min-height: calc(100vh - 52px); padding: 16px; }
 .home-card {
-  width: min(440px, 100%);
+  width: min(500px, 100%);
   display: flex; flex-direction: column; gap: 12px; text-align: center;
-  padding: 28px 26px;
+  padding: 44px 48px;
   color: var(--ink);
-  background: radial-gradient(ellipse at center, #f8edd2 0%, #ead6a6 75%, #d6bb82 100%);
-  border-radius: 10px;
-  box-shadow: 0 10px 40px #000a, inset 0 0 40px #8a5a2a44;
+  background: url(img/pergamino.webp) center / 100% 100% no-repeat;
+  filter: drop-shadow(0 10px 20px #000c);
 }
 .home-title { font-family: 'Pirata One', cursive; font-size: 64px; margin: 0; color: var(--wood); line-height: 1; }
 .home-sub { margin: 0 0 6px; font-style: italic; }
@@ -91,11 +90,10 @@ button { font: inherit; cursor: pointer; }
 .lobby { display: grid; place-items: center; padding: 20px 16px; }
 .parchment {
   color: var(--ink);
-  background: radial-gradient(ellipse at center, #f8edd2 0%, #ead6a6 80%, #d6bb82 100%);
-  border-radius: 10px;
-  box-shadow: 0 8px 30px #0009, inset 0 0 30px #8a5a2a33;
+  background: url(img/pergamino.webp) center / 100% 100% no-repeat;
+  filter: drop-shadow(0 6px 10px #000a);
 }
-.lobby-card { width: min(520px, 100%); padding: 22px; }
+.lobby-card { width: min(560px, 100%); padding: 36px 44px; }
 .lobby-card h2 { font-family: 'Pirata One', cursive; font-size: 36px; margin: 0 0 6px; color: var(--wood); }
 .player-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #8a6a3a55; }
 .flag { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #0006; flex: none; }
@@ -220,7 +218,8 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- panel lateral */
 .panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
-.box { padding: 12px 14px; }
+.box { padding: 16px 20px; }
+.ico, .ship-head .ico { height: 1.35em; width: auto; vertical-align: -0.35em; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
 .ship-head { display: flex; gap: 10px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }
@@ -260,9 +259,9 @@ button { font: inherit; cursor: pointer; }
   display: grid; place-items: center; padding: 16px;
   background: #050a0dcc;
 }
-.dialog { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 18px 20px; position: relative; }
+.dialog { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 30px 34px; position: relative; }
 .dialog h2 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 34px; margin: 0 0 8px; color: var(--wood); }
-.close { position: absolute; right: 10px; top: 6px; background: none; border: 0; font-size: 28px; color: var(--wood); }
+.close { position: absolute; right: 18px; top: 12px; background: none; border: 0; font-size: 28px; color: var(--wood); }
 table.trade { width: 100%; border-collapse: collapse; font-size: 16px; }
 table.trade th, table.trade td { padding: 5px 4px; text-align: center; border-bottom: 1px dashed #8a6a3a55; }
 table.trade th { font-size: 14px; color: #6b5a3e; font-weight: 600; }
