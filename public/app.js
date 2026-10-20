@@ -271,6 +271,7 @@ function render() {
   if (!S) return;
   $('home').classList.add('hidden');
   $('roomInfo').textContent = S.code;
+  document.body.classList.toggle('in-game', S.phase !== 'lobby');
   if (S.phase === 'lobby') {
     $('game').classList.add('hidden');
     $('lobby').classList.remove('hidden');
@@ -339,13 +340,14 @@ function renderStatus() {
     return;
   }
   const t = S.turn;
-  let html = `Ronda ${S.round} de ${S.reglas.maxRounds} · ${LEYENDA} ${S.reglas.winPL} para ganar <span class="sep">|</span> `;
+  // En el móvil se muestra la versión corta (.short) de cada dato.
+  let html = `<span class="long">Ronda ${S.round} de ${S.reglas.maxRounds} · ${LEYENDA} ${S.reglas.winPL} para ganar</span><span class="short">Ronda ${S.round}/${S.reglas.maxRounds}</span> <span class="sep">|</span> `;
   if (S.combat) html += '<span class="me-turn">⚔ ¡Combate!</span>';
   else if (S.combatOthers) html += `⚔ ${esc(S.combatOthers.a)} combate contra ${esc(S.combatOthers.d)}`;
   else if (!t) html += 'Mercantes y Armada se mueven…';
   else if (t.pid === S.you) {
-    html += `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span> ${t.actions} acción(es)`;
-    if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp} de movimiento`;
+    html += `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span><span class="long"> ${t.actions} acción(es)</span>`;
+    if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp}<span class="long"> de movimiento</span>`;
   } else html += `Turno de <b>${esc(playerName(t.pid))}</b>`;
   const ms = t && remaining(t.deadlineIn);
   if (ms !== null && ms !== undefined && !S.combat) html += ` <span class="clock ${ms < 15000 ? 'low' : ''}" id="clock">${fmt(ms)}</span>`;
@@ -808,9 +810,9 @@ function renderPanel() {
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
-      acts += `<button class="btn green block" data-dock="${id}">Atracar en ${LUGAR(p ? p.name : 'el puerto')} (gratis)</button>`;
+      acts += `<button class="btn gold block" data-dock="${id}">Atracar en ${LUGAR(p ? p.name : 'el puerto')} (gratis)</button>`;
     }
-    for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} Explorar la isla</button>`;
+    for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} Explorar la isla</button>`;
     if (port) acts += `<button class="btn gold block" id="portBtn">Puerto de ${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
