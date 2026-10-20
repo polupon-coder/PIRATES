@@ -808,12 +808,12 @@ function renderPanel() {
   const goods = R.goods.map((g) => `<span>${GOOD_ICON[g]} ${R.goodLabel[g]}: <b>${me.mercancias[g]}</b>${me.mercancias[g] ? ` <span class="muted">(coste ${me.costes[g]})</span>` : ''}</span>`).join('');
 
   const turnOrder = S.order.map((id) => S.players.find((p) => p.id === id)).filter(Boolean);
-  const scores = turnOrder.map((p) => `
-    <div class="score-row ${t && t.pid === p.id ? 'turn' : ''}">
-      <span class="flag" style="background:${p.color}"></span>
-      <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span>
+  // Logros: un capitán junto a otro, con su tesoro debajo.
+  const scores = `<div class="scores">${turnOrder.map((p) => `
+    <div class="score ${t && t.pid === p.id ? 'turn' : ''}">
+      <span class="name" title="${esc(p.name)}"><span class="flag" style="background:${p.color}"></span><span class="txt">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span></span>
       <b>${LEYENDA} ${p.pl}</b>
-    </div>`).join('');
+    </div>`).join('')}</div>`;
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
   const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || '<p class="hint">Aún no hay mensajes.</p>';
@@ -822,10 +822,17 @@ function renderPanel() {
     <div class="box parchment">
       <div class="ship-head">
         ${shipImg({ kind: 'pirata', niveles: me.niveles })}
-        <div>
-          <div class="who" style="color:${me.color}">${esc(me.name)}</div>
-          <div>${LEYENDA} <b>${me.pl}</b> / ${R.winPL} · ${ORO} <b>${me.oro}</b> oros</div>
-          <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
+        <div class="who-wrap">
+          <div class="who-row">
+            <div>
+              <div class="who" style="color:${me.color}">${esc(me.name)}</div>
+              <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
+            </div>
+            <div class="mine">
+              <span>${LEYENDA} <b>${me.pl}</b> / ${R.winPL}</span>
+              <span>${ORO} <b>${me.oro}</b> oros</span>
+            </div>
+          </div>
         </div>
       </div>
       <div class="stats">
@@ -836,7 +843,7 @@ function renderPanel() {
       </div>
       <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
-    <div class="box parchment"><h3>${ICON('catalejo', 'head')} A la vista</h3>${sight}</div>
+    <div class="box parchment sight-box"><h3>${ICON('catalejo', 'head')} A la vista</h3><div class="sight-list">${sight}</div></div>
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Logros</h3>${scores}</div>
     <div class="log-buttons">

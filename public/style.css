@@ -141,7 +141,7 @@ button { font: inherit; cursor: pointer; }
 }
 .log-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* Crónica y Chat: letra pirata grande, clara y con sombra para leerse bien sobre la madera. */
-.btn.log-btn { font-family: 'Pirata One', cursive; font-size: 24px; letter-spacing: .5px; color: #fff3dc; text-shadow: 0 1px 0 #000, 0 0 6px #000c; padding: 6px 2px 8px; }
+.btn.log-btn { font-family: 'Pirata One', cursive; font-size: 24px; letter-spacing: .5px; color: #fff3dc; text-shadow: 0 1px 0 #000, 0 0 6px #000c; padding: 3px 2px 5px; }
 .unread { display: inline-block; min-width: 20px; padding: 0 5px; border-radius: 10px; background: #c0392b; color: #fff; font-size: 13px; line-height: 20px; }
 .actions-float.log-float { left: 34px; top: 34px; right: auto; bottom: auto; width: 380px; }
 .log-float .log { max-height: 320px; }
@@ -191,8 +191,9 @@ button { font: inherit; cursor: pointer; }
 .cell.fog {
   /* Lo no descubierto es pergamino en blanco: un solo papel que cubre todo el tablero. */
   background: url(img/pergamino-centro.webp) #e8d3a4;
-  background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
-  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+  /* Alto del tablero y ancho según la proporción del papel (1,9:1): no se estira. */
+  background-size: calc(var(--cell) * 12 * 1.9) calc(var(--cell) * 12);
+  background-position: calc(var(--cell) * (var(--x) + 5.4) * -1) calc(var(--cell) * var(--y) * -1);
 }
 /* El mar, los arrecifes y la playa se dibujan en el lienzo de debajo (.sea-layer). */
 .sea-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -244,7 +245,7 @@ button { font: inherit; cursor: pointer; }
 @keyframes pulse { 50% { opacity: .35; } }
 
 .ship {
-  position: absolute; left: -12%; top: -18%; width: 124%; height: 124%;
+  position: absolute; left: -2%; top: -8%; width: 104%; height: 104%;
   object-fit: contain; z-index: 5; pointer-events: none;
   filter: drop-shadow(0 3px 2px #0009);
 }
@@ -259,8 +260,16 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 .ship.me-ship { filter: drop-shadow(0 0 4px var(--gold-2)) drop-shadow(0 3px 2px #0009); }
 
 /* ---------- panel lateral */
-.panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
-.box { padding: 28px 32px; }
+.panel { display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
+/* En ordenador el panel nunca se corta: Logros y los botones quedan fijos y, si falta sitio,
+   solo se desplaza la lista de barcos a la vista. En pantallas muy bajas, el panel se desplaza. */
+@media (min-width: 901px) and (min-height: 820px) {
+  .panel { overflow: hidden; }
+  .panel > * { flex: none; }
+  .panel > .sight-box { flex: 0 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+  .sight-box .sight-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
+}
+.box { padding: 18px 30px; }
 .ico, .ship-head .ico { height: 1.75em; width: auto; vertical-align: -0.55em; }
 .choice-ico { height: 46px; width: auto; }
 .toast-ico { display: block; height: 92px; margin: 0 auto 4px; }
@@ -283,13 +292,17 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .ship-head { display: flex; gap: 16px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }
 .ship-head .who { font-family: 'Pirata One', cursive; font-size: 26px; line-height: 1; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-top: 16px; font-size: 16px; }
+/* Logros y oro propios a la derecha del nombre, alineados a la derecha. */
+.who-wrap { flex: 1; min-width: 0; }
+.who-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.who-row .mine { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; white-space: nowrap; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 26px; margin-top: 10px; font-size: 16px; }
 .stat { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 3px; border-bottom: 1px dotted #8a6a3a66; }
 .stat b { font-variant-numeric: tabular-nums; }
 .bar { height: 8px; border-radius: 4px; background: #0002; overflow: hidden; margin-top: 2px; }
 .bar > i { display: block; height: 100%; background: linear-gradient(90deg, #b5382a, #e3833a); }
 .bar.ok > i { background: linear-gradient(90deg, #3f8f4a, #7cc06b); }
-.levels { display: flex; gap: 8px 8px; flex-wrap: wrap; margin-top: 16px; }
+.levels { display: flex; gap: 6px 8px; flex-wrap: wrap; margin-top: 10px; }
 .lvl { font-size: 13px; padding: 1px 7px; white-space: nowrap; border-radius: 10px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
 .actions { display: flex; flex-direction: column; gap: 6px; }
 .actions .row .btn { flex: 1; }
@@ -301,10 +314,16 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .target-row .name { flex: 1; font-weight: 600; min-width: 120px; }
 .hint { font-size: 14px; color: #6b5a3e; font-style: italic; }
 .goods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 12px; font-size: 15px; }
-.score-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
-.score-row .name { flex: 1; }
-.score-row.turn .name { font-weight: 700; }
-.score-row.turn .name::before { content: '➤ '; color: var(--red); }
+.scores { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+.score { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; padding: 4px 4px; border-radius: 8px; min-width: 0; }
+.score .name { display: flex; align-items: center; justify-content: center; gap: 5px; max-width: 100%; line-height: 1.2; white-space: nowrap; }
+.score .name .txt { overflow: hidden; text-overflow: ellipsis; }
+.score .flag { flex: none; }
+.score .flag { width: 12px; height: 12px; }
+.score b { font-size: 18px; white-space: nowrap; }
+/* El capitán al que le toca, resaltado. */
+.score.turn { background: #5a3a1c1c; box-shadow: inset 0 0 0 1px #8a5a2a66; }
+.score.turn .name { font-weight: 700; }
 .tabs { display: flex; gap: 4px; margin-bottom: 6px; }
 .tabs button { flex: 1; background: #0001; border: 1px solid #5a3a1c44; border-radius: 6px 6px 0 0; padding: 3px; color: var(--ink); }
 .tabs button.on { background: #5a3a1c22; font-weight: 700; }
