@@ -362,9 +362,14 @@ function coastHtml(x, y) {
     if (!land(dx, dy)) continue;
     html += `<div class="coast" style="--m:linear-gradient(${dir}, #000 0, #000 20%, transparent 42%)"><i style="--rot:${rot}deg"></i></div>`;
   }
+  // Esquina de playa solo si la tierra toca en diagonal y no hay arrecife entre medias.
+  const reef = (dx, dy) => {
+    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
+    return !!n && n.t === 'arrecife';
+  };
   const corners = [[1, -1, 45, '100% 0'], [1, 1, 135, '100% 100%'], [-1, 1, 225, '0 100%'], [-1, -1, 315, '0 0']];
   for (const [dx, dy, rot, at] of corners) {
-    if (!land(dx, dy) || land(dx, 0) || land(0, dy)) continue;
+    if (!land(dx, dy) || land(dx, 0) || land(0, dy) || reef(dx, 0) || reef(0, dy)) continue;
     html += `<div class="coast" style="--m:radial-gradient(circle at ${at}, #000 0, #000 22%, transparent 40%)"><i style="--rot:${rot}deg;--sc:1.42"></i></div>`;
   }
   return html;
