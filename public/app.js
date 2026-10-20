@@ -831,7 +831,7 @@ function renderPanel() {
   const low = me.casco <= Math.ceil(me.cascoMax / 3);
 
   $('panel').innerHTML = `
-    <div class="box parchment">
+    <div class="box parchment me-box">
       <div class="ship-head">
         ${shipImg({ kind: 'pirata', niveles: me.niveles })}
         <div class="who-wrap">
@@ -847,14 +847,20 @@ function renderPanel() {
           </div>
         </div>
       </div>
-      <div class="chips">
-        <span class="chip ${low ? 'low' : ''}" title="Casco">${CASCO}<b>${me.casco}/${me.cascoMax}</b></span>
-        <span class="chip" title="Tripulación">${TRIP}<b>${me.tripulacion}/${me.tripMax}</b></span>
-        <span class="chip" title="Bodega">${CARGA}<b>${me.carga}/${me.bodega}</b></span>
-        <span class="chip" title="Beneficio comercial: próximo punto de leyenda al llegar a ${me.siguientePL}">${ORO}<b>${me.netProfit}/${me.siguientePL}</b></span>
+      <div class="attrs">
+        ${[
+          ['velas', `${me.velas}`, 'casillas por navegación'],
+          ['canones', `${me.canones}`, 'dados de cañón'],
+          ['casco', `${me.casco}/${me.cascoMax}`, 'casco actual / máximo'],
+          ['bodega', `${me.carga}/${me.bodega}`, 'carga / capacidad'],
+          ['tripulacion', `${me.tripulacion}/${me.tripMax}`, 'marineros / máximo'],
+        ].map(([a, v, what]) => `<div class="attr ${a === 'casco' && low ? 'low' : ''}" title="${R.attrLabel[a]}: ${what} · nivel ${ROMAN[me.niveles[a]]}">
+          ${ATTR_ICON[a]}<b>${v}</b><span class="lv">${ROMAN[me.niveles[a]]}</span></div>`).join('')}
       </div>
-      <div class="chips goods-line">${goods}</div>
-      <div class="levels">${R.attrs.map((a) => `<span class="lvl" title="${R.attrLabel[a]} nivel ${ROMAN[me.niveles[a]]}">${ATTR_ICON[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
+      <div class="cargo">
+        <div class="chips goods-line">${goods}</div>
+        <span class="chip profit" title="Beneficio comercial: próximo punto de leyenda al llegar a ${me.siguientePL}">${ORO}<b>${me.netProfit}/${me.siguientePL}</b></span>
+      </div>
     </div>
     <div class="box parchment rivals-box"><h3>Rivales</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
     <div class="log-buttons">

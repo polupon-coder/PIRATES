@@ -83,11 +83,8 @@ button { font: inherit; cursor: pointer; }
   display: flex; flex-direction: column; gap: 12px; text-align: center;
   padding: 46px 52px;
   color: var(--ink);
-  background: url(img/pergamino-centro.webp) center / cover no-repeat;
-  box-shadow: inset 0 0 30px 10px #8a4f1fa0, inset 0 0 6px 2px #5a2f0f80;
-  -webkit-mask-box-image: url(img/pergamino.webp) 60 / 30px round;
-  mask-border: url(img/pergamino.webp) 60 / 30px round;
 }
+.home-card.parchment::before { -webkit-mask-box-image: url(img/pergamino.webp) 60 / 30px round; mask-border: url(img/pergamino.webp) 60 / 30px round; }
 /* La sombra va en el contenedor, porque la máscara recortaría la del propio pergamino. */
 .home, .lobby, .panel { filter: drop-shadow(0 8px 12px #000b); }
 .home-title { font-family: 'Pirata One', cursive; font-size: 64px; margin: 0; color: var(--wood); line-height: 1; }
@@ -99,13 +96,30 @@ button { font: inherit; cursor: pointer; }
 .lobby { display: grid; place-items: center; padding: 20px 16px; }
 .parchment {
   color: var(--ink);
-  /* Un solo papel continuo; la silueta rota de tu pergamino se recorta con una máscara
-     (bordes repetidos, no estirados) y el tostado de los bordes es una sombra interior. */
   padding: 26px;
+  position: relative;
+  isolation: isolate;
+}
+/* El papel con la silueta rota (máscara con bordes repetidos, sin estirar) y el tostado de los
+   bordes. Encima, una segunda hoja interior sin máscara tapa la costura de 1 px que la máscara
+   deja a veces entre el borde y el centro. */
+.parchment::before, .parchment::after {
+  content: ''; position: absolute; z-index: -1; pointer-events: none;
   background: url(img/pergamino-centro.webp) center / cover no-repeat;
+}
+.parchment::before {
+  inset: 0;
   box-shadow: inset 0 0 26px 8px #8a4f1fa0, inset 0 0 6px 2px #5a2f0f80;
   -webkit-mask-box-image: url(img/pergamino.webp) 60 / 26px round;
   mask-border: url(img/pergamino.webp) 60 / 26px round;
+}
+.parchment::after {
+  inset: 16px;
+  box-shadow: inset 0 0 18px 4px #8a4f1f55;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent), linear-gradient(transparent, #000 8px, #000 calc(100% - 8px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent), linear-gradient(transparent, #000 8px, #000 calc(100% - 8px), transparent);
+  mask-composite: intersect;
 }
 .lobby-card { width: min(560px, 100%); padding: 36px 44px; }
 .lobby-card h2 { font-family: 'Pirata One', cursive; font-size: 36px; margin: 0 0 6px; color: var(--wood); }
@@ -264,9 +278,11 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 /* En ordenador el panel nunca se corta: Logros y los botones quedan fijos y, si falta sitio,
    solo se desplaza la lista de barcos a la vista. En pantallas muy bajas, el panel se desplaza. */
 @media (min-width: 901px) and (min-height: 820px) {
-  .panel { overflow: hidden; }
+  .panel { overflow: hidden; height: calc(100vh - 72px); }
   .panel > * { flex: none; }
-  .panel > .rivals-box { flex: 0 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+  /* Los dos papiros reparten toda la altura disponible. */
+  .panel > .me-box { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; max-height: 430px; }
+  .panel > .rivals-box { flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column; }
   .rivals-box .rivals-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
 }
 .box { padding: 18px 30px; }
@@ -459,3 +475,17 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .rival-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .rival .hint { margin-left: 20px; }
 
+
+/* Atributos del barco: cada uno una vez, con su valor y su nivel. */
+.attrs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 14px; }
+.attr { display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center; }
+.attr .ico { height: 2.1em; margin: 0; vertical-align: 0; }
+.attr b { font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.attr .lv { font-size: 13px; color: #6b5a3e; padding: 0 6px; border-radius: 8px; background: #5a3a1c1c; }
+.attr.low b { color: var(--red); }
+.cargo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.cargo .goods-line { flex: 1; margin: 0; }
+.cargo .profit { padding-left: 10px; border-left: 1px solid #8a6a3a55; }
+.rivals-list { display: flex; flex-direction: column; gap: 6px; }
+.rival + .rival { margin-top: 0; }
+.rival { padding: 8px 10px; }
