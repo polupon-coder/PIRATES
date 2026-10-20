@@ -270,7 +270,6 @@ button { font: inherit; cursor: pointer; }
 /* Mercantes más claros; la Armada, con tono de acero azulado. */
 img.kind-mercante { filter: sepia(.35) brightness(1.12) drop-shadow(0 3px 2px #0009); }
 img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop-shadow(0 3px 2px #0009); }
-.ship.docked { width: 70%; height: 70%; left: 30%; top: 30%; }
 .ship.me-ship { filter: drop-shadow(0 0 4px var(--gold-2)) drop-shadow(0 3px 2px #0009); }
 
 /* ---------- panel lateral */
@@ -481,6 +480,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .attr { display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center; }
 .attr .ico { height: 2.1em; margin: 0; vertical-align: 0; }
 .attr b { font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.attr .name { font-size: 13px; color: #5a4a30; line-height: 1.1; }
 .attr .lv { font-size: 13px; color: #6b5a3e; padding: 0 6px; border-radius: 8px; background: #5a3a1c1c; }
 .attr.low b { color: var(--red); }
 .cargo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
@@ -489,3 +489,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .rivals-list { display: flex; flex-direction: column; gap: 6px; }
 .rival + .rival { margin-top: 0; }
 .rival { padding: 8px 10px; }
+
+.chip.good { flex-direction: column; gap: 0; font-size: 15px; }
+.chip.good small, .chip.profit small { font-size: 12px; color: #5a4a30; line-height: 1.1; }
+.chip.profit { flex-direction: column; gap: 0; }

@@ -824,7 +824,7 @@ function renderPanel() {
     </div>`).join('');
 
   // Mercancías en una línea: solo icono y número (el nombre y el coste, al pasar el ratón).
-  const goods = R.goods.map((g) => `<span class="chip" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}">${GOOD_ICON[g]}<b>${me.mercancias[g]}</b></span>`).join('');
+  const goods = R.goods.map((g) => `<span class="chip good" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}"><span>${GOOD_ICON[g]} <b>${me.mercancias[g]}</b></span><small>${R.goodLabel[g]}</small></span>`).join('');
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
   const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || '<p class="hint">Aún no hay mensajes.</p>';
@@ -855,11 +855,11 @@ function renderPanel() {
           ['bodega', `${me.carga}/${me.bodega}`, 'carga / capacidad'],
           ['tripulacion', `${me.tripulacion}/${me.tripMax}`, 'marineros / máximo'],
         ].map(([a, v, what]) => `<div class="attr ${a === 'casco' && low ? 'low' : ''}" title="${R.attrLabel[a]}: ${what} · nivel ${ROMAN[me.niveles[a]]}">
-          ${ATTR_ICON[a]}<b>${v}</b><span class="lv">${ROMAN[me.niveles[a]]}</span></div>`).join('')}
+          ${ATTR_ICON[a]}<span class="name">${R.attrLabel[a]}</span><b>${v}</b><span class="lv">Nivel ${ROMAN[me.niveles[a]]}</span></div>`).join('')}
       </div>
       <div class="cargo">
         <div class="chips goods-line">${goods}</div>
-        <span class="chip profit" title="Beneficio comercial: próximo punto de leyenda al llegar a ${me.siguientePL}">${ORO}<b>${me.netProfit}/${me.siguientePL}</b></span>
+        <span class="chip profit" title="Beneficio comercial: próximo punto de logro al llegar a ${me.siguientePL}"><span>${ORO} <b>${me.netProfit}/${me.siguientePL}</b></span><small>Beneficio</small></span>
       </div>
     </div>
     <div class="box parchment rivals-box"><h3>Rivales</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
