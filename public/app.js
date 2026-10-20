@@ -308,27 +308,24 @@ function playerName(id) {
   return p ? p.name : '';
 }
 
+// Barra superior: ronda y estado del turno (acciones, movimiento y reloj).
 function renderStatus() {
   if (S.phase === 'fin') {
-    $('status').textContent = 'Fin de la partida';
-    $('banner').innerHTML = '<span class="me-turn">La partida ha terminado</span>';
-    $('banner').classList.add('mine');
+    $('status').innerHTML = '<span class="me-turn">La partida ha terminado</span>';
     return;
   }
-  $('status').textContent = `Ronda ${S.round} de ${S.reglas.maxRounds} · Victoria con ${S.reglas.winPL} PL`;
   const t = S.turn;
-  let html;
-  if (S.combat) html = '<span class="me-turn">⚔ ¡Combate!</span>';
-  else if (S.combatOthers) html = `⚔ ${esc(S.combatOthers.a)} combate contra ${esc(S.combatOthers.d)}`;
-  else if (!t) html = 'Mercantes y Armada se mueven…';
+  let html = `Ronda ${S.round} de ${S.reglas.maxRounds} · ${S.reglas.winPL} PL para ganar <span class="sep">|</span> `;
+  if (S.combat) html += '<span class="me-turn">⚔ ¡Combate!</span>';
+  else if (S.combatOthers) html += `⚔ ${esc(S.combatOthers.a)} combate contra ${esc(S.combatOthers.d)}`;
+  else if (!t) html += 'Mercantes y Armada se mueven…';
   else if (t.pid === S.you) {
-    html = `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span> ${t.actions} acción(es)`;
+    html += `<span class="me-turn">Tu turno</span> <span class="pips">${Array.from({ length: S.reglas.actions }, (_, i) => `<i class="${i < t.actions ? '' : 'off'}"></i>`).join('')}</span> ${t.actions} acción(es)`;
     if (t.moving) html += ` · ${ICON('velas')} ${t.moving.mp} de movimiento`;
-  } else html = `Turno de <b>${esc(playerName(t.pid))}</b>`;
+  } else html += `Turno de <b>${esc(playerName(t.pid))}</b>`;
   const ms = t && remaining(t.deadlineIn);
   if (ms !== null && ms !== undefined && !S.combat) html += ` <span class="clock ${ms < 15000 ? 'low' : ''}" id="clock">${fmt(ms)}</span>`;
-  $('banner').innerHTML = html;
-  $('banner').classList.toggle('mine', !!(t && t.pid === S.you && !S.combat));
+  $('status').innerHTML = html;
 }
 
 setInterval(() => {
@@ -562,7 +559,7 @@ function renderPanel() {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
       if (near) acts += `<p class="hint">No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.</p>`;
     }
-    acts += `<button class="btn red block" data-act="terminar">Terminar turno</button>`;
+    acts += `<button class="btn flag-btn block" data-act="terminar">Terminar turno</button>`;
   }
 
   // Barcos a la vista.

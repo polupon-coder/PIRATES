@@ -82,7 +82,7 @@ Texturas del tablero (en `public/img/`):
 | `casco.webp`, `tesoro.webp`, `sables.webp` | Casco, Puntos de Leyenda y aviso de tesoro, y la maniobra de Abordar. |
 | `velas.webp`, `canon.webp`, `yunque.webp`, `martillo.webp` | Velas; Cañones y Cañonear; Mejorar; Reparar (maza). |
 | `timon.webp`, `catalejo.webp`, `balanza.webp` | Navegar; Explorar y «A la vista»; Comerciar y tratos. |
-| `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, banderín del aviso de turno y fondo de los botones de madera. |
+| `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, botón Terminar turno y fondo de los botones de madera. |
 | `arrecife.webp` | Arrecifes. |
 | `poblado.webp` | La casilla de tierra más cercana al puerto en las islas con puerto. |
 
