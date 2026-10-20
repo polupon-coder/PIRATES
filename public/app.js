@@ -537,13 +537,13 @@ function renderPanel() {
       acts += `<p class="hint">Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.</p>
         <button class="btn block" data-act="parar">Detener el barco</button>`;
     } else {
-      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('velas')} Navegar (${me.velas} casillas)</button>`;
+      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar (${me.velas} casillas)</button>`;
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
       acts += `<button class="btn green block" data-dock="${id}">⚓ Atracar en ${esc(p ? p.name : 'el puerto')} (gratis)</button>`;
     }
-    for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>🧭 Explorar la isla</button>`;
+    for (const id of me.explorables) acts += `<button class="btn block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo')} Explorar la isla</button>`;
     if (port) acts += `<button class="btn gold block" id="portBtn">🏛 Puerto de ${esc(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
@@ -562,9 +562,9 @@ function renderPanel() {
     const btns = [];
     if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>${ICON('canon')} Cañonear</button>`);
     if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>Abordar</button>`);
-    if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>Comerciar</button>`);
+    if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Comerciar</button>`);
     const adj = Math.max(Math.abs(s.x - me.x), Math.abs(s.y - me.y)) <= 1;
-    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>Proponer trato</button>`);
+    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Proponer trato</button>`);
     return `<div class="target-row">
       ${s.kind === 'pirata' ? `<span class="flag" style="background:${s.color}"></span>` : ''}
       <span class="name">${shipLabel(s)}${docked ? ' <span class="tag">atracado</span>' : ''}</span>
@@ -605,7 +605,7 @@ function renderPanel() {
       <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
     <div class="box parchment"><h3>Acciones</h3><div class="actions">${acts}</div></div>
-    <div class="box parchment"><h3>A la vista</h3>${sight}</div>
+    <div class="box parchment"><h3>${ICON('catalejo', 'head')} A la vista</h3>${sight}</div>
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
     <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
     <div class="box parchment">
@@ -713,7 +713,7 @@ function renderModal() {
   } else if (ui.modal === 'puerto') {
     const port = S.map.ports.find((p) => p.id === me.docked);
     if (!port) return closeModal();
-    const tabs = [['comercio', `${ORO} Comerciar`], ['mejoras', `${ICON('yunque')} Mejorar`], ['reparar', `${ICON('martillo')} Reparar`], ['reclutar', `${ICON('tripulacion')} Reclutar`]];
+    const tabs = [['comercio', `${ICON('balanza')} Comerciar`], ['mejoras', `${ICON('yunque')} Mejorar`], ['reparar', `${ICON('martillo')} Reparar`], ['reclutar', `${ICON('tripulacion')} Reclutar`]];
     let content = '';
     const hasAct = S.turn && S.turn.pid === S.you && S.turn.actions > 0;
     if (ui.portTab === 'comercio') content = tradeTable(port.precios, null, { noResell: me.compradoAqui });

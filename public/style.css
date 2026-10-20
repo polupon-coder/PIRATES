@@ -255,6 +255,7 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 .ico, .ship-head .ico { height: 1.35em; width: auto; vertical-align: -0.35em; }
 .choice-ico { height: 34px; width: auto; }
 .toast-ico { display: block; height: 72px; margin: 0 auto 4px; }
+.ico.head { height: 1.1em; vertical-align: -0.15em; }
 .ico.good { height: 2em; vertical-align: -0.65em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
 .ship-head { display: flex; gap: 10px; align-items: center; }
