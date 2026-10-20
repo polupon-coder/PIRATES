@@ -77,9 +77,9 @@ Texturas del tablero (en `public/img/`):
 | `niebla.webp` | Sin uso por ahora (la niebla de guerra es el pergamino). |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
 | `pergamino.webp`, `pergamino-centro.webp` | Silueta rota (como máscara, con los bordes repetidos sin estirar) y papel del centro (a escala) de paneles, portada y ventanas. |
-| `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro, bodega y tripulación. |
+| `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro (moneda), bodega (barril) y tripulación (sombrero). |
 | `comida.webp`, `materiales.webp`, `manufacturas.webp`, `lujos.webp` | Iconos de las mercancías. |
-| `casco.webp`, `tesoro.webp`, `sables.webp` | Casco, Puntos de Leyenda y aviso de tesoro, y la maniobra de Abordar. |
+| `casco.webp`, `tesoro.webp`, `sables.webp` | Casco (ancla), Puntos de Leyenda y aviso de tesoro, y la maniobra de Abordar. |
 | `velas.webp`, `canon.webp`, `yunque.webp`, `martillo.webp` | Velas; Cañones y Cañonear; Mejorar; Reparar (maza). |
 | `timon.webp`, `catalejo.webp`, `balanza.webp` | Navegar; Explorar y «A la vista»; Comerciar y tratos. |
 | `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, botón Terminar turno y fondo de los botones de madera. |
