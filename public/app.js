@@ -312,6 +312,7 @@ function renderStatus() {
   if (S.phase === 'fin') {
     $('status').textContent = 'Fin de la partida';
     $('banner').innerHTML = '<span class="me-turn">La partida ha terminado</span>';
+    $('banner').classList.add('mine');
     return;
   }
   $('status').textContent = `Ronda ${S.round} de ${S.reglas.maxRounds} · Victoria con ${S.reglas.winPL} PL`;
@@ -327,6 +328,7 @@ function renderStatus() {
   const ms = t && remaining(t.deadlineIn);
   if (ms !== null && ms !== undefined && !S.combat) html += ` <span class="clock ${ms < 15000 ? 'low' : ''}" id="clock">${fmt(ms)}</span>`;
   $('banner').innerHTML = html;
+  $('banner').classList.toggle('mine', !!(t && t.pid === S.you && !S.combat));
 }
 
 setInterval(() => {

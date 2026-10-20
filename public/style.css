@@ -18,7 +18,7 @@
   --red: #b5382a;
   --green: #3f8f4a;
   --muted: #8a7a5e;
-  --cell: min(calc((100vw - 400px) / 12.6), calc((100vh - 110px) / 12.6), 62px);
+  --cell: min(calc((100vw - 450px) / 12.6), calc((100vh - 175px) / 12.4), 62px);
 }
 
 * { box-sizing: border-box; }
@@ -48,20 +48,21 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- botones */
 .btn {
-  background: linear-gradient(#6b4325, #4a2c17);
+  background: url(img/tablon.webp) center / 100% 100% no-repeat, transparent;
   color: var(--paper);
-  border: 1px solid #1a0f07;
+  text-shadow: 0 1px 2px #000;
+  border: 0;
   border-radius: 7px;
-  padding: 6px 14px;
-  box-shadow: inset 0 1px 0 #ffffff22, 0 2px 0 #0008;
+  padding: 7px 16px;
+  filter: drop-shadow(0 2px 2px #0009);
   transition: transform .06s, filter .1s;
 }
-.btn:hover:not(:disabled) { filter: brightness(1.15); }
+.btn:hover:not(:disabled) { filter: brightness(1.15) drop-shadow(0 2px 2px #0009); }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn.gold { background: linear-gradient(#f2c76a, #c98f2a); color: #2a1606; font-weight: 700; }
-.btn.red { background: linear-gradient(#c6493a, #8d2a1f); }
-.btn.green { background: linear-gradient(#4f9e58, #2e6d36); }
+.btn.gold { background: linear-gradient(#f2c76a, #c98f2a); color: #2a1606; font-weight: 700; text-shadow: none; border: 1px solid #1a0f07; }
+.btn.red { background: linear-gradient(#c6493a, #8d2a1f); border: 1px solid #1a0f07; }
+.btn.green { background: linear-gradient(#4f9e58, #2e6d36); border: 1px solid #1a0f07; }
 .btn.big { font-size: 20px; padding: 10px 20px; }
 .btn.small { font-size: 14px; padding: 3px 9px; }
 .btn.block { width: 100%; }
@@ -120,20 +121,32 @@ button { font: inherit; cursor: pointer; }
   display: flex; align-items: center; justify-content: center; gap: 10px;
   font-size: 18px; text-align: center;
 }
+/* En tu turno, el aviso va sobre el banderín rojo. */
+.banner.mine {
+  width: min(620px, 100%); min-height: 54px; padding: 4px 70px 8px 40px;
+  background: url(img/banderin.webp) center / 100% 100% no-repeat;
+  color: #fff3dc; text-shadow: 0 1px 2px #000c;
+}
+.banner.mine .me-turn { color: #fff3dc; font-family: 'Pirata One', cursive; font-size: 26px; font-weight: 400; }
 .banner .me-turn { color: var(--gold-2); font-weight: 700; }
 .banner .clock { font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 6px; background: #0005; }
 .banner .clock.low { color: #ff9d8a; }
 
 .board {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(12, var(--cell));
   grid-template-rows: repeat(12, var(--cell));
-  padding: 6px;
+  margin: 22px;
   background: #2d1b0e;
-  border: 3px solid #1a0f07;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px #000a, inset 0 0 0 2px #7a4d2b;
+  box-shadow: 0 10px 30px #000a;
   user-select: none;
+}
+/* Marco de madera alrededor del tablero; las esquinas de hierro montan un poco sobre las casillas. */
+.board::after {
+  content: ''; position: absolute; inset: -22px; pointer-events: none; z-index: 7;
+  border: 42px solid transparent;
+  border-image: url(img/marco.webp) 110 / 42px;
 }
 .cell { position: relative; overflow: visible; }
 .cell.fog {
@@ -330,7 +343,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 
 /* ---------- móvil */
 @media (max-width: 900px) {
-  :root { --cell: min(calc((100vw - 32px) / 12.4), 54px); }
+  :root { --cell: min(calc((100vw - 76px) / 12.2), 54px); }
   .game { grid-template-columns: 1fr; padding: 8px 16px; }
   .panel { max-height: none; overflow: visible; }
   .status { font-size: 14px; }
@@ -338,4 +351,6 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .choices { grid-template-columns: 1fr; }
   .fighter img { width: 80px; height: 70px; }
   .port-name { display: none; }
+  .banner.mine { padding: 4px 44px 8px 22px; font-size: 15px; gap: 6px; white-space: nowrap; }
+  .banner.mine .me-turn { font-size: 21px; }
 }
