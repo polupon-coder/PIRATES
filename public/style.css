@@ -266,8 +266,8 @@ img.kind-fragata { filter: saturate(.55) hue-rotate(180deg) brightness(.95) drop
 @media (min-width: 901px) and (min-height: 820px) {
   .panel { overflow: hidden; }
   .panel > * { flex: none; }
-  .panel > .sight-box { flex: 0 1 auto; min-height: 120px; display: flex; flex-direction: column; }
-  .sight-box .sight-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
+  .panel > .rivals-box { flex: 0 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+  .rivals-box .rivals-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
 }
 .box { padding: 18px 30px; }
 .ico, .ship-head .ico { height: 1.75em; width: auto; vertical-align: -0.55em; }
@@ -297,7 +297,7 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .who-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .who-row .mine { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; white-space: nowrap; }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 26px; margin-top: 10px; font-size: 16px; }
-.stat { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 3px; border-bottom: 1px dotted #8a6a3a66; }
+.stat { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-bottom: 3px; }
 .stat b { font-variant-numeric: tabular-nums; }
 .bar { height: 8px; border-radius: 4px; background: #0002; overflow: hidden; margin-top: 2px; }
 .bar > i { display: block; height: 100%; background: linear-gradient(90deg, #b5382a, #e3833a); }
@@ -310,7 +310,7 @@ h2 .ico.place { height: 1.05em; vertical-align: -0.12em; }
 .pips i { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); border: 1px solid #0007; }
 .pips i.off { background: #0002; }
 .status .pips i.off { background: #fff2; border-color: #fff5; }
-.target-row { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px dashed #8a6a3a55; flex-wrap: wrap; }
+.target-row { display: flex; align-items: center; gap: 6px; padding: 5px 0; flex-wrap: wrap; }
 .target-row .name { flex: 1; font-weight: 600; min-width: 120px; }
 .hint { font-size: 14px; color: #6b5a3e; font-style: italic; }
 .goods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 12px; font-size: 15px; }
@@ -432,3 +432,30 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .status .sep { display: none; }
   .status .me-turn { font-size: 18px; }
 }
+
+/* ---------- panel del jugador: datos en una línea, solo icono y número */
+.chips { display: flex; justify-content: space-between; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 17px; white-space: nowrap; }
+.chip b { font-variant-numeric: tabular-nums; }
+.chip.low b { color: var(--red); }
+.goods-line { justify-content: space-around; margin-top: 8px; }
+.goods-line .ico.good { height: 2.1em; margin: 0; }
+.levels { justify-content: space-between; }
+.lvl { padding: 1px 6px; }
+
+/* ---------- rivales (logros y barcos a la vista) */
+.rivals-box h3 { margin-bottom: 4px; }
+.rival { padding: 6px 8px; border-radius: 8px; opacity: .72; }
+.rival + .rival { margin-top: 4px; }
+.rival.seen { opacity: 1; background: #5a3a1c18; box-shadow: inset 0 0 0 1.5px #8a5a2a88; }
+.rival.turn .name { font-weight: 700; }
+.rival.turn .name::before { content: '➤ '; color: var(--red); }
+.rival-row { display: flex; align-items: center; gap: 8px; }
+.rival-row .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 17px; }
+.rival.neutral .name { font-weight: 600; }
+.rival-row .hull, .rival-row .pts { white-space: nowrap; }
+.rival-row .pts { font-size: 17px; }
+.ico.tiny { height: 1em; vertical-align: -0.1em; }
+.rival-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.rival .hint { margin-left: 20px; }
+

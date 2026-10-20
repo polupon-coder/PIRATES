@@ -784,39 +784,51 @@ function renderPanel() {
     acts += `<button class="btn flag-btn block" data-act="terminar">Terminar turno</button>`;
   }
 
-  // Barcos a la vista.
-  const others = S.ships.filter((s) => s.id !== S.you);
+  // Rivales: los demás capitanes con sus logros; los que están a la vista se resaltan y
+  // muestran su casco y lo que puedes hacer con ellos. Debajo, mercantes y Armada a la vista.
   const tgt = new Map(me.objetivos.map((o) => [o.id, o]));
-  const sight = others.length ? others.map((s) => {
+  const can = myTurn && S.turn.actions > 0;
+  const shipActions = (s) => {
     const o = tgt.get(s.id);
-    const can = myTurn && S.turn.actions > 0;
-    const docked = s.kind === 'pirata' && s.docked !== null;
     const btns = [];
     if (o && o.canon) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="canon" ${can ? '' : 'disabled'}>${ICON('canon')} Cañonear</button>`);
-    if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>Abordar</button>`);
+    if (o && o.abordaje) btns.push(`<button class="btn small red" data-atk="${s.id}" data-modo="abordaje" ${can ? '' : 'disabled'}>${ICON('sables')} Abordar</button>`);
     if (o && o.comercio) btns.push(`<button class="btn small green" data-merchant="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Comerciar</button>`);
     const adj = Math.max(Math.abs(s.x - me.x), Math.abs(s.y - me.y)) <= 1;
-    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Proponer trato</button>`);
-    return `<div class="target-row">
-      ${s.kind === 'pirata' ? `<span class="flag" style="background:${s.color}"></span>` : ''}
-      <span class="name">${shipLabel(s)}${docked ? ' <span class="tag">atracado</span>' : ''}</span>
-      <span title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>
-      <div class="row" style="width:100%">${btns.join('')}</div>
-    </div>`;
-  }).join('') : '<p class="hint">No hay barcos a la vista.</p>';
-
-  const goods = R.goods.map((g) => `<span>${GOOD_ICON[g]} ${R.goodLabel[g]}: <b>${me.mercancias[g]}</b>${me.mercancias[g] ? ` <span class="muted">(coste ${me.costes[g]})</span>` : ''}</span>`).join('');
-
+    if (s.kind === 'pirata' && adj) btns.push(`<button class="btn small green" data-deal="${s.id}" ${can ? '' : 'disabled'}>${ICON('balanza')} Trato</button>`);
+    return btns.length ? `<div class="rival-acts">${btns.join('')}</div>` : '';
+  };
   const turnOrder = S.order.map((id) => S.players.find((p) => p.id === id)).filter(Boolean);
-  // Logros: un capitán junto a otro, con su tesoro debajo.
-  const scores = `<div class="scores">${turnOrder.map((p) => `
-    <div class="score ${t && t.pid === p.id ? 'turn' : ''}">
-      <span class="name" title="${esc(p.name)}"><span class="flag" style="background:${p.color}"></span><span class="txt">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span></span>
-      <b>${LEYENDA} ${p.pl}</b>
-    </div>`).join('')}</div>`;
+  const seen = new Map(S.ships.filter((s) => s.id !== S.you).map((s) => [s.id, s]));
+  const rivals = turnOrder.filter((p) => p.id !== S.you).map((p) => {
+    const s = seen.get(p.id);
+    const docked = s && s.docked !== null && s.docked !== undefined;
+    return `<div class="rival ${s ? 'seen' : ''} ${t && t.pid === p.id ? 'turn' : ''}">
+      <div class="rival-row">
+        <span class="flag" style="background:${p.color}"></span>
+        <span class="name" title="${esc(p.name)}">${esc(p.name)}${!p.bot && !p.connected ? ' 💤' : ''}</span>
+        ${s ? `<span class="seen-tag" title="A la vista">${ICON('catalejo', 'tiny')}</span><span class="hull" title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>` : ''}
+        <b class="pts" title="Logros">${LEYENDA} ${p.pl}</b>
+      </div>
+      ${docked ? '<div class="hint">Atracado</div>' : ''}
+      ${s ? shipActions(s) : ''}
+    </div>`;
+  }).join('');
+  const neutrals = [...seen.values()].filter((s) => s.kind !== 'pirata').map((s) => `
+    <div class="rival seen neutral">
+      <div class="rival-row">
+        <span class="name">${shipLabel(s)}</span>
+        <span class="hull" title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>
+      </div>
+      ${shipActions(s)}
+    </div>`).join('');
+
+  // Mercancías en una línea: solo icono y número (el nombre y el coste, al pasar el ratón).
+  const goods = R.goods.map((g) => `<span class="chip" title="${R.goodLabel[g]}${me.mercancias[g] ? ` · coste medio ${me.costes[g]}` : ''}">${GOOD_ICON[g]}<b>${me.mercancias[g]}</b></span>`).join('');
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
   const chat = ui.chat.slice().reverse().map((m) => `<p><b style="color:${m.color}">${esc(m.from)}:</b> ${esc(m.text)}</p>`).join('') || '<p class="hint">Aún no hay mensajes.</p>';
+  const low = me.casco <= Math.ceil(me.cascoMax / 3);
 
   $('panel').innerHTML = `
     <div class="box parchment">
@@ -835,17 +847,16 @@ function renderPanel() {
           </div>
         </div>
       </div>
-      <div class="stats">
-        <div><div class="stat"><span>${CASCO} Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
-        <div><div class="stat"><span>${TRIP} Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
-        <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
-        <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo punto de leyenda al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
+      <div class="chips">
+        <span class="chip ${low ? 'low' : ''}" title="Casco">${CASCO}<b>${me.casco}/${me.cascoMax}</b></span>
+        <span class="chip" title="Tripulación">${TRIP}<b>${me.tripulacion}/${me.tripMax}</b></span>
+        <span class="chip" title="Bodega">${CARGA}<b>${me.carga}/${me.bodega}</b></span>
+        <span class="chip" title="Beneficio comercial: próximo punto de leyenda al llegar a ${me.siguientePL}">${ORO}<b>${me.netProfit}/${me.siguientePL}</b></span>
       </div>
-      <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
+      <div class="chips goods-line">${goods}</div>
+      <div class="levels">${R.attrs.map((a) => `<span class="lvl" title="${R.attrLabel[a]} nivel ${ROMAN[me.niveles[a]]}">${ATTR_ICON[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
-    <div class="box parchment sight-box"><h3>${ICON('catalejo', 'head')} A la vista</h3><div class="sight-list">${sight}</div></div>
-    <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
-    <div class="box parchment"><h3>Logros</h3>${scores}</div>
+    <div class="box parchment rivals-box"><h3>Rivales</h3><div class="rivals-list">${rivals}${neutrals}</div></div>
     <div class="log-buttons">
       <button class="btn block log-btn" data-open="cronica">Crónica</button>
       <button class="btn block log-btn" data-open="chat">Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>
