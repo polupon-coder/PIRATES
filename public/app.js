@@ -804,9 +804,9 @@ function renderPanel() {
     const noAct = t.actions <= 0;
     if (t.moving) {
       acts += `<p class="hint">Pulsa una casilla marcada para navegar (te quedan ${t.moving.mp} puntos). Los arrecifes cuestan 2.</p>
-        <button class="btn block" data-act="parar">Detener el barco</button>`;
+        <button class="btn gold block" data-act="parar">Detener el barco</button>`;
     } else {
-      acts += `<button class="btn block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar <span class="long">(${me.velas} casillas)</span></button>`;
+      acts += `<button class="btn gold block" data-act="navegar" ${noAct ? 'disabled' : ''}>${ICON('timon')} Navegar <span class="long">(${me.velas} casillas)</span></button>`;
     }
     for (const id of me.atracables) {
       const p = S.map.ports.find((x) => x.id === id);
