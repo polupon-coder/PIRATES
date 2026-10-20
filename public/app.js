@@ -39,7 +39,10 @@ function saveSession(s) {
 const ROMAN = ['', 'I', 'II', 'III'];
 const ORO = '<img class="ico" src="img/oro.webp" alt="oro">';
 const CARGA = '<img class="ico" src="img/carga.webp" alt="carga">';
-const GOOD_ICON = { comida: '🍖', materiales: '🪵', manufacturas: '🧵', lujos: '💎' };
+const ICON = (name, cls = '') => `<img class="ico ${cls}" src="img/${name}.webp" alt="">`;
+// Mercancías con ilustración; las que aún no la tienen usan un emoji.
+const GOOD_ICON = { comida: ICON('comida', 'good'), materiales: '🪵', manufacturas: ICON('manufacturas', 'good'), lujos: ICON('lujos', 'good') };
+const TRIP = ICON('tripulacion');
 const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
 const PICK_LABEL = { canon: 'Cañonear', abordaje: 'Abordar', maniobra: 'Maniobrar' };
 
@@ -586,7 +589,7 @@ function renderPanel() {
       </div>
       <div class="stats">
         <div><div class="stat"><span>🛡 Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
-        <div><div class="stat"><span>👥 Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
+        <div><div class="stat"><span>${TRIP} Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
         <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
         <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
       </div>
@@ -693,7 +696,7 @@ function renderModal() {
     body = `<h2>${shipLabel(s)}</h2>
       <div class="ship-head">${shipImg(s)}<div>
         <div>${KIND_LABEL[s.kind]}</div>
-        <div>🛡 Casco ${s.casco}/${s.cascoMax} · 👥 Tripulación ${s.tripulacion}</div>
+        <div>🛡 Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
         ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${R.attrLabel[a]} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>Carga: ${s.carga} mercancías</div>` : ''}
         ${s.kind === 'mercante' ? `<div>Rumbo a ${esc(s.destino)} con ${s.carga} mercancías</div>` : ''}
       </div></div>
@@ -861,7 +864,7 @@ function fighter(s, side, c, right) {
     ${shipImg(s)}
     <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? ' (tú)' : ''}</div>
     <div>🛡 ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
-    <div>🎯 ${s.canones} dados · 👥 ${s.tripulacion}</div>
+    <div>🎯 ${s.canones} dados · ${TRIP} ${s.tripulacion}</div>
     <div class="badges">${c.ventaja[side] ? '<span class="badge adv">Ventaja +1</span>' : ''}${c.maniobro[side] ? '<span class="badge">Ya maniobró</span>' : ''}</div>
   </div>`;
 }

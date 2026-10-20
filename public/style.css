@@ -220,6 +220,7 @@ button { font: inherit; cursor: pointer; }
 .panel { display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 72px); overflow: auto; padding-bottom: 6px; }
 .box { padding: 16px 20px; }
 .ico, .ship-head .ico { height: 1.35em; width: auto; vertical-align: -0.35em; }
+.ico.good { height: 2em; vertical-align: -0.65em; margin-right: 2px; }
 .box h3 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 24px; margin: 0 0 6px; color: var(--wood); }
 .ship-head { display: flex; gap: 10px; align-items: center; }
 .ship-head img { width: 76px; height: 76px; object-fit: contain; }

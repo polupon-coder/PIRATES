@@ -76,7 +76,8 @@ Texturas del tablero (en `public/img/`):
 | `niebla.webp` | Niebla de guerra sobre lo que aún no se ha descubierto. |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
 | `pergamino.webp` | Fondo de los paneles, la portada y las ventanas. |
-| `oro.webp`, `carga.webp` | Iconos de oro y de bodega. |
+| `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro, bodega y tripulación. |
+| `comida.webp`, `manufacturas.webp`, `lujos.webp` | Iconos de las mercancías (materiales aún usa un emoji). |
 | `arrecife.webp` | Arrecifes. |
 | `costa.webp` | Borde de playa en cada lado (y esquina) de una casilla de mar que toca tierra: la lámina se gira hacia la tierra y solo se usa su franja de playa. |
 | `oceano.webp` | Mar profundo: casillas de mar rodeadas de mar por los 8 lados; se funde con el mar normal. |
