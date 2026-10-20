@@ -105,7 +105,9 @@ button { font: inherit; cursor: pointer; }
 .home-card.parchment::before { -webkit-mask-box-image: url(img/pergamino.webp) 60 / 30px round; mask-border: url(img/pergamino.webp) 60 / 30px round; }
 /* La sombra va en el contenedor, porque la máscara recortaría la del propio pergamino. */
 .home, .lobby, .panel { filter: drop-shadow(0 8px 12px #000b); }
-.home-title { font-family: 'Pirata One', cursive; font-size: 64px; margin: 0; color: var(--wood); line-height: 1; }
+.home-title { margin: 0; line-height: 0; text-align: center; }
+.home-title img { width: 100%; max-width: 380px; height: auto; filter: drop-shadow(0 3px 3px #0007); }
+.brand img { display: block; height: 34px; width: auto; filter: drop-shadow(0 2px 2px #000); }
 .join-row { display: flex; gap: 8px; }
 .join-row #joinBtn { flex: none; min-width: 110px; align-self: stretch; }
 .join-row .input { flex: 1; text-transform: uppercase; letter-spacing: 4px; text-align: center; }
@@ -456,7 +458,7 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .panel { min-width: 0; padding: 0 8px; }
   .panel { max-height: none; overflow: visible; }
   .status { font-size: 14px; }
-  .brand { font-size: 24px; }
+  .brand img { height: 30px; }
   .choices { grid-template-columns: 1fr; }
   .fighter > img { width: 80px; height: 70px; }
   .port-name { display: none; }
@@ -500,7 +502,6 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .up-row .btn { font-size: 13px; padding: 3px 8px; }
   /* Portada y sala sin desbordar. */
   .home-card { padding: 22px 20px; }
-  .home-title { font-size: 48px; }
   .lobby-card { padding: 24px 22px; }
   .lobby-card h2 { font-size: 28px; }
   .join-row .input, .share .input { min-width: 0; }
