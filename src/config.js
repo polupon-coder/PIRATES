@@ -14,7 +14,7 @@ module.exports = {
   START_MIN_DIST: 6,
   ACTIONS_PER_TURN: 3,
   MAX_ROUNDS: 15,
-  WIN_PL: 12,
+  WIN_PL: 24,
 
   // Visión: el terreno se descubre en 3 × 3 (radio 1). Los barcos se ven hasta el alcance
   // de los cañones (radio 2): si no, nunca se podría cañonear a distancia 2.
