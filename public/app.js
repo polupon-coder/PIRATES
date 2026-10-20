@@ -290,9 +290,18 @@ function effects(prev, st) {
 
 // ------------------------------------------------------------ portada y sala
 
+// Portada (título grande y «Jugar») la primera vez; si llegas con el enlace de una sala, directo al formulario.
+let coverDone = !!new URLSearchParams(location.search).get('sala');
+function showCover(on) {
+  $('cover').classList.toggle('hidden', !on);
+  document.body.classList.toggle('on-cover', on);
+}
+$('playBtn').onclick = () => { coverDone = true; showHome(); };
+
 function showHome() {
   for (const id of ['lobby', 'game']) $(id).classList.add('hidden');
-  $('home').classList.remove('hidden');
+  showCover(!coverDone);
+  $('home').classList.toggle('hidden', !coverDone);
   $('roomInfo').textContent = '';
   $('status').textContent = '';
   $('pricesBtn').classList.add('hidden');
@@ -340,6 +349,8 @@ function applyStaticTexts() {
   set('codeInput', 'placeholder', 'CÓDIGO', 'CODE');
   set('createBtn', 'textContent', 'Crear partida', 'Create game');
   set('joinBtn', 'textContent', 'Unirse', 'Join');
+  set('playBtn', 'textContent', 'Jugar', 'Play');
+  set('coverBy', 'textContent', 'Un juego de Pol Lupon', 'A game by Pol Lupon');
   $('langBtn').textContent = LANG.toUpperCase();
   $('langBtn').title = L('Change language: English', 'Cambiar idioma: español');
   paintSound();
@@ -372,6 +383,7 @@ function render() {
   if (!S) return;
   if (renderHandoff()) return;
   $('home').classList.add('hidden');
+  showCover(false);
   $('roomInfo').textContent = S.code;
   document.body.classList.toggle('in-game', S.phase !== 'lobby');
   if (S.phase === 'lobby') {

@@ -639,3 +639,19 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 .handoff-card { width: min(440px, 100%); text-align: center; padding: 34px 30px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .handoff-card h2 { font-family: 'Pirata One', cursive; font-weight: 400; font-size: 40px; margin: 0; color: var(--wood); display: flex; align-items: center; gap: 10px; }
 .local-add { margin-top: 10px; }
+
+/* ---------- portada */
+.cover {
+  min-height: calc(100vh - 52px); min-height: calc(100dvh - 52px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6vh;
+  padding: 24px 16px; box-sizing: border-box; text-align: center;
+  background: radial-gradient(ellipse at center, #0000 30%, #0a0603b3 100%);
+}
+.cover-title { width: min(92vw, 900px); height: auto; filter: drop-shadow(0 6px 10px #000) drop-shadow(0 0 30px #000a); }
+.btn.cover-play { font-size: 30px; min-width: 220px; padding: 12px 30px; font-family: 'Pirata One', cursive; letter-spacing: 1px; }
+.cover-by {
+  margin: 0; position: relative; top: 4vh;
+  font-style: italic; font-size: 18px; color: var(--paper-2); text-shadow: 0 1px 2px #000, 0 0 8px #000;
+}
+.cover-by::before, .cover-by::after { content: '—'; margin: 0 10px; color: var(--gold); }
+body.on-cover .brand { visibility: hidden; }
