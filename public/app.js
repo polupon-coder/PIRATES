@@ -505,9 +505,9 @@ function drawSea() {
             if (dd < dist) dist = dd;
           }
           if (dist >= REACH) continue;
-          const n1 = vnoise(fx * 5, fy * 5);
-          const n2 = vnoise(fx * 13 + 7, fy * 13 + 3);
-          const beach = 0.06 + 0.08 * n1 * n1 + 0.03 * n2; // ancho irregular de la arena
+          const n1 = vnoise(fx * 3.2, fy * 3.2);
+          const n2 = vnoise(fx * 9 + 7, fy * 9 + 3);
+          const beach = 0.03 + 0.17 * n1 + 0.06 * n2; // ancho irregular de la arena (calas y salientes)
           const i = (py * W + pxx) * 4;
           let r0 = d[i];
           let g0 = d[i + 1];
@@ -541,7 +541,69 @@ function drawSea() {
   }
   ctx.putImageData(img, 0, 0);
 }
-addEventListener('resize', () => { if (S && S.map) drawSea(); });
+
+// Arena que entra de forma irregular sobre el borde de las losetas de tierra (capa encima de
+// la tierra y debajo de los barcos), para que la orilla no sea la línea recta de la loseta.
+const coastCanvas = document.createElement('canvas');
+coastCanvas.className = 'coast-layer';
+let coastKey = '';
+function drawCoast() {
+  const N = S.map.size;
+  const cell = $('board').clientWidth / N;
+  if (!cell) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const px = Math.round(cell * dpr);
+  const me = S.me;
+  const key = `${seaKey}|${me.x},${me.y}|${S.reglas.terrainView}`;
+  if (key === coastKey) return;
+  coastKey = key;
+  const W = px * N;
+  coastCanvas.width = W;
+  coastCanvas.height = W;
+  const ctx = coastCanvas.getContext('2d');
+  const img = ctx.createImageData(W, W);
+  const d = img.data;
+  const isWater = (x, y) => {
+    const n = S.map.tiles[y] && S.map.tiles[y][x];
+    return !!n && (n.t === 'mar' || n.t === 'arrecife');
+  };
+  const MAXIN = 0.32;
+  for (let ty = 0; ty < N; ty++) {
+    for (let tx = 0; tx < N; tx++) {
+      const c = S.map.tiles[ty][tx];
+      if (!c || c.t !== 'tierra' || isIslet(tx, ty)) continue;
+      const waters = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && isWater(tx + dx, ty + dy)) waters.push([tx + dx, ty + dy]);
+      if (!waters.length) continue;
+      const out = Math.max(Math.abs(me.x - tx), Math.abs(me.y - ty)) > S.reglas.terrainView;
+      for (let py = ty * px; py < (ty + 1) * px; py++) {
+        const fy = (py + 0.5) / px;
+        for (let pxx = tx * px; pxx < (tx + 1) * px; pxx++) {
+          const fx = (pxx + 0.5) / px;
+          let din = 9;
+          for (const [wx, wy] of waters) {
+            const dx = Math.max(wx - fx, 0, fx - (wx + 1));
+            const dy = Math.max(wy - fy, 0, fy - (wy + 1));
+            const dd = Math.hypot(dx, dy);
+            if (dd < din) din = dd;
+          }
+          if (din > MAXIN) continue;
+          const n3 = vnoise(fx * 5.5 + 11, fy * 5.5 + 5);
+          const n4 = vnoise(fx * 13 + 2, fy * 13 + 9);
+          const sIn = (n3 - 0.38) * 0.42 + (n4 - 0.5) * 0.12; // cuánto entra la arena (a veces nada)
+          if (din >= sIn) continue;
+          const a = Math.min(1, (sIn - din) * px / 2.5);
+          const grain = (hash2(pxx, py) - 0.5) * 18 + (n4 - 0.5) * 14;
+          const k = out ? 0.72 : 1; // como el oscurecido de la tierra fuera de la vista
+          const i = (py * W + pxx) * 4;
+          d[i] = (228 + grain) * k; d[i + 1] = (207 + grain) * k; d[i + 2] = (158 + grain * 0.8) * k; d[i + 3] = a * 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+addEventListener('resize', () => { if (S && S.map) { drawSea(); drawCoast(); } });
 
 function renderBoard() {
   const me = S.me;
@@ -631,7 +693,9 @@ function renderBoard() {
   }
   $('board').innerHTML = html;
   $('board').prepend(seaCanvas);
+  $('board').append(coastCanvas);
   drawSea();
+  drawCoast();
 }
 
 $('board').addEventListener('click', (e) => {
@@ -747,7 +811,7 @@ function renderPanel() {
   const scores = turnOrder.map((p) => `
     <div class="score-row ${t && t.pid === p.id ? 'turn' : ''}">
       <span class="flag" style="background:${p.color}"></span>
-      <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${p.bot ? ' 🤖' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span>
+      <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span>
       <b>${LEYENDA} ${p.pl}</b>
     </div>`).join('');
 
@@ -774,7 +838,7 @@ function renderPanel() {
     </div>
     <div class="box parchment"><h3>${ICON('catalejo', 'head')} A la vista</h3>${sight}</div>
     <div class="box parchment"><h3>${CARGA} Bodega</h3><div class="goods">${goods}</div></div>
-    <div class="box parchment"><h3>Leyendas</h3>${scores}</div>
+    <div class="box parchment"><h3>Logros</h3>${scores}</div>
     <div class="log-buttons">
       <button class="btn block log-btn" data-open="cronica">Crónica</button>
       <button class="btn block log-btn" data-open="chat">Chat${ui.unread ? ` <span class="unread">${ui.unread}</span>` : ''}</button>

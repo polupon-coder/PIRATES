@@ -75,5 +75,8 @@ module.exports = {
 
   PORT_NAMES: ['Tortuga', 'Port Royal', 'Nassau', 'Maracaibo', 'Cartagena', 'Portobelo', 'La Habana',
     'Santo Domingo', 'Campeche', 'Veracruz', 'San Juan', 'Barbados'],
+  // Nombres de los capitanes que maneja el juego (bots).
+  BOT_NAMES: ['Barbanegra', 'Anne Bonny', 'Calico Jack', 'Mary Read', 'Henry Morgan', 'Capitán Kidd',
+    'Barbarroja', 'Bartholomew Roberts', 'Charles Vane', 'Ching Shih'],
   COLORS: ['#c0392b', '#2471a3', '#229954', '#d4ac0d'],
 };

@@ -170,7 +170,7 @@ class Game {
     const p = {
       id: this.nid('p'),
       kind: 'pirata',
-      name: clean || (opts.bot ? `Bot ${this.players.length + 1}` : `Pirata ${this.players.length + 1}`),
+      name: clean || (opts.bot ? this.botName() : `Pirata ${this.players.length + 1}`),
       color: C.COLORS.find((c) => !used.has(c)),
       bot: !!opts.bot,
       connected: !!opts.bot,
@@ -180,6 +180,13 @@ class Game {
     if (!this.hostId) this.hostId = p.id;
     this.say(`${p.name} sube a bordo.`);
     return p;
+  }
+
+  // Un nombre de capitán célebre que no esté ya en la sala.
+  botName() {
+    const used = new Set(this.players.map((p) => p.name));
+    const free = C.BOT_NAMES.filter((n) => !used.has(n));
+    return free.length ? free[Math.floor(this.rng() * free.length)] : `Capitán ${this.players.length + 1}`;
   }
 
   removePlayer(id) {
