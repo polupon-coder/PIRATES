@@ -77,7 +77,7 @@ Texturas del tablero (en `public/img/`):
 | `colina.webp` | La casilla más interior de cada isla sin puerto de 3 o más casillas. |
 | `isla.webp` | Islotes de una sola casilla. |
 | `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Van en las islas más grandes, con tierra detrás y a los lados si se puede, y el muelle hacia el mar; donde su tierra toca agua, el borde se funde. |
-| `niebla.webp` | Sin uso por ahora (la niebla de guerra es el pergamino). |
+| `niebla-mapa.webp` | Niebla de guerra: carta náutica antigua, tenue, sobre lo no descubierto. |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
 | `pergamino.webp`, `pergamino-centro.webp` | Silueta rota (como máscara, con los bordes repetidos sin estirar) y papel del centro (a escala) de paneles, portada y ventanas. |
 | `oro.webp`, `carga.webp`, `tripulacion.webp` | Iconos de oro (moneda), bodega (barril) y tripulación (sombrero). |

@@ -114,7 +114,7 @@ button { font: inherit; cursor: pointer; }
   mask-border: url(img/pergamino.webp) 60 / 26px round;
 }
 .parchment::after {
-  inset: 16px;
+  inset: 24px;
   box-shadow: inset 0 0 18px 4px #8a4f1f55;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent), linear-gradient(transparent, #000 8px, #000 calc(100% - 8px), transparent);
   -webkit-mask-composite: source-in;
@@ -191,7 +191,7 @@ button { font: inherit; cursor: pointer; }
   grid-template-columns: repeat(12, var(--cell));
   grid-template-rows: repeat(12, var(--cell));
   margin: 22px;
-  background: #e6cfa0; /* tono del pergamino: no asoman líneas entre casillas */
+  background: #e3cfa6; /* tono del mapa: no asoman líneas entre casillas */
   box-shadow: 0 10px 30px #000a;
   user-select: none;
 }
@@ -203,11 +203,11 @@ button { font: inherit; cursor: pointer; }
 }
 .cell { position: relative; overflow: visible; }
 .cell.fog {
-  /* Lo no descubierto es pergamino en blanco: un solo papel que cubre todo el tablero. */
-  background: url(img/pergamino-centro.webp) #e8d3a4;
-  /* Alto del tablero y ancho según la proporción del papel (1,9:1): no se estira. */
-  background-size: calc(var(--cell) * 12 * 1.9) calc(var(--cell) * 12);
-  background-position: calc(var(--cell) * (var(--x) + 5.4) * -1) calc(var(--cell) * var(--y) * -1);
+  /* Lo no descubierto es una carta náutica antigua, tenue: una sola imagen cuadrada que cubre
+     todo el tablero, a su proporción (sin estirar). */
+  background: url(img/niebla-mapa.webp) #e8d3a4;
+  background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
+  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
 /* El mar, los arrecifes y la playa se dibujan en el lienzo de debajo (.sea-layer). */
 .sea-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -426,8 +426,13 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 
 /* ---------- móvil */
 @media (max-width: 900px) {
-  :root { --cell: min(calc((100vw - 76px) / 12.2), 54px); }
-  .game { grid-template-columns: 1fr; padding: 8px 16px; }
+  /* Mapa a todo el ancho: marco fino y casillas lo más grandes posible. */
+  :root { --cell: min(calc((100vw - 24px) / 12), 60px); }
+  .game { grid-template-columns: minmax(0, 1fr); padding: 4px 0; gap: 10px; }
+  .board-wrap { min-width: 0; }
+  .board { margin: 6px; }
+  .board::after { inset: -6px; border-width: 14px; border-image-width: 14px; }
+  .panel { min-width: 0; padding: 0 8px; }
   .panel { max-height: none; overflow: visible; }
   .status { font-size: 14px; }
   .brand { font-size: 24px; }
@@ -435,9 +440,16 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .fighter > img { width: 80px; height: 70px; }
   .port-name { display: none; }
   .topbar { flex-wrap: wrap; row-gap: 4px; }
-  .actions-float { position: fixed; left: 8px !important; right: 8px !important; top: auto !important; bottom: 8px !important; width: auto; max-height: 45vh; }
+  /* Acciones: barra compacta abajo que no tapa el mapa (los botones en fila). */
+  .actions-float { position: fixed; left: 4px !important; right: 4px !important; top: auto !important; bottom: 4px !important; width: auto; max-height: 34vh; padding: 0 2px 2px; }
+  .actions-float.framed { border-width: 14px; border-image-width: 14px; }
+  .actions-float h3 { font-size: 18px; margin: 0; }
+  .actions-float .actions { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .actions-float .actions .btn.block { width: auto; flex: 1 1 45%; font-size: 14px; padding: 4px 2px; }
+  .actions-float .actions .btn.flag-btn { flex-basis: 100%; min-height: 38px; font-size: 18px; }
+  .actions-float .actions .hint { display: none; }
   .log-float { z-index: 21; max-height: 60vh; }
-  body.float-open .game { padding-bottom: calc(45vh + 16px); }
+  body.float-open .game { padding-bottom: calc(34vh + 12px); }
   /* Tabla de comercio en el móvil: columnas estrechas y el icono encima del nombre. */
   table.trade { font-size: 13px; }
   table.trade th { font-size: 11px; }
@@ -447,7 +459,31 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
   .stepper { gap: 1px; }
   .stepper button { width: 22px; height: 22px; font-size: 13px; }
   .stepper span { min-width: 12px; }
-  .dialog { padding: 6px 4px; }
+  .dialog { padding: 4px 2px; }
+  .dialog.framed, .modal .framed { border-width: 14px; border-image-width: 14px; }
+  .modal { padding: 6px; }
+  .dialog h2 { font-size: 26px; }
+  /* Pestañas del puerto: icono encima, texto pequeño; caben las cuatro. */
+  .tabs button { font-size: 13px; padding: 3px 1px; min-width: 0; }
+  .tabs button .ico { display: block; height: 1.9em; margin: 0 auto 1px; }
+  /* Mejoras: nombre y nivel arriba, coste y botón debajo. */
+  .up-row { grid-template-columns: 1fr auto; row-gap: 2px; font-size: 15px; }
+  .up-row > span:first-child { grid-column: 1 / -1; }
+  .up-row .btn { font-size: 13px; padding: 3px 8px; }
+  /* Portada y sala sin desbordar. */
+  .home-card { padding: 22px 20px; }
+  .home-title { font-size: 48px; }
+  .lobby-card { padding: 24px 22px; }
+  .lobby-card h2 { font-size: 28px; }
+  .join-row .input, .share .input { min-width: 0; }
+  .home-card { max-width: 100%; min-width: 0; }
+  .home-card > *, .home-card .input { min-width: 0; max-width: 100%; }
+  .home-card .input { width: 100%; }
+  .ship-head { gap: 8px; }
+  .ship-head img { width: 56px; height: 56px; }
+  .ship-head .who { font-size: 22px; }
+  .who-row .mine { font-size: 15px; }
+  .who-wrap { min-width: 0; }
   body.float-min .game { padding-bottom: 90px; }
   .actions-float .float-head { cursor: default; }
   .status { order: 5; flex-basis: 100%; white-space: normal; line-height: 1.3; }
