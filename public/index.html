@@ -14,8 +14,8 @@
   <header class="topbar">
     <div class="brand">Piratas</div>
     <div id="status" class="status"></div>
-    <button id="pricesBtn" class="top-btn hidden">Precios</button>
-    <button id="rulesBtn" class="top-btn">Reglas</button>
+    <button id="pricesBtn" class="top-btn hidden" title="Precios"><img src="img/balanza.webp" alt=""></button>
+    <button id="rulesBtn" class="top-btn" title="Reglas">R</button>
     <button id="langBtn" class="top-btn lang-btn" aria-label="Idioma / Language"></button>
     <button id="soundBtn" class="top-btn icon" title="Silenciar sonidos" aria-label="Sonido"></button>
     <span id="roomInfo" class="room-code"></span>
@@ -24,12 +24,11 @@
   <main id="home" class="home hidden">
     <div class="home-card parchment">
       <h1 class="home-title">Piratas</h1>
-      <p class="home-sub">Explora el archipiélago, comercia, mejora tu barco y conviértete en leyenda.</p>
       <input id="nameInput" class="input" maxlength="20" placeholder="Tu nombre de capitán" aria-label="Tu nombre">
       <button id="createBtn" class="btn gold big">Crear partida</button>
       <div class="join-row">
         <input id="codeInput" class="input code" maxlength="4" placeholder="CÓDIGO" aria-label="Código de sala">
-        <button id="joinBtn" class="btn">Unirse</button>
+        <button id="joinBtn" class="btn gold">Unirse</button>
       </div>
       <p id="homeError" class="error"></p>
     </div>

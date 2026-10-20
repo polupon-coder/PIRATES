@@ -333,15 +333,14 @@ $('langBtn').onclick = () => setLang(LANG === 'es' ? 'en' : 'es');
 function applyStaticTexts() {
   document.documentElement.lang = LANG;
   const set = (id, prop, es, en) => { const el = $(id); if (el) el[prop] = L(es, en); };
-  set('pricesBtn', 'textContent', 'Precios', 'Prices');
-  set('rulesBtn', 'textContent', 'Reglas', 'Rules');
+  set('pricesBtn', 'title', 'Precios', 'Prices');
+  set('rulesBtn', 'title', 'Reglas', 'Rules');
+  set('rulesBtn', 'textContent', 'R', 'R');
   set('nameInput', 'placeholder', 'Tu nombre de capitán', 'Your captain name');
   set('codeInput', 'placeholder', 'CÓDIGO', 'CODE');
   set('createBtn', 'textContent', 'Crear partida', 'Create game');
   set('joinBtn', 'textContent', 'Unirse', 'Join');
-  const sub = document.querySelector('.home-sub');
-  if (sub) sub.textContent = L('Explora el archipiélago, comercia, mejora tu barco y conviértete en leyenda.', 'Explore the archipelago, trade, upgrade your ship and become a legend.');
-  $('langBtn').innerHTML = `<span class="${LANG === 'es' ? 'on' : ''}">ES</span><span class="${LANG === 'en' ? 'on' : ''}">EN</span>`;
+  $('langBtn').textContent = LANG.toUpperCase();
   $('langBtn').title = L('Change language: English', 'Cambiar idioma: español');
   paintSound();
 }
