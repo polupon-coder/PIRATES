@@ -347,24 +347,37 @@ setInterval(() => {
 
 const isLandT = (c) => c && (c.t === 'tierra' || c.t === 'puerto');
 
-// La lámina de puerto tiene tierra arriba y a los lados. Donde la casilla vecina no es tierra
-// de la misma isla, ese borde se funde con el mar (máscara en el sistema de la lámina, antes de girarla).
-function portMask(x, y, isla, giro) {
-  const turn = ([dx, dy]) => {
-    let v = [dx, dy];
-    for (let i = 0; i < giro / 90; i++) v = [-v[1], v[0]];
-    return v;
-  };
-  const sameIsland = ([dx, dy]) => {
-    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return n === null || (isLandT(n) && n.isla === isla); // lo no descubierto no se funde
-  };
-  const fades = [[[0, -1], 'to bottom'], [[-1, 0], 'to right'], [[1, 0], 'to left']]
-    .filter(([dir]) => !sameIsland(turn(dir)))
-    .map(([, to]) => `linear-gradient(${to}, transparent 0, #000 14%)`);
-  if (!fades.length) return '';
-  const m = fades.join(', ');
-  return `-webkit-mask-image:${m};mask-image:${m};-webkit-mask-composite:source-in;mask-composite:intersect`;
+// ------------------------------------------------------------ capa de mar y costa
+
+// Mar, arrecifes y playa en un lienzo bajo las casillas. La playa es una franja calculada
+// alrededor de toda la tierra conocida: rodea las esquinas y rellena los rincones de forma
+// natural, en cualquier forma de isla. Los puertos solo aportan su lado de tierra.
+const SEA_IMG = {};
+for (const n of ['mar', 'arrecife']) {
+  SEA_IMG[n] = new Image();
+  SEA_IMG[n].onload = () => { seaKey = ''; if (S && S.map) drawSea(); };
+  SEA_IMG[n].src = `img/${n}.webp`;
+}
+const seaCanvas = document.createElement('canvas');
+seaCanvas.className = 'sea-layer';
+let seaKey = '';
+
+// Ruido suave (valor interpolado) para bordes irregulares y grano de arena.
+function hash2(x, y) {
+  let h = (x * 374761393 + y * 668265263) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+}
+function vnoise(x, y) {
+  const xi = Math.floor(x);
+  const yi = Math.floor(y);
+  const fx = x - xi;
+  const fy = y - yi;
+  const sx = fx * fx * (3 - 2 * fx);
+  const sy = fy * fy * (3 - 2 * fy);
+  const a = hash2(xi, yi) + (hash2(xi + 1, yi) - hash2(xi, yi)) * sx;
+  const b = hash2(xi, yi + 1) + (hash2(xi + 1, yi + 1) - hash2(xi, yi + 1)) * sx;
+  return a + (b - a) * sy;
 }
 
 // Islote de una casilla: tierra sin tierra vecina en cruz (y con sus vecinas ya descubiertas).
@@ -379,32 +392,154 @@ function isIslet(x, y) {
   });
 }
 
-// Playa en cada lado de la casilla de agua que toca tierra, y en las esquinas que la tocan solo
-// en diagonal. Puertos e islotes ya traen su costa en la lámina: junto a ellos no se pinta.
-// La lámina de costa tiene la playa arriba: se gira hacia la tierra.
-function coastHtml(x, y) {
-  const land = (dx, dy) => {
+// Canto de la loseta de tierra fundido con la arena donde toca agua (la loseta sigue cuadrada).
+function landFeather(x, y, isla) {
+  const sea = (dx, dy) => {
     const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return isLandT(n) && n.t !== 'puerto' && !isIslet(x + dx, y + dy);
+    return !!n && !(isLandT(n) && n.isla === isla);
   };
-  let html = '';
-  const sides = [[0, -1, 0, 'to bottom'], [1, 0, 90, 'to left'], [0, 1, 180, 'to top'], [-1, 0, 270, 'to right']];
-  for (const [dx, dy, rot, dir] of sides) {
-    if (!land(dx, dy)) continue;
-    html += `<div class="coast" style="--m:linear-gradient(${dir}, #000 0, #000 20%, transparent 42%)"><i style="--rot:${rot}deg"></i></div>`;
-  }
-  // Esquina de playa solo si la tierra toca en diagonal y no hay arrecife entre medias.
-  const reef = (dx, dy) => {
-    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
-    return !!n && n.t === 'arrecife';
-  };
-  const corners = [[1, -1, 45, '100% 0'], [1, 1, 135, '100% 100%'], [-1, 1, 225, '0 100%'], [-1, -1, 315, '0 0']];
-  for (const [dx, dy, rot, at] of corners) {
-    if (!land(dx, dy) || land(dx, 0) || land(0, dy) || reef(dx, 0) || reef(0, dy)) continue;
-    html += `<div class="coast" style="--m:radial-gradient(circle at ${at}, #000 0, #000 22%, transparent 40%)"><i style="--rot:${rot}deg;--sc:1.42"></i></div>`;
-  }
-  return html;
+  const fades = [[0, -1, 'to bottom'], [0, 1, 'to top'], [-1, 0, 'to right'], [1, 0, 'to left']]
+    .filter(([dx, dy]) => sea(dx, dy))
+    .map(([, , to]) => `linear-gradient(${to}, transparent 0, #000 9%)`);
+  if (!fades.length) return '';
+  const m = fades.join(', ');
+  return `-webkit-mask-image:${m};mask-image:${m};-webkit-mask-composite:source-in;mask-composite:intersect`;
 }
+
+// Puerto: igual que la tierra, pero la máscara va en el sistema de la lámina (antes de girarla).
+// El lado del muelle (abajo en la lámina) no se toca.
+function portFeather(x, y, isla, giro) {
+  const turn = ([dx, dy]) => {
+    let v = [dx, dy];
+    for (let i = 0; i < giro / 90; i++) v = [-v[1], v[0]];
+    return v;
+  };
+  const sea = ([dx, dy]) => {
+    const n = S.map.tiles[y + dy] && S.map.tiles[y + dy][x + dx];
+    return !!n && !(isLandT(n) && n.isla === isla);
+  };
+  const fades = [[[0, -1], 'to bottom'], [[-1, 0], 'to right'], [[1, 0], 'to left']]
+    .filter(([dir]) => sea(turn(dir)))
+    .map(([, to]) => `linear-gradient(${to}, transparent 0, #000 9%)`);
+  if (!fades.length) return '';
+  const m = fades.join(', ');
+  return `-webkit-mask-image:${m};mask-image:${m};-webkit-mask-composite:source-in;mask-composite:intersect`;
+}
+
+// Rectángulos de tierra (en casillas). Islotes de una casilla: su lámina ya trae playa.
+// Puertos: solo la franja del lado de tierra (la lámina tiene la tierra arriba, girada).
+function landRects() {
+  const N = S.map.size;
+  const rects = [];
+  const giro = new Map(S.map.ports.map((p) => [p.id, p.giro || 0]));
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const c = S.map.tiles[y][x];
+      if (!isLandT(c) || isIslet(x, y)) continue;
+      if (c.t === 'puerto') {
+        const g = giro.get(c.puerto) || 0;
+        const d = 0.3; // la arena queda bajo la orilla de la propia lámina, nunca ante el muelle
+        if (g === 0) rects.push([x, y, x + 1, y + d]);
+        else if (g === 90) rects.push([x + 1 - d, y, x + 1, y + 1]);
+        else if (g === 180) rects.push([x, y + 1 - d, x + 1, y + 1]);
+        else rects.push([x, y, x + d, y + 1]);
+      } else rects.push([x, y, x + 1, y + 1]);
+    }
+  }
+  return rects;
+}
+
+function drawSea() {
+  const N = S.map.size;
+  const cell = $('board').clientWidth / N;
+  if (!cell) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const px = Math.round(cell * dpr);
+  const key = `${px}|${S.map.tiles.map((r) => r.map((c) => (c ? c.t[0] + (c.isla ?? '') : '_')).join('')).join('/')}|${S.map.ports.map((p) => p.giro).join()}`;
+  if (key === seaKey) return;
+  seaKey = key;
+  const W = px * N;
+  seaCanvas.width = W;
+  seaCanvas.height = W;
+  const ctx = seaCanvas.getContext('2d');
+  // Mar continuo (la lámina cubre 4 × 4 casillas).
+  if (SEA_IMG.mar.complete && SEA_IMG.mar.naturalWidth) {
+    const t = px * 4;
+    for (let y = 0; y < W; y += t) for (let x = 0; x < W; x += t) ctx.drawImage(SEA_IMG.mar, x, y, t, t);
+  } else {
+    ctx.fillStyle = '#2b7896';
+    ctx.fillRect(0, 0, W, W);
+  }
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const c = S.map.tiles[y][x];
+      if (c && c.t === 'arrecife' && SEA_IMG.arrecife.complete) ctx.drawImage(SEA_IMG.arrecife, x * px, y * px, px, px);
+    }
+  }
+  // Lo no descubierto queda vacío: la niebla de pergamino lo cubre sin que asome el mar.
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!S.map.tiles[y][x]) ctx.clearRect(x * px, y * px, px, px);
+  // Playa, espuma y agua somera alrededor de la tierra.
+  const rects = landRects();
+  if (!rects.length) return;
+  const REACH = 0.5; // hasta dónde llega el agua clara de la orilla (en casillas)
+  const img = ctx.getImageData(0, 0, W, W);
+  const d = img.data;
+  const near = (tx, ty) => rects.filter((r) => r[0] <= tx + 2 && r[2] >= tx - 1 && r[1] <= ty + 2 && r[3] >= ty - 1);
+  for (let ty = 0; ty < N; ty++) {
+    for (let tx = 0; tx < N; tx++) {
+      const c = S.map.tiles[ty][tx];
+      if (!c) continue;
+      const rs = near(tx, ty);
+      if (!rs.length) continue;
+      for (let py = ty * px; py < (ty + 1) * px; py++) {
+        const fy = (py + 0.5) / px;
+        for (let pxx = tx * px; pxx < (tx + 1) * px; pxx++) {
+          const fx = (pxx + 0.5) / px;
+          let dist = 9;
+          for (const r of rs) {
+            const dx = Math.max(r[0] - fx, 0, fx - r[2]);
+            const dy = Math.max(r[1] - fy, 0, fy - r[3]);
+            const dd = Math.hypot(dx, dy);
+            if (dd < dist) dist = dd;
+          }
+          if (dist >= REACH) continue;
+          const n1 = vnoise(fx * 5, fy * 5);
+          const n2 = vnoise(fx * 13 + 7, fy * 13 + 3);
+          const beach = 0.06 + 0.08 * n1 * n1 + 0.03 * n2; // ancho irregular de la arena
+          const i = (py * W + pxx) * 4;
+          let r0 = d[i];
+          let g0 = d[i + 1];
+          let b0 = d[i + 2];
+          // Agua clara de orilla: más turquesa y luminosa cerca de la arena.
+          const shallow = Math.max(0, 1 - (dist - beach) / (REACH - beach));
+          if (dist > beach) {
+            const k = 0.55 * shallow * shallow;
+            r0 += (120 - r0) * k; g0 += (225 - g0) * k; b0 += (215 - b0) * k;
+          }
+          // Espuma junto a la arena.
+          const foamW = 0.05 + 0.03 * n2;
+          if (dist > beach && dist < beach + foamW) {
+            const k = (1 - (dist - beach) / foamW) * (0.55 + 0.45 * vnoise(fx * 30, fy * 30));
+            r0 += (250 - r0) * k; g0 += (252 - g0) * k; b0 += (245 - b0) * k;
+          }
+          // Arena: seca junto a la tierra, mojada hacia el agua, con grano.
+          if (dist <= beach) {
+            const wet = dist / beach;
+            const grain = (hash2(pxx, py) - 0.5) * 18 + (n2 - 0.5) * 14;
+            const sr = 228 - 40 * wet + grain;
+            const sg = 207 - 34 * wet + grain;
+            const sb = 158 - 20 * wet + grain * 0.8;
+            const edge = Math.min(1, (beach - dist) * px / 1.5); // borde suavizado
+            r0 += (sr - r0) * edge; g0 += (sg - g0) * edge; b0 += (sb - b0) * edge;
+          }
+          d[i] = r0; d[i + 1] = g0; d[i + 2] = b0;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+addEventListener('resize', () => { if (S && S.map) drawSea(); });
 
 function renderBoard() {
   const me = S.me;
@@ -464,10 +599,10 @@ function renderBoard() {
         });
         if (c.t === 'puerto') {
           const giro = (portsById.get(c.puerto) || {}).giro || 0;
-          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${giro}deg;${portMask(x, y, c.isla, giro)}"></div>`;
+          inner += `<div class="land puerto" style="--port-img:url(img/puerto-${(c.puerto % 3) + 1}.webp);--rot:${giro}deg;${portFeather(x, y, c.isla, giro)}"></div>`;
         } else {
           const kind = solo ? ' solo' : village.get(c.isla) === k ? ' poblado' : hill.get(c.isla) === k ? ' colina' : '';
-          inner += `<div class="land${kind}"></div>`;
+          inner += `<div class="land${kind}" style="${solo ? '' : landFeather(x, y, c.isla)}"></div>`;
         }
         if (!islandMarked.has(c.isla)) {
           islandMarked.add(c.isla);
@@ -475,7 +610,6 @@ function renderBoard() {
         }
         if (me.explorables.includes(c.isla) && myTurn) clickable = true;
       }
-      if (c.t === 'mar') inner += coastHtml(x, y);
       if (c.t === 'puerto') {
         const p = portsById.get(c.puerto);
         inner += `<div class="port-icon" title="${esc(p ? p.name : 'Puerto')}">⚓</div><div class="port-name">${esc(p ? p.name : '')}</div>`;
@@ -495,6 +629,8 @@ function renderBoard() {
     }
   }
   $('board').innerHTML = html;
+  $('board').prepend(seaCanvas);
+  drawSea();
 }
 
 $('board').addEventListener('click', (e) => {

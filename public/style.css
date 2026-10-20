@@ -175,7 +175,7 @@ button { font: inherit; cursor: pointer; }
   grid-template-columns: repeat(12, var(--cell));
   grid-template-rows: repeat(12, var(--cell));
   margin: 22px;
-  background: #2d1b0e;
+  background: #e6cfa0; /* tono del pergamino: no asoman líneas entre casillas */
   box-shadow: 0 10px 30px #000a;
   user-select: none;
 }
@@ -192,16 +192,12 @@ button { font: inherit; cursor: pointer; }
   background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
   background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
-/* El mar y la tierra son texturas continuas: cada casilla muestra su trozo (--x, --y). */
-.cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto {
-  background: url(img/mar.webp) var(--sea);
-  background-size: calc(var(--cell) * 4) calc(var(--cell) * 4);
-  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
-}
-.cell.arrecife { background: url(img/arrecife.webp) center / cover; }
-/* Borde de playa: la lámina de costa girada hacia la tierra; solo se ve su franja de playa. */
-.coast { position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: var(--m); mask-image: var(--m); }
-.coast > i { position: absolute; inset: 0; background: url(img/costa.webp) center / cover; transform: rotate(var(--rot)) scale(var(--sc, 1)); }
+/* El mar, los arrecifes y la playa se dibujan en el lienzo de debajo (.sea-layer). */
+.sea-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto { background: transparent; }
+/* Fuera de tu vista: un velo oscuro (la tierra se oscurece con su propio filtro). */
+.cell.dim { box-shadow: inset 0 0 0 999px #0000004d; }
+
 .land {
   position: absolute; inset: 0;
   /* Cada casilla de tierra muestra la lámina entera, a su tamaño. */

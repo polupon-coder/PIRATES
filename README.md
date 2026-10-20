@@ -64,6 +64,8 @@ Se buscan en `public/img/` en `.webp` o `.png`. Si falta alguna, se usa un dibuj
 
 Mejor con fondo transparente. El color de cada jugador se muestra con una franja bajo su barco.
 
+El mar, los arrecifes y la playa se dibujan en una capa bajo las casillas: la playa (arena, espuma y agua clara de orilla) se calcula alrededor de toda la tierra descubierta, así que rodea esquinas y rincones de forma natural en cualquier isla. Las losetas de tierra van enteras encima, con el canto fundido con la arena; el agua de las láminas de puerto, islote y arrecife es transparente para que el mar sea continuo.
+
 Texturas del tablero (en `public/img/`):
 
 | Archivo | Uso |
@@ -72,7 +74,6 @@ Texturas del tablero (en `public/img/`):
 | `tierra.webp` | Tierra de las islas de varias casillas (lámina entera en cada casilla). |
 | `colina.webp` | La casilla más interior de cada isla sin puerto de 3 o más casillas. |
 | `isla.webp` | Islotes de una sola casilla. |
-| `costa.webp` | Borde de playa en el agua que toca tierra (no junto a puertos ni islotes, que traen su costa): se gira hacia la tierra y solo se usa su franja de playa. |
 | `puerto-1/2/3.webp` | Puertos (se reparten entre los 9). Van en las islas más grandes, con tierra detrás y a los lados si se puede, y el muelle hacia el mar; donde su tierra toca agua, el borde se funde. |
 | `niebla.webp` | Sin uso por ahora (la niebla de guerra es el pergamino). |
 | `mesa.webp` | Fondo de la página (mesa de capitán). |
@@ -83,7 +84,7 @@ Texturas del tablero (en `public/img/`):
 | `velas.webp`, `canon.webp`, `yunque.webp`, `martillo.webp` | Velas; Cañones y Cañonear; Mejorar; Reparar (maza). |
 | `timon.webp`, `catalejo.webp`, `balanza.webp` | Navegar; Explorar y «A la vista»; Comerciar y tratos. |
 | `marco.webp`, `banderin.webp`, `tablon.webp` | Marco del tablero, botón Terminar turno y fondo de los botones de madera. |
-| `arrecife.webp` | Arrecifes. |
+| `arrecife.webp` | Arrecifes (rocas sobre una mancha de agua clara, fundida con el mar). |
 | `poblado.webp` | La casilla de tierra más cercana al puerto en las islas con puerto. |
 
 ## Decisiones tomadas donde el reglamento no lo especifica
