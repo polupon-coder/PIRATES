@@ -157,7 +157,7 @@ class Game {
   addPL(p, n, motivo) {
     if (!p || p.kind !== 'pirata' || n <= 0) return;
     p.pl += n;
-    this.say(`${p.name} gana ${n} PL (${motivo}).`);
+    this.say(`${p.name} gana ${n} de leyenda (${motivo}).`);
   }
 
   // ---------------------------------------------------------------- sala

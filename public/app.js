@@ -319,7 +319,7 @@ function renderStatus() {
     return;
   }
   const t = S.turn;
-  let html = `Ronda ${S.round} de ${S.reglas.maxRounds} · ${S.reglas.winPL} PL para ganar <span class="sep">|</span> `;
+  let html = `Ronda ${S.round} de ${S.reglas.maxRounds} · ${LEYENDA} ${S.reglas.winPL} para ganar <span class="sep">|</span> `;
   if (S.combat) html += '<span class="me-turn">⚔ ¡Combate!</span>';
   else if (S.combatOthers) html += `⚔ ${esc(S.combatOthers.a)} combate contra ${esc(S.combatOthers.d)}`;
   else if (!t) html += 'Mercantes y Armada se mueven…';
@@ -748,7 +748,7 @@ function renderPanel() {
     <div class="score-row ${t && t.pid === p.id ? 'turn' : ''}">
       <span class="flag" style="background:${p.color}"></span>
       <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${p.bot ? ' 🤖' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span>
-      <b>${LEYENDA} ${p.pl} PL</b>
+      <b>${LEYENDA} ${p.pl}</b>
     </div>`).join('');
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
@@ -760,7 +760,7 @@ function renderPanel() {
         ${shipImg({ kind: 'pirata', niveles: me.niveles })}
         <div>
           <div class="who" style="color:${me.color}">${esc(me.name)}</div>
-          <div>${LEYENDA} <b>${me.pl}</b> / ${R.winPL} PL · ${ORO} <b>${me.oro}</b> oros</div>
+          <div>${LEYENDA} <b>${me.pl}</b> / ${R.winPL} · ${ORO} <b>${me.oro}</b> oros</div>
           <div class="hint">${port ? `Atracado en ${LUGAR(port.name)}` : 'En alta mar'}</div>
         </div>
       </div>
@@ -768,7 +768,7 @@ function renderPanel() {
         <div><div class="stat"><span>${CASCO} Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
         <div><div class="stat"><span>${TRIP} Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
         <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
-        <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
+        <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo punto de leyenda al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
       </div>
       <div class="levels">${R.attrs.map((a) => `<span class="lvl">${ATTR_ICON[a]} ${R.attrLabel[a]} ${ROMAN[me.niveles[a]]}</span>`).join('')}</div>
     </div>
@@ -1023,11 +1023,11 @@ function pricesHtml() {
 
 function rulesHtml() {
   return `<div class="rules"><h2>Reglas de Piratas</h2>
-    <p><b>Objetivo:</b> conseguir 12 Puntos de Leyenda (PL). La partida termina al completar la ronda en que alguien llega a 12, o tras la ronda 15. Gana quien más PL tenga (desempate: oro, luego islas exploradas).</p>
+    <p><b>Objetivo:</b> conseguir 12 ${LEYENDA} Puntos de Leyenda. La partida termina al completar la ronda en que alguien llega a 12, o tras la ronda 15. Gana quien más puntos tenga (desempate: oro, luego islas exploradas).</p>
     <h3>Tu turno: 3 acciones</h3>
     <ul>
       <li><b>Navegar:</b> mueve tantas casillas como tus Velas (3/4/5), en 8 direcciones. Los arrecifes cuestan 2. No se cruzan esquinas cerradas por tierra ni casillas con barcos en el mar.</li>
-      <li><b>Explorar:</b> junto a una isla que no hayas explorado. Tesoro 25 % (3–8 oros y +3 PL), mercancías 35 %, peligro 25 % (1–2 de daño) o nada.</li>
+      <li><b>Explorar:</b> junto a una isla que no hayas explorado. Tesoro 25 % (3–8 oros y +3 ${LEYENDA}), mercancías 35 %, peligro 25 % (1–2 de daño) o nada.</li>
       <li><b>Cañonear</b> (hasta 2 casillas, con línea de tiro) o <b>Abordar</b> (junto al barco): empieza un combate.</li>
       <li><b>En puerto:</b> comerciar, mejorar, reparar (1 oro por punto) y reclutar (2 oros por marinero). Cada una es 1 acción.</li>
       <li><b>Atracar</b> es gratis desde una casilla vecina al puerto, pero no puedes volver al último puerto visitado hasta atracar en otro.</li>
@@ -1041,8 +1041,8 @@ function rulesHtml() {
       <li>Si te hunden, pierdes la mitad de la carga (se la lleva quien te hundió si es pirata) y vuelves a tu puerto de origen reparado.</li>
     </ul>
     <h3>Puntos de Leyenda</h3>
-    <ul><li>Tesoro: +3 · Hundir mercante: +1 · Hundir pirata: +2 · Hundir fragata: +3</li>
-    <li>Cada 4 oros de beneficio comercial neto acumulado (venta − coste de compra): +1</li></ul>
+    <ul><li>Tesoro: +3 ${LEYENDA} · Hundir mercante: +1 ${LEYENDA} · Hundir pirata: +2 ${LEYENDA} · Hundir fragata: +3 ${LEYENDA}</li>
+    <li>Cada 4 oros de beneficio comercial neto acumulado (venta − coste de compra): +1 ${LEYENDA}</li></ul>
     <h3>Mar</h3>
     <p>Ves el terreno en 3 × 3 alrededor de tu barco y los barcos hasta 2 casillas. Los mercantes viajan entre puertos y la Armada patrulla y ataca a los piratas que ve. Tienes 90 s por turno y 20 s para elegir maniobra.</p>
   </div>`;
@@ -1055,7 +1055,7 @@ function renderFinal() {
   m.innerHTML = `<div class="dialog framed">
     <button class="close" id="closeModal" aria-label="Cerrar">×</button>
     <p class="winner-title">${win ? '¡Eres una leyenda!' : `Gana ${f.winners.map(playerName).map(esc).join(' y ')}`}</p>
-    <table class="final-table"><tr><th>#</th><th>Pirata</th><th>PL</th><th>Oro</th><th>Islas</th></tr>
+    <table class="final-table"><tr><th>#</th><th>Pirata</th><th>${LEYENDA}</th><th>Oro</th><th>Islas</th></tr>
       ${f.ranking.map((r, i) => `<tr><td>${i + 1}</td><td><span class="flag" style="background:${r.color};display:inline-block"></span> ${esc(r.name)}</td><td><b>${r.pl}</b></td><td>${r.oro}</td><td>${r.islas}</td></tr>`).join('')}
     </table>
     <button class="btn gold block" data-again>Nueva partida</button>
