@@ -41,8 +41,10 @@ const ORO = '<img class="ico" src="img/oro.webp" alt="oro">';
 const CARGA = '<img class="ico" src="img/carga.webp" alt="carga">';
 const ICON = (name, cls = '') => `<img class="ico ${cls}" src="img/${name}.webp" alt="">`;
 // Mercancías con ilustración; las que aún no la tienen usan un emoji.
-const GOOD_ICON = { comida: ICON('comida', 'good'), materiales: '🪵', manufacturas: ICON('manufacturas', 'good'), lujos: ICON('lujos', 'good') };
+const GOOD_ICON = { comida: ICON('comida', 'good'), materiales: ICON('materiales', 'good'), manufacturas: ICON('manufacturas', 'good'), lujos: ICON('lujos', 'good') };
 const TRIP = ICON('tripulacion');
+const CASCO = ICON('casco');
+const LEYENDA = ICON('tesoro');
 const KIND_LABEL = { pirata: 'Pirata', mercante: 'Mercante', fragata: 'Fragata de la Armada' };
 const PICK_LABEL = { canon: 'Cañonear', abordaje: 'Abordar', maniobra: 'Maniobrar' };
 
@@ -50,6 +52,7 @@ function toast(text, kind = 'info') {
   const t = document.createElement('div');
   t.className = `toast ${kind}`;
   t.textContent = text;
+  if (kind === 'tesoro') t.insertAdjacentHTML('afterbegin', '<img class="toast-ico" src="img/tesoro.webp" alt="">');
   $('toasts').appendChild(t);
   setTimeout(() => t.remove(), kind === 'tesoro' ? 6000 : 4200);
 }
@@ -559,7 +562,7 @@ function renderPanel() {
     return `<div class="target-row">
       ${s.kind === 'pirata' ? `<span class="flag" style="background:${s.color}"></span>` : ''}
       <span class="name">${shipLabel(s)}${docked ? ' <span class="tag">atracado</span>' : ''}</span>
-      <span title="Casco">🛡 ${s.casco}/${s.cascoMax}</span>
+      <span title="Casco">${CASCO} ${s.casco}/${s.cascoMax}</span>
       <div class="row" style="width:100%">${btns.join('')}</div>
     </div>`;
   }).join('') : '<p class="hint">No hay barcos a la vista.</p>';
@@ -571,7 +574,7 @@ function renderPanel() {
     <div class="score-row ${t && t.pid === p.id ? 'turn' : ''}">
       <span class="flag" style="background:${p.color}"></span>
       <span class="name">${esc(p.name)}${p.id === S.you ? ' (tú)' : ''}${p.bot ? ' 🤖' : ''}${!p.bot && !p.connected ? ' 💤' : ''}</span>
-      <b>${p.pl} PL</b>
+      <b>${LEYENDA} ${p.pl} PL</b>
     </div>`).join('');
 
   const log = S.log.slice().reverse().map((l) => `<p>${esc(l.text)}</p>`).join('');
@@ -583,12 +586,12 @@ function renderPanel() {
         ${shipImg({ kind: 'pirata', niveles: me.niveles })}
         <div>
           <div class="who" style="color:${me.color}">${esc(me.name)}</div>
-          <div><b>${me.pl}</b> / ${R.winPL} PL · ${ORO} <b>${me.oro}</b> oros</div>
+          <div>${LEYENDA} <b>${me.pl}</b> / ${R.winPL} PL · ${ORO} <b>${me.oro}</b> oros</div>
           <div class="hint">${port ? `Atracado en ${esc(port.name)}` : 'En alta mar'}</div>
         </div>
       </div>
       <div class="stats">
-        <div><div class="stat"><span>🛡 Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
+        <div><div class="stat"><span>${CASCO} Casco</span><b>${me.casco}/${me.cascoMax}</b></div>${statBar(me.casco, me.cascoMax)}</div>
         <div><div class="stat"><span>${TRIP} Tripulación</span><b>${me.tripulacion}/${me.tripMax}</b></div>${statBar(me.tripulacion, me.tripMax)}</div>
         <div class="stat"><span>${CARGA} Bodega</span><b>${me.carga}/${me.bodega}</b></div>
         <div class="stat"><span>${ORO} Beneficio</span><b title="Próximo PL al llegar a ${me.siguientePL}">${me.netProfit}/${me.siguientePL}</b></div>
@@ -696,7 +699,7 @@ function renderModal() {
     body = `<h2>${shipLabel(s)}</h2>
       <div class="ship-head">${shipImg(s)}<div>
         <div>${KIND_LABEL[s.kind]}</div>
-        <div>🛡 Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
+        <div>${CASCO} Casco ${s.casco}/${s.cascoMax} · ${TRIP} Tripulación ${s.tripulacion}</div>
         ${s.kind === 'pirata' ? `<div>${R.attrs.map((a) => `${R.attrLabel[a]} ${ROMAN[s.niveles[a]]}`).join(' · ')}</div><div>Carga: ${s.carga} mercancías</div>` : ''}
         ${s.kind === 'mercante' ? `<div>Rumbo a ${esc(s.destino)} con ${s.carga} mercancías</div>` : ''}
       </div></div>
@@ -863,7 +866,7 @@ function fighter(s, side, c, right) {
   return `<div class="fighter ${right ? 'right' : ''}">
     ${shipImg(s)}
     <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? ' (tú)' : ''}</div>
-    <div>🛡 ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
+    <div>${CASCO} ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
     <div>🎯 ${s.canones} dados · ${TRIP} ${s.tripulacion}</div>
     <div class="badges">${c.ventaja[side] ? '<span class="badge adv">Ventaja +1</span>' : ''}${c.maniobro[side] ? '<span class="badge">Ya maniobró</span>' : ''}</div>
   </div>`;
@@ -892,7 +895,7 @@ function renderCombat() {
   }
   const c = live || done;
   if (!c) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const ICON = { canon: '💥', abordaje: '🪝', maniobra: '🌀' };
+  const ICON = { canon: '💥', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
   const DESC = {
     canon: `Dispara ${c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)} dados`,
     abordaje: `Lucha con ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} dados de tripulación`,
