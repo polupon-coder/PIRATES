@@ -137,9 +137,10 @@ button { font: inherit; cursor: pointer; }
 }
 .cell { position: relative; overflow: visible; }
 .cell.fog {
-  background: url(img/niebla.webp) #dfe7ef;
-  background-size: calc(var(--cell) * 12) calc(var(--cell) * 12);
-  background-position: calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
+  /* Nubes de tormenta: la lámina de niebla oscurecida. */
+  background: linear-gradient(#0d141bb3, #0d141bb3), url(img/niebla.webp) #2a333b;
+  background-size: 100% 100%, calc(var(--cell) * 12) calc(var(--cell) * 12);
+  background-position: 0 0, calc(var(--cell) * var(--x) * -1) calc(var(--cell) * var(--y) * -1);
 }
 /* El mar y la tierra son texturas continuas: cada casilla muestra su trozo (--x, --y). */
 .cell.mar, .cell.arrecife, .cell.tierra, .cell.puerto {
