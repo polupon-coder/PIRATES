@@ -1412,6 +1412,7 @@ function renderLoss(box) {
   }
   const rows = (list, cls) => list.map(([i, t]) => `<div class="cons ${cls}">${i}<span>${t}</span></div>`).join('');
   box.innerHTML = `<div class="dialog framed loss">
+    ${l.tipo === 'hundido' ? '<img class="loss-art" src="img/calavera.webp" alt="">' : ''}
     <h2>${title}</h2>
     <p class="loss-intro">${intro}</p>
     <div class="loss-cons">
