@@ -1482,13 +1482,20 @@ function fighter(s, side, c, right) {
   if (!s) return `<div class="fighter ${right ? 'right' : ''}"><div class="fname">${esc(txt((c.nombres || {})[side]) || L('Hundido', 'Sunk'))}</div><p>☠ ${L('Hundido', 'Sunk')}</p></div>`;
   const raw = LANG === 'en' && s.nameEn ? s.nameEn : s.name;
   const name = raw.charAt(0).toUpperCase() + raw.slice(1);
+  // Ventaja y maniobra gastada, como iconos pequeños con su explicación al pasar el dedo.
+  const marks = `${c.ventaja[side] ? `<span class="fmark adv" title="${L('Ventaja: +1 dado el próximo asalto', 'Advantage: +1 die next round')}">+1</span>` : ''}${c.maniobro[side] ? `<span class="fmark used" title="${L('Ya usó su maniobra', 'Maneuver already used')}">🌀✓</span>` : ''}`;
   return `<div class="fighter ${right ? 'right' : ''}">
     ${shipImg(s, facing(s, right ? 'left' : 'right'))}
     <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? L(' (tú)', ' (you)') : ''}</div>
-    <div>${CASCO} ${s.casco}/${s.cascoMax}</div>${statBar(s.casco, s.cascoMax)}
-    <div>🎯 ${s.canones} ${L('dados', 'dice')} · ${TRIP} ${s.tripulacion}</div>
-    <div class="badges">${c.ventaja[side] ? `<span class="badge adv">${L('Ventaja +1', 'Advantage +1')}</span>` : ''}${c.maniobro[side] ? `<span class="badge">${L('Ya maniobró', 'Already maneuvered')}</span>` : ''}</div>
+    <div class="fstats">${CASCO}<b>${s.casco}/${s.cascoMax}</b> <img class="ico" src="img/canon.webp" alt=""><b>${s.canones}</b> ${TRIP}<b>${s.tripulacion}</b>${marks}</div>
+    ${statBar(s.casco, s.cascoMax)}
   </div>`;
+}
+
+// Resumen de un asalto en una línea: qué hizo cada uno y cuántos impactos.
+function roundSummary(r, c) {
+  const who = (sd) => (sd === c.yo ? L('Tú', 'You') : esc((c[sd] && (LANG === 'en' && c[sd].nameEn ? c[sd].nameEn : c[sd].name)) || txt((c.nombres || {})[sd]) || ''));
+  return ['a', 'd'].map((sd) => `<span class="rs">${who(sd)}: <b>${PICK_LABEL[r.picks[sd]]}</b>${r.tiradas[sd] ? ` (${r.tiradas[sd].exitos} ${L('imp.', 'hits')})` : ''}</span>`).join(' · ');
 }
 
 function renderCombat() {
@@ -1518,16 +1525,21 @@ function renderCombat() {
     box.classList.add('hidden'); box.innerHTML = ''; return;
   }
   const ICON = { canon: '<img class="choice-ico" src="img/canon.webp" alt="">', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
+  const dice = (n) => `${n} ${n === 1 ? L('dado', 'die') : L('dados', 'dice')}`;
   const DESC = {
-    canon: `Dispara ${c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)} dados`,
-    abordaje: L(`Lucha con ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} dados de tripulación`, `Fight with ${c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)} crew dice`),
-    maniobra: L('Esquiva 1 impacto o evita el abordaje y gana ventaja', 'Dodge 1 hit or avoid boarding and gain advantage'),
+    canon: dice(c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)),
+    abordaje: dice(c[c.yo].tripulacion + (c.ventaja[c.yo] ? 1 : 0)),
+    maniobra: L('esquiva y +1', 'dodge, +1'),
+  };
+  const TIP = {
+    canon: L('Dispara tus cañones: cada 5 o 6 es un impacto', 'Fire your cannons: each 5 or 6 is a hit'),
+    abordaje: L('Lucha cuerpo a cuerpo con tu tripulación; si ganas, robas mercancía', 'Fight hand to hand with your crew; if you win, you steal goods'),
+    maniobra: L('Esquiva 1 impacto o evita el abordaje y gana +1 dado (una vez por combate)', 'Dodge 1 hit or avoid boarding and gain +1 die (once per fight)'),
   };
   let choose = '';
   if (live && !c.eligio) {
-    choose = `<p class="center"><b>${L('Elige tu maniobra', 'Choose your maneuver')}</b> · <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>
-      <div class="choices">${['canon', 'abordaje', 'maniobra'].map((k) => `
-        <button class="btn choice ${k === 'canon' ? 'red' : k === 'abordaje' ? 'gold' : 'green'}" data-pick="${k}" ${c.opciones.includes(k) ? '' : 'disabled'}>
+    choose = `<div class="choices">${['canon', 'abordaje', 'maniobra'].map((k) => `
+        <button class="btn choice ${k === 'canon' ? 'red' : k === 'abordaje' ? 'gold' : 'green'}" data-pick="${k}" title="${TIP[k]}" ${c.opciones.includes(k) ? '' : 'disabled'}>
           <span class="big-ico">${ICON[k]}</span><b>${PICK_LABEL[k]}</b><small>${DESC[k]}</small></button>`).join('')}</div>`;
   } else if (live) {
     choose = `<p class="waiting">${L('Esperando la decisión del rival…', 'Waiting for the rival\'s decision…')} <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span></p>`;
@@ -1540,20 +1552,15 @@ function renderCombat() {
         : L('Tras tres asaltos, ningún barco se impone.', 'After three rounds, neither ship prevails.');
     result = `<p class="winner-title" style="font-size:30px">${end}</p><button class="btn gold block" id="combatClose">${L('Continuar', 'Continue')}</button>`;
   }
-  const hist = c.historial.slice().reverse().map((r, i) => {
-    const fresh = i === 0;
-    const line = ['a', 'd'].map((sd) => {
-      const n = sd === c.yo ? L('Tú', 'You') : esc((c[sd] && (LANG === 'en' && c[sd].nameEn ? c[sd].nameEn : c[sd].name)) || txt((c.nombres || {})[sd]) || '');
-      const t = r.tiradas[sd] || r.tiradas[`${sd}Abordaje`];
-      return `${n}: <b>${PICK_LABEL[r.picks[sd]]}</b>${diceHtml(r.tiradas[sd], fresh)}${r.tiradas[`${sd}Abordaje`] ? diceHtml(r.tiradas[`${sd}Abordaje`], fresh) : ''}${t ? '' : ''}`;
-    }).join(' · ');
-    return `<div class="round-log"><b>${L('Asalto', 'Round')} ${r.ronda}</b> — ${line}<br>${esc(r.texto.map(txt).join(' '))}</div>`;
-  }).join('');
+  const rounds = c.historial.slice().reverse();
+  const last = rounds[0];
+  const detail = (r, fresh) => `<div class="round-log"><b>${L('Asalto', 'Round')} ${r.ronda}</b> — ${['a', 'd'].map((sd) => `${diceHtml(r.tiradas[sd], fresh)}${r.tiradas[`${sd}Abordaje`] ? diceHtml(r.tiradas[`${sd}Abordaje`], fresh) : ''}`).join(' ')}<br>${esc(r.texto.map(txt).join(' '))}</div>`;
+  const hist = last ? `<div class="last-round"><span class="lr-title">${L('Asalto', 'Round')} ${last.ronda}:</span> ${roundSummary(last, c)}<div class="lr-dice">${['a', 'd'].map((sd) => `${diceHtml(last.tiradas[sd], true)}${last.tiradas[`${sd}Abordaje`] ? diceHtml(last.tiradas[`${sd}Abordaje`], true) : ''}`).filter(Boolean).join('<span class="vs-mini">vs</span>')}</div></div>
+    <details class="history"><summary>${L('Ver detalle de los asaltos', 'See round details')}</summary>${rounds.map((r, i) => detail(r, false)).join('')}</details>` : '';
   box.innerHTML = `<div class="dialog framed">
-    <h2>⚔ ${L('Combate', 'Fight')} · ${L('Asalto', 'Round')} ${Math.min(c.ronda, 3)} ${L('de', 'of')} 3</h2>
+    <h2 class="combat-head">⚔ ${L('Asalto', 'Round')} ${Math.min(c.ronda, 3)}/3${live && !c.eligio ? ` · <span id="combatClock">${fmt(remaining(c.deadlineIn) || 0)}</span>` : ''}</h2>
     <div class="duel">${fighter(c.a, 'a', c, false)}<div class="vs">VS</div>${fighter(c.d, 'd', c, true)}</div>
-    ${choose}${result}
-    <div class="history">${hist}</div>
+    ${hist}${choose}${result}
   </div>`;
   box.classList.remove('hidden');
   box.querySelectorAll('[data-pick]').forEach((b) => { b.onclick = () => act('maniobra', { eleccion: b.dataset.pick }); });
