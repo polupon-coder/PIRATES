@@ -674,6 +674,12 @@ body.on-cover .brand { visibility: hidden; }
 
 /* ---------- ventana de consecuencias al perder */
 .dialog.loss h2 { text-align: center; }
-.loss-list { margin: 8px 0 14px; padding-left: 20px; line-height: 1.45; }
-.loss-list li { margin: 6px 0; }
-.loss-list .ico { height: 1.4em; vertical-align: -0.35em; }
+.loss-intro { margin: 4px 0 14px; font-style: italic; font-size: 17px; line-height: 1.45; color: #5a3d22; text-align: center; }
+.loss-cons { background: #3b24120f; border: 1px solid #8a6a3a55; border-radius: 10px; padding: 10px 14px 12px; margin-bottom: 14px; }
+.loss-cons h3 { margin: 0 0 8px; text-align: center; font-family: 'Pirata One', cursive; font-size: 22px; color: var(--wood); }
+.cons { display: flex; align-items: center; gap: 10px; margin: 7px 0; line-height: 1.35; }
+.cons .cons-ico { width: 34px; height: 34px; object-fit: contain; flex: none; filter: drop-shadow(0 1px 1px #0006); }
+.cons.bad { color: #7d1f14; font-weight: 600; }
+.cons.good { color: #2f5a2a; }
+.cons .ico { height: 1.35em; vertical-align: -0.35em; }
+.cons-sep { border-top: 1px dashed #8a6a3a66; margin: 10px 0 4px; }

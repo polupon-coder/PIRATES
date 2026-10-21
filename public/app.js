@@ -1388,27 +1388,37 @@ function renderLoss(box) {
   const l = S.me && S.me.perdida;
   if (!l || !seen || l.n <= (seen.loss || 0)) return false;
   const por = esc(txt(l.por) || '');
-  let title;
-  const items = [];
+  const ic = (name) => `<img class="cons-ico" src="img/${name}.webp" alt="">`;
+  let title, intro;
+  const bad = []; // lo que pierdes
+  const ok = []; // lo que se arregla o conservas
   if (l.tipo === 'hundido') {
-    title = L('☠ Tu barco se ha hundido', '☠ Your ship has sunk');
-    items.push(l.plRival ? L(`Te ha hundido <b>${por}</b>.`, `You were sunk by <b>${por}</b>.`) : L(`Causa: ${por}.`, `Cause: ${por}.`));
-    items.push(l.mercancias.length ? L(`Pierdes la mitad de la carga: ${goodsList(l.mercancias)}.`, `You lose half your cargo: ${goodsList(l.mercancias)}.`) : L('No llevabas carga, así que no pierdes mercancías.', 'You carried no cargo, so you lose no goods.'));
-    if (l.recogidas) items.push(L(`${por} recoge ${l.recogidas} del naufragio.`, `${por} salvages ${l.recogidas} from the wreck.`));
-    if (l.plRival) items.push(L(`${por} gana ${l.plRival} ${LEYENDA} Puntos de Leyenda.`, `${por} gains ${l.plRival} ${LEYENDA} Legend Points.`));
-    items.push(L(`Vuelves atracado a tu puerto de origen, <b>${LUGAR(l.puerto)}</b>, y se acaba tu movimiento.`, `You return docked to your home port, <b>${LUGAR(l.puerto)}</b>, and your movement ends.`));
-    items.push(L('El casco y la tripulación se reparan por completo, gratis.', 'Your hull and crew are fully restored for free.'));
-    items.push(L(`Conservas tu oro, tus mejoras y tus ${LEYENDA} Puntos de Leyenda.`, `You keep your gold, your upgrades and your ${LEYENDA} Legend Points.`));
+    title = L('Tu barco se ha hundido', 'Your ship has sunk');
+    intro = l.plRival
+      ? L(`${por} te ha mandado al fondo del mar. Tranquilo: tu tripulación llega a nado a puerto y pronto volverás a navegar.`, `${por} sent you to the bottom of the sea. Don't worry: your crew swims back to port and you'll soon sail again.`)
+      : L(`Tu barco no ha resistido ${por}. Tranquilo: tu tripulación llega a nado a puerto y pronto volverás a navegar.`, `Your ship didn't survive ${por}. Don't worry: your crew swims back to port and you'll soon sail again.`);
+    bad.push([ic('carga'), l.mercancias.length ? L(`Pierdes la mitad de la carga: ${goodsList(l.mercancias)}`, `You lose half your cargo: ${goodsList(l.mercancias)}`) : L('No llevabas carga: no pierdes mercancías', 'You carried no cargo: no goods lost')]);
+    if (l.recogidas) bad.push([ic('sables'), L(`${por} recoge ${l.recogidas} del naufragio`, `${por} salvages ${l.recogidas} from the wreck`)]);
+    if (l.plRival) bad.push([ic('tesoro'), L(`${por} gana ${l.plRival} Puntos de Leyenda`, `${por} gains ${l.plRival} Legend Points`)]);
+    bad.push([ic('timon'), L(`Vuelves atracado a ${esc(l.puerto)}, tu puerto de origen, y se acaba tu movimiento`, `You return docked to ${esc(l.puerto)}, your home port, and your movement ends`)]);
+    ok.push([ic('martillo'), L('Casco y tripulación reparados por completo, gratis', 'Hull and crew fully restored, for free')]);
+    ok.push([ic('oro'), L('Conservas tu oro, tus mejoras y tus Puntos de Leyenda', 'You keep your gold, upgrades and Legend Points')]);
   } else {
     title = L('Has perdido el abordaje', 'You lost the boarding');
-    items.push(L(`<b>${por}</b> ha abordado tu barco.`, `<b>${por}</b> boarded your ship.`));
-    items.push(l.mercancias.length ? L(`Te roba lo más valioso de la bodega: ${goodsList(l.mercancias)}.`, `They take the most valuable goods in your hold: ${goodsList(l.mercancias)}.`) : L('No te ha podido robar mercancías.', 'They could not take any goods.'));
-    items.push(L(`Pierdes un marinero: te ${l.tripulacion === 1 ? 'queda' : 'quedan'} ${l.tripulacion}. Con menos tripulación tiras menos dados al abordar y al defenderte.`, `You lose a sailor: ${l.tripulacion} left. With a smaller crew you roll fewer dice when boarding and defending.`));
-    items.push(L(`Puedes reclutar marineros en cualquier puerto (${S.reglas.recruitCost || 2} de oro cada uno).`, `You can recruit sailors at any port (${S.reglas.recruitCost || 2} gold each).`));
+    intro = L(`La tripulación de ${por} ha saltado a tu cubierta y se ha impuesto. Tu barco sigue a flote.`, `${por}'s crew leapt onto your deck and prevailed. Your ship is still afloat.`);
+    bad.push([ic('carga'), l.mercancias.length ? L(`Te roban lo más valioso de la bodega: ${goodsList(l.mercancias)}`, `They take the most valuable goods: ${goodsList(l.mercancias)}`) : L('No han podido robarte mercancías', 'They could not take any goods')]);
+    bad.push([ic('tripulacion'), L(`Pierdes un marinero: te ${l.tripulacion === 1 ? 'queda' : 'quedan'} ${l.tripulacion}, y tiras menos dados al abordar y al defenderte`, `You lose a sailor: ${l.tripulacion} left, so you roll fewer dice when boarding and defending`)]);
+    ok.push([ic('oro'), L(`Puedes reclutar marineros en cualquier puerto (${S.reglas.recruitCost || 2} de oro cada uno)`, `You can recruit sailors at any port (${S.reglas.recruitCost || 2} gold each)`)]);
   }
+  const rows = (list, cls) => list.map(([i, t]) => `<div class="cons ${cls}">${i}<span>${t}</span></div>`).join('');
   box.innerHTML = `<div class="dialog framed loss">
     <h2>${title}</h2>
-    <ul class="loss-list">${items.map((x) => `<li>${x}</li>`).join('')}</ul>
+    <p class="loss-intro">${intro}</p>
+    <div class="loss-cons">
+      <h3>${L('Consecuencias', 'Consequences')}</h3>
+      ${rows(bad, 'bad')}
+      ${ok.length ? `<div class="cons-sep"></div>${rows(ok, 'good')}` : ''}
+    </div>
     <button class="btn gold block" id="lossClose">${L('Entendido', 'Got it')}</button>
   </div>`;
   box.classList.remove('hidden');
