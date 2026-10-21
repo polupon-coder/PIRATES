@@ -1492,8 +1492,8 @@ function fighter(s, side, c, right) {
       <span class="st" title="${L('Cañones (dados)', 'Cannons (dice)')}"><img class="ico" src="img/canon.webp" alt=""><b>${s.canones}</b></span>
       <span class="st" title="${L('Tripulación', 'Crew')}">${TRIP}<b>${s.tripulacion}</b></span>
     </div>
-    ${marks ? `<div class="fmarks">${marks}</div>` : ''}
     ${statBar(s.casco, s.cascoMax)}
+    <div class="fmarks">${marks}</div>
   </div>`;
 }
 

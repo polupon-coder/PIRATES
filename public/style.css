@@ -699,7 +699,9 @@ body.on-cover .brand { visibility: hidden; }
 .fighter .fstats { display: flex; justify-content: center; gap: 8px; margin: 4px 0 6px; font-size: 16px; }
 .fighter .fstats .st { display: flex; flex-direction: column; align-items: center; min-width: 42px; padding: 3px 4px 2px; border-radius: 8px; background: #5a3a1c12; border: 1px solid #5a3a1c26; line-height: 1.1; }
 .fighter .fstats .ico { height: 28px; width: auto; margin: 0 0 2px; vertical-align: middle; }
-.fighter .fmarks { display: flex; justify-content: center; gap: 6px; margin-bottom: 4px; }
+.fighter .fmarks { display: flex; justify-content: center; gap: 6px; margin-top: 6px; min-height: 22px; }
+.duel { align-items: start; }
+.duel .vs { align-self: center; }
 .fighter .fmark { font-size: 12px; padding: 0 6px; border-radius: 8px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
 .fighter .fmark.adv { background: #d9a43b77; font-weight: 700; }
 .last-round { text-align: center; font-size: 15px; background: #5a3a1c14; border-radius: 8px; padding: 6px 8px; margin: 8px 0 4px; }
