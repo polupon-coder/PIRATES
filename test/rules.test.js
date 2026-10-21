@@ -216,6 +216,25 @@ test('no se puede atracar en un puerto con un rival atracado', () => {
   assert.strictEqual(a.docked, 0);
 });
 
+test('al hundirte queda registrada la pérdida y la historia de puntos va por rondas', () => {
+  const { g, a, b } = setup(['.P........', '..........']);
+  a.home = 0;
+  place(g, a, 4, 1);
+  place(g, b, 6, 1);
+  a.hold = [{ g: 'lujos', cost: 5 }, { g: 'comida', cost: 2 }];
+  g.sink(a, b, 'combate');
+  assert.strictEqual(a.loss.tipo, 'hundido');
+  assert.strictEqual(a.loss.mercancias.length, 1);
+  assert.strictEqual(a.loss.plRival, C.PL.pirata);
+  assert.deepStrictEqual(g.view(a.id).me.perdida, a.loss);
+  assert.strictEqual(g.history.length, 1);
+  b.pl = C.WIN_PL;
+  g.endRound();
+  assert.strictEqual(g.phase, 'fin');
+  assert.deepStrictEqual(g.final.historia.map((h) => h.ronda), [0, 1]);
+  assert.strictEqual(g.final.historia[1].pl[b.id], C.WIN_PL);
+});
+
 test('comercio en puerto: beneficio neto, umbrales de PL y no revender', () => {
   const { g, a, b } = setup(['.P........']);
   place(g, b, 9, 9);

@@ -88,6 +88,8 @@ class Game {
     this.neutral = null; // pasos pendientes de la fase neutral
     this.map = null;
     this.final = null;
+    this.history = []; // [{ ronda, pl: { id: puntos } }] al acabar cada ronda, para la gráfica
+    this._lossN = 0;
     this._id = 0;
     this._seq = 0;
   }
@@ -234,6 +236,7 @@ class Game {
     for (let i = 0; i < C.FRIGATES_BY_PLAYERS[n]; i++) this.spawnFrigate();
     this.phase = 'juego';
     this.round = 1;
+    this.snapshot(0);
     const names = this.order.map((id) => this.player(id).name).join(', ');
     this.say(T(`¡Zarpamos! Orden de turno: ${names}.`, `We set sail! Turn order: ${names}.`));
     this.startTurn(0);
@@ -834,6 +837,9 @@ class Game {
       l.hold.splice(l.hold.indexOf(u), 1);
       w.hold.push({ g: u.g, cost: 0 });
     }
+    if (l.kind === 'pirata') {
+      this.recordLoss(l, { tipo: 'abordaje', por: T(this.shipName(w), this.shipName(w, 'en')), mercancias: best.map((u) => u.g), tripulacion: l.tripulacion });
+    }
     r.texto.push(T(`¡${this.shipName(w)} gana el abordaje${n ? ` y captura ${goodsText(best)}` : ''}! ${this.shipName(l)} pierde un marinero.`,
       `${this.shipName(w, 'en')} wins the boarding${n ? ` and captures ${goodsText(best, 'en')}` : ''}! ${this.shipName(l, 'en')} loses a sailor.`));
     return 'abordaje';
@@ -865,6 +871,14 @@ class Game {
       this.dock(s, s.home);
       s.casco = maxCasco(s);
       s.tripulacion = maxCrew(s);
+      this.recordLoss(s, {
+        tipo: 'hundido',
+        por: by ? T(this.shipName(by), this.shipName(by, 'en')) : why,
+        mercancias: lost.map((u) => u.g),
+        recogidas: taken.length,
+        puerto: home,
+        plRival: by && by.kind === 'pirata' ? C.PL.pirata : 0,
+      });
       if (this.turn && this.turn.pid === s.id) this.turn.moving = null;
       if (by && by.kind === 'pirata') this.addPL(by, C.PL.pirata, T(`hundir a ${s.name}`, `sinking ${s.name}`));
     } else if (s.kind === 'mercante') {
@@ -1033,8 +1047,19 @@ class Game {
     while (this.merchants.length + pending < target && this.spawnMerchant());
   }
 
+  snapshot(ronda) {
+    this.history.push({ ronda, pl: Object.fromEntries(this.players.map((p) => [p.id, p.pl])) });
+  }
+
+  // Lo que ha perdido un jugador, para explicárselo en una ventana.
+  recordLoss(p, data) {
+    this._lossN += 1;
+    p.loss = { n: this._lossN, ...data };
+  }
+
   endRound() {
     this.neutral = null;
+    this.snapshot(this.round);
     if (this.players.some((p) => p.pl >= C.WIN_PL) || this.round >= C.MAX_ROUNDS) {
       this.finish();
       return;
@@ -1052,6 +1077,7 @@ class Game {
     this.final = {
       ranking: ranking.map((p) => ({ id: p.id, name: p.name, color: p.color, pl: p.pl, oro: p.oro, islas: p.explored.length })),
       winners: winners.map((p) => p.id),
+      historia: this.history,
     };
     this.say(T(`🏴‍☠️ Fin de la partida. ${winners.length > 1 ? 'Victoria compartida' : 'Gana'}: ${winners.map((p) => p.name).join(' y ')}.`,
       `🏴‍☠️ Game over. ${winners.length > 1 ? 'Shared victory' : 'Winner'}: ${winners.map((p) => p.name).join(' and ')}.`));
@@ -1181,7 +1207,7 @@ class Game {
       reglas: {
         size: C.SIZE, maxRounds: C.MAX_ROUNDS, winPL: C.WIN_PL, actions: C.ACTIONS_PER_TURN, levels: C.LEVELS,
         upgradeCost: C.UPGRADE_COST, repair: C.REPAIR_COST, recruit: C.RECRUIT_COST, goods: C.GOODS, goodLabel: C.GOOD_LABEL,
-        goodValue: C.GOOD_VALUE, attrs: C.ATTRS, attrLabel: C.ATTR_LABEL, profitPerPL: C.PROFIT_PER_PL, terrainView: C.TERRAIN_VIEW, shipView: C.SHIP_VIEW,
+        goodValue: C.GOOD_VALUE, attrs: C.ATTRS, attrLabel: C.ATTR_LABEL, profitPerPL: C.PROFIT_PER_PL, recruitCost: C.RECRUIT_COST, terrainView: C.TERRAIN_VIEW, shipView: C.SHIP_VIEW,
       },
     };
     if (this.phase === 'lobby' || !me) return base;
@@ -1262,6 +1288,7 @@ class Game {
         reach: this.reachFor(me),
         avisos: me.avisos,
         ultimoCombate: me.lastCombat && this.combatView(me.lastCombat, pid),
+        perdida: me.loss || null,
       },
       combat: this.combatView(c, pid),
       combatOthers: c && c.a !== pid && c.d !== pid ? {

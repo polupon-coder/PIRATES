@@ -659,3 +659,21 @@ table.trade td:first-child, table.trade th:first-child { text-align: left; }
 }
 .cover-by::before, .cover-by::after { content: '—'; margin: 0 10px; color: var(--gold); }
 body.on-cover .brand { visibility: hidden; }
+
+/* ---------- gráfica de evolución (clasificación final) */
+.chart-title { font-family: 'Pirata One', cursive; font-size: 22px; color: var(--wood); text-align: center; margin: 14px 0 4px; }
+.chart-title .ico { height: 1.2em; vertical-align: -0.3em; }
+.evo-chart { display: block; width: 100%; height: auto; font-size: 12px; fill: #5a3a1c; }
+.evo-chart .g { stroke: #8a6a3a40; stroke-width: 1; }
+.evo-chart .goal { stroke: #a0782a; stroke-width: 1.5; stroke-dasharray: 6 4; }
+.evo-chart .line { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 1px 0 #0005); }
+.evo-chart .dot { stroke: #f3e3bf; stroke-width: 1.5; }
+.evo-chart .axis { font-style: italic; }
+.evo-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin: 4px 0 12px; font-size: 15px; }
+.evo-legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+/* ---------- ventana de consecuencias al perder */
+.dialog.loss h2 { text-align: center; }
+.loss-list { margin: 8px 0 14px; padding-left: 20px; line-height: 1.45; }
+.loss-list li { margin: 6px 0; }
+.loss-list .ico { height: 1.4em; vertical-align: -0.35em; }

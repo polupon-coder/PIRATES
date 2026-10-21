@@ -243,7 +243,7 @@ socket.on('state', (st) => {
   // Avisos y combates ya vistos, por jugador (varios pueden jugar en este dispositivo).
   if (!ui.seenBy) ui.seenBy = {};
   if (!ui.seenBy[st.you]) {
-    ui.seenBy[st.you] = { avisos: new Set(((st.me && st.me.avisos) || []).map((a) => a.n)), combat: st.me && st.me.ultimoCombate ? st.me.ultimoCombate.id : null };
+    ui.seenBy[st.you] = { avisos: new Set(((st.me && st.me.avisos) || []).map((a) => a.n)), combat: st.me && st.me.ultimoCombate ? st.me.ultimoCombate.id : null, loss: st.me && st.me.perdida ? st.me.perdida.n : 0 };
   }
   ui.seenAvisos = ui.seenBy[st.you].avisos;
   if (first) ui.finalSeen = st.phase === 'fin';
@@ -982,7 +982,7 @@ function renderPanel() {
     }
     for (const id of me.explorables) acts += `<button class="btn gold block" data-explore="${id}" ${noAct ? 'disabled' : ''}>${ICON('catalejo', 'small')} ${L('Explorar la isla', 'Explore the island')}</button>`;
     for (const b of me.cerrados || []) acts += `<p class="hint">${L(`${esc(b.rival)} está atracado en ${esc(b.name)}: no puedes atracar hasta que se vaya.`, `${esc(b.rival)} is docked at ${esc(b.name)}: you can't dock until they leave.`)}</p>`;
-    if (port) acts += `<button class="btn gold block" id="portBtn">${L('Puerto', 'Port')}<span class="long"> ${L('de', 'of')}</span> ${LUGAR(port.name)}</button>`;
+    if (port) acts += `<button class="btn gold block" id="portBtn"><span class="long">${L('Puerto de', 'Port of')} </span>${LUGAR(port.name)}</button>`;
     else if (me.lastPort !== null && me.atracables.length === 0) {
       const near = S.map.ports.find((p) => p.id === me.lastPort && Math.max(Math.abs(p.x - me.x), Math.abs(p.y - me.y)) === 1);
       if (near) acts += `<p class="hint">${L(`No puedes volver a ${esc(near.name)} hasta atracar en otro puerto.`, `You can't return to ${esc(near.name)} until you dock at another port.`)}</p>`;
@@ -1377,6 +1377,71 @@ function rulesHtml() {
   </div>`;
 }
 
+// Ventana que explica qué has perdido (al hundirte o al perder un abordaje).
+function goodsList(list) {
+  const n = {};
+  for (const g of list) n[g] = (n[g] || 0) + 1;
+  return Object.entries(n).map(([g, k]) => `${GOOD_ICON[g]} ${k} ${goodLabel(g).toLowerCase()}`).join(', ');
+}
+function renderLoss(box) {
+  const seen = ui.seenBy && ui.seenBy[S.you];
+  const l = S.me && S.me.perdida;
+  if (!l || !seen || l.n <= (seen.loss || 0)) return false;
+  const por = esc(txt(l.por) || '');
+  let title;
+  const items = [];
+  if (l.tipo === 'hundido') {
+    title = L('☠ Tu barco se ha hundido', '☠ Your ship has sunk');
+    items.push(l.plRival ? L(`Te ha hundido <b>${por}</b>.`, `You were sunk by <b>${por}</b>.`) : L(`Causa: ${por}.`, `Cause: ${por}.`));
+    items.push(l.mercancias.length ? L(`Pierdes la mitad de la carga: ${goodsList(l.mercancias)}.`, `You lose half your cargo: ${goodsList(l.mercancias)}.`) : L('No llevabas carga, así que no pierdes mercancías.', 'You carried no cargo, so you lose no goods.'));
+    if (l.recogidas) items.push(L(`${por} recoge ${l.recogidas} del naufragio.`, `${por} salvages ${l.recogidas} from the wreck.`));
+    if (l.plRival) items.push(L(`${por} gana ${l.plRival} ${LEYENDA} Puntos de Leyenda.`, `${por} gains ${l.plRival} ${LEYENDA} Legend Points.`));
+    items.push(L(`Vuelves atracado a tu puerto de origen, <b>${LUGAR(l.puerto)}</b>, y se acaba tu movimiento.`, `You return docked to your home port, <b>${LUGAR(l.puerto)}</b>, and your movement ends.`));
+    items.push(L('El casco y la tripulación se reparan por completo, gratis.', 'Your hull and crew are fully restored for free.'));
+    items.push(L(`Conservas tu oro, tus mejoras y tus ${LEYENDA} Puntos de Leyenda.`, `You keep your gold, your upgrades and your ${LEYENDA} Legend Points.`));
+  } else {
+    title = L('Has perdido el abordaje', 'You lost the boarding');
+    items.push(L(`<b>${por}</b> ha abordado tu barco.`, `<b>${por}</b> boarded your ship.`));
+    items.push(l.mercancias.length ? L(`Te roba lo más valioso de la bodega: ${goodsList(l.mercancias)}.`, `They take the most valuable goods in your hold: ${goodsList(l.mercancias)}.`) : L('No te ha podido robar mercancías.', 'They could not take any goods.'));
+    items.push(L(`Pierdes un marinero: te ${l.tripulacion === 1 ? 'queda' : 'quedan'} ${l.tripulacion}. Con menos tripulación tiras menos dados al abordar y al defenderte.`, `You lose a sailor: ${l.tripulacion} left. With a smaller crew you roll fewer dice when boarding and defending.`));
+    items.push(L(`Puedes reclutar marineros en cualquier puerto (${S.reglas.recruitCost || 2} de oro cada uno).`, `You can recruit sailors at any port (${S.reglas.recruitCost || 2} gold each).`));
+  }
+  box.innerHTML = `<div class="dialog framed loss">
+    <h2>${title}</h2>
+    <ul class="loss-list">${items.map((x) => `<li>${x}</li>`).join('')}</ul>
+    <button class="btn gold block" id="lossClose">${L('Entendido', 'Got it')}</button>
+  </div>`;
+  box.classList.remove('hidden');
+  $('lossClose').onclick = () => { seen.loss = l.n; renderCombat(); };
+  return true;
+}
+
+// Gráfica de Puntos de Leyenda por ronda de todos los jugadores.
+function evolutionChart(f) {
+  const hist = f.historia || [];
+  if (hist.length < 2) return '';
+  const W = 520, H = 240, l = 34, r = 12, t = 12, b = 40;
+  const maxR = hist[hist.length - 1].ronda;
+  const maxPL = Math.max(S.reglas.winPL, ...hist.flatMap((h) => Object.values(h.pl)));
+  const X = (ronda) => l + (ronda / Math.max(1, maxR)) * (W - l - r);
+  const Y = (pl) => t + (1 - pl / maxPL) * (H - t - b);
+  const step = maxPL > 20 ? 6 : 3;
+  let grid = '';
+  for (let v = 0; v <= maxPL; v += step) grid += `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" class="g"/><text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+  const xStep = maxR > 12 ? 2 : 1;
+  for (let v = 0; v <= maxR; v += xStep) grid += `<text x="${X(v)}" y="${H - 22}" text-anchor="middle">${v}</text>`;
+  const goal = `<line x1="${l}" x2="${W - r}" y1="${Y(S.reglas.winPL)}" y2="${Y(S.reglas.winPL)}" class="goal"/>`;
+  const lines = f.ranking.map((p) => {
+    const pts = hist.filter((h) => p.id in h.pl).map((h) => `${X(h.ronda).toFixed(1)},${Y(h.pl[p.id]).toFixed(1)}`);
+    const last = pts[pts.length - 1].split(',');
+    return `<polyline points="${pts.join(' ')}" stroke="${p.color}" class="line"/><circle cx="${last[0]}" cy="${last[1]}" r="4.5" fill="${p.color}" class="dot"/>`;
+  }).join('');
+  return `<h3 class="chart-title">${L('Evolución de los', 'Progress of')} ${LEYENDA} ${L('Puntos de Leyenda', 'Legend Points')}</h3>
+    <svg class="evo-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('Puntos por ronda', 'Points per round')}">${grid}${goal}${lines}
+      <text x="${(W + l) / 2}" y="${H - 2}" text-anchor="middle" class="axis">${L('Ronda', 'Round')}</text></svg>
+    <div class="evo-legend">${f.ranking.map((p) => `<span><i style="background:${p.color}"></i>${esc(p.name)}</span>`).join('')}</div>`;
+}
+
 function renderFinal() {
   const m = $('modal');
   const f = S.final;
@@ -1387,6 +1452,7 @@ function renderFinal() {
     <table class="final-table"><tr><th>#</th><th>${L('Pirata', 'Pirate')}</th><th>${LEYENDA}</th><th>${L('Oro', 'Gold')}</th><th>${L('Islas', 'Islands')}</th></tr>
       ${f.ranking.map((r, i) => `<tr><td>${i + 1}</td><td><span class="flag" style="background:${r.color};display:inline-block"></span> ${esc(r.name)}</td><td><b>${r.pl}</b></td><td>${r.oro}</td><td>${r.islas}</td></tr>`).join('')}
     </table>
+    ${evolutionChart(f)}
     <button class="btn gold block" data-again>${L('Nueva partida', 'New game')}</button>
   </div>`;
   m.classList.remove('hidden');
@@ -1436,7 +1502,10 @@ function renderCombat() {
     return;
   }
   const c = live || done;
-  if (!c) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  if (!c) {
+    if (renderLoss(box)) return;
+    box.classList.add('hidden'); box.innerHTML = ''; return;
+  }
   const ICON = { canon: '<img class="choice-ico" src="img/canon.webp" alt="">', abordaje: '<img class="choice-ico" src="img/sables.webp" alt="">', maniobra: '🌀' };
   const DESC = {
     canon: `Dispara ${c[c.yo].canones + (c.ventaja[c.yo] ? 1 : 0)} dados`,
