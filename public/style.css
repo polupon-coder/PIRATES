@@ -696,10 +696,11 @@ body.on-cover .brand { visibility: hidden; }
 
 /* ---------- combate compacto */
 .combat-head { text-align: center; margin: 0 0 6px; font-size: 26px; }
-.fighter .fstats { display: flex; align-items: center; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 15px; }
-.fighter .fstats .ico { height: 1.5em; vertical-align: middle; margin-left: 4px; }
-.fighter .fstats b { margin-right: 2px; }
-.fighter .fmark { font-size: 12px; padding: 0 5px; border-radius: 8px; margin-left: 4px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
+.fighter .fstats { display: flex; justify-content: center; gap: 8px; margin: 4px 0 6px; font-size: 16px; }
+.fighter .fstats .st { display: flex; flex-direction: column; align-items: center; min-width: 42px; padding: 3px 4px 2px; border-radius: 8px; background: #5a3a1c12; border: 1px solid #5a3a1c26; line-height: 1.1; }
+.fighter .fstats .ico { height: 28px; width: auto; margin: 0 0 2px; vertical-align: middle; }
+.fighter .fmarks { display: flex; justify-content: center; gap: 6px; margin-bottom: 4px; }
+.fighter .fmark { font-size: 12px; padding: 0 6px; border-radius: 8px; background: #5a3a1c22; border: 1px solid #5a3a1c55; }
 .fighter .fmark.adv { background: #d9a43b77; font-weight: 700; }
 .last-round { text-align: center; font-size: 15px; background: #5a3a1c14; border-radius: 8px; padding: 6px 8px; margin: 8px 0 4px; }
 .last-round .lr-title { font-weight: 700; }
@@ -717,8 +718,9 @@ details.history summary { cursor: pointer; text-align: center; opacity: .75; }
   .choice small { font-size: 12px; }
   .fighter > img { width: 70px; height: 56px; }
   .fighter .fname { font-size: 20px; }
-  .fighter .fstats { font-size: 14px; gap: 1px; }
-  .fighter .fstats .ico { height: 1.35em; margin-left: 2px; }
+  .fighter .fstats { font-size: 14px; gap: 4px; }
+  .fighter .fstats .st { min-width: 0; flex: 1; padding: 3px 2px 2px; }
+  .fighter .fstats .ico { height: 24px; }
   .vs { font-size: 28px; }
   .combat-head { font-size: 22px; }
 }

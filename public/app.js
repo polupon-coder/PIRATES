@@ -1487,7 +1487,12 @@ function fighter(s, side, c, right) {
   return `<div class="fighter ${right ? 'right' : ''}">
     ${shipImg(s, facing(s, right ? 'left' : 'right'))}
     <div class="fname" ${s.color ? `style="color:${s.color}"` : ''}>${esc(name)}${side === c.yo ? L(' (tú)', ' (you)') : ''}</div>
-    <div class="fstats">${CASCO}<b>${s.casco}/${s.cascoMax}</b> <img class="ico" src="img/canon.webp" alt=""><b>${s.canones}</b> ${TRIP}<b>${s.tripulacion}</b>${marks}</div>
+    <div class="fstats">
+      <span class="st" title="${L('Casco', 'Hull')}">${CASCO}<b>${s.casco}/${s.cascoMax}</b></span>
+      <span class="st" title="${L('Cañones (dados)', 'Cannons (dice)')}"><img class="ico" src="img/canon.webp" alt=""><b>${s.canones}</b></span>
+      <span class="st" title="${L('Tripulación', 'Crew')}">${TRIP}<b>${s.tripulacion}</b></span>
+    </div>
+    ${marks ? `<div class="fmarks">${marks}</div>` : ''}
     ${statBar(s.casco, s.cascoMax)}
   </div>`;
 }
